@@ -1,0 +1,74 @@
+
+/*****CSS for the Main Template*****/
+
+#nav_search_input{
+	background-image: url(../img/search-icon-gray-wider.png);
+	background-position: right center;
+	background-repeat: no-repeat;
+	background-position-x: 100%;
+	background-position-y: 50%;
+	padding-right:35px;
+	padding-left:113px;
+}
+
+#search_input_holder{
+	position:relative;
+}
+
+#search_input_holder input[type='button']{
+	position:absolute;
+	border:none;
+	background: transparent;
+	cursor: pointer;
+	width: 35px;
+	height: 30px;
+	top: -6px;
+	right: 0;
+	border-top-right-radius: 15px;
+	border-bottom-right-radius: 15px;
+}
+
+/* Sticky footer styles, from http://twitter.github.io/bootstrap/examples/sticky-footer-navbar.html
+-------------------------------------------------- */
+
+html,
+body {
+height: 100%;
+/* The html and body elements cannot have any padding or margin. */
+}
+
+/* Wrapper for page content to push down footer */
+#wrap {
+min-height: 100%;
+height: auto !important;
+height: 100%;
+/* Negative indent footer by it's height */
+margin: 0 auto -60px;
+}
+
+/* Set the fixed height of the footer here */
+#push,
+#footer {
+height: 20px;
+padding-top: 20px;
+}
+
+/* Lastly, apply responsive CSS fixes as necessary */
+@media (max-width: 767px) {
+#footer {
+  margin-left: -20px;
+  margin-right: -20px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+}
+
+
+
+/* Custom page CSS
+-------------------------------------------------- */
+/* Not required for template or sticky footer method. */
+
+#wrap > .container {
+padding-top: 60px;
+}

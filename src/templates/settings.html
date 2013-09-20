@@ -1,0 +1,236 @@
+
+{% extends "maintemplate.html" %}
+
+{% block title %}Settings{% endblock %}
+
+{% block style %}
+
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery-ui-1.10.2.custom.min.css') }}" />
+
+{% endblock %}
+
+{% block script %}
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery-ui-1.10.2.custom.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/settings.js') }}"></script>
+
+<script type="text/javascript">
+
+	function submit() {
+		if(validate()) {
+			$("#validationError").hide();
+			$.post("\settings", $("#settingsForm").serialize())
+			.done(function() {
+				$("#submitSuccess").show();
+				$("#submitError").hide();
+			}).fail(function() {
+				$("#submitError").show();
+				$("#submitSuccess").hide();
+			});
+		}
+		else {
+			$("#validationError").show();
+			$("#submitSuccess").hide();
+			$("#submitError").hide();
+		}
+		
+		return false;
+	}
+	
+	function validate() {
+		var validates = true;
+		
+		// Test that lending length is between 1 and 99
+		var reLength = /^\d{1,2}$/;
+		if(!reLength.test($("#lending_length").val()) || $("#lending_length").val() == "0") {
+			validates = false;
+			$("#lendingLengthControlGroup").removeClass("success").addClass("error");
+			$("#lendingLengthHelp").show();
+		}
+		else {
+			$("#lendingLengthControlGroup").removeClass("error").addClass("success");
+			$("#lendingLengthHelp").hide();
+		}
+		
+		// Test that display name has at least one letter or number
+		var reName = /\w/;
+		if(!reName.test($("#display_name").val())) {
+			validates = false;
+			$("#display_name").parent().removeClass("success").addClass("error");
+			$("#displayNameHelp").show();
+		}
+		else {
+			$("#display_name").parent().removeClass("error").addClass("success");
+			$("#displayNameHelp").hide();
+		}
+		
+		// Test that the info does not exceed 2000 characters
+		if($("#additional_info").val().length > 2000) {
+			validates = false;
+			$("#additional_info").parent().removeClass("success").addClass("error");
+			$("#additionalInfoHelp").show();
+		}
+		else {
+			$("#additional_info").parent().removeClass("error").addClass("success");
+			$("#additionalInfoHelp").hide();
+		}
+		
+		// Test if user is mobile user
+		// We don't have a way of knowing this yet, so assume all users are web only
+		if($("#notification_settings option:selected").val() != "email") {
+			validates = false;
+			$("#notification_settings").parent().removeClass("success").addClass("error");
+			$("#notificationSettingsHelp").show();
+		}
+		else {
+			$("#notification_settings").parent().removeClass("error").addClass("success");
+			$("#notificationSettingsHelp").hide();
+		}
+		
+		return validates;
+	}
+	
+	function confirm_delete_account() {
+		$("#deleteModal").modal('show');
+	}
+	
+	function delete_account() {
+		// delete account
+		$("#deleteModal").modal('hide');
+        $.get("/delete")
+          .done(function(data) {
+              if (data == "Success") {
+                $("#deleteError").hide();
+                $("#deleteSuccess").show();
+                window.location = "/logout";
+              } else {
+                $("#deleteError").show();
+                $("#deleteSuccess").hide();
+              }
+          }).fail(function() {
+              $("#deleteError").show();
+              $("#deleteSuccess").hide();
+          });
+        return false;
+	}
+
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+<div id="deleteModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3 id="deleteModalLabel">Are you sure?</h3>
+  </div>
+  <div class="modal-body">
+    <p>If you delete your account it will be gone forever!</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger" onclick="delete_account()">Delete Account</button>
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+  </div>
+</div>
+
+<form id="settingsForm" method="post" action="/settings">
+
+<div class="row">
+	<div class="span5">
+
+		<h3>Lending Settings</h3>
+
+		<div id="lendingLengthControlGroup" class="control-group">
+			<label for="lending_length" style="display:inline-block">Default lending length (days):&nbsp;</label>
+			<input id="lending_length" name="lendingLength" style="width:1.5em;" value="{{ user.lending_length }}" />
+			<span id="lendingLengthHelp" class="help-inline" style="display: none;">Must be between 1 and 99.</span>
+		</div>
+
+		<h3>Notifications</h3>
+		<div class="control-group">
+			Receive notifications via:&nbsp;
+			<select id="notification_settings" name="notifications" style="vertical-align:baseline">
+				<option {% if user.notification == "email" %} selected="true" {% endif %} value="email">Email</option>
+				<option {% if user.notification == "mobile" %} selected="true" {% endif %} value="mobile">Mobile App</option>
+				<option {% if user.notification == "both" %} selected="true" {% endif %} value="both">Both</option>
+			</select>
+			<span id="notificationSettingsHelp" class="help-inline" style="display: none;">Must be a mobile app user to select options other than Email.</span> 
+		</div>
+		
+		<h3>User Profile</h3>
+		
+		<div class="control-group">
+			Display name to connections:&nbsp;
+			<input type="text" id="display_name" name="displayName" value="{{ user.name }}" style="vertical-align:baseline" />
+			<span id="displayNameHelp" class="help-inline" style="display: none;">Must have at least one letter or number.</span> 
+		</div>
+		
+		<p>Additional info available to connections:</p>
+		
+		<div class="control-group">
+			<textarea name="additionalInfo" id="additional_info" style="width:400px;height:125px;"
+			placeholder="Enter any additional info you would like to have visible to your contacts, such as your contact info, address, or favorite food."
+			>{{ user.info }}</textarea>
+			<span id="additionalInfoHelp" class="help-inline" style="display: none;">Info cannot exceed 2000 characters.</span> 
+		</div>
+
+	</div>
+
+	<div class="span3">
+		<br>
+		<div class="well">
+			<h3 style="margin-top:-8px">Delete Account</h3>
+			<div id="deleteError" class="alert alert-error" style="display:none;">
+			  <strong>Account not deleted</strong>&nbsp; All items you are borrowing or lending must be returned prior to deleting your account.
+			</div>
+			<div id="deleteSuccess" class="alert alert-success" style="display:none;">
+			  <strong>Account deleted.</strong>
+			</div>
+			Looking to delete your Sharing Commons account? Click the button below.
+			<br>
+			<a class="btn btn-danger" style="margin-top:20px" onclick="confirm_delete_account()">Delete Account</a>
+		</div>
+	</div>
+</div>
+
+</form>
+
+<div class="row">
+	<div class="span4">
+
+		<div id="validationError" class="alert alert-error" style="display:none;">
+			<strong>Settings not saved!</strong>&nbsp; Fix the errors and try again.
+		</div>
+		
+		<div id="submitError" class="alert alert-error" style="display:none;">
+			<strong>Settings not saved!</strong>&nbsp; Something went wrong.
+		</div>
+		
+		<div id="submitSuccess" class="alert alert-success" style="display:none;">
+			<strong>Settings saved.</strong>
+		</div>
+		
+		<!--<div id="deleteConfirm" class="alert alert-block alert-error fade in" style="display:none;">
+			<button type="button" class="close" data-dismiss="alert">&times;</button>
+			<h4 class="alert-heading">Are you sure?</h4>
+			<p>If you delete your account it'll be gone forever!</p>
+			<p>
+				<a class="btn btn-danger" href="#">Delete Account</a> <a class="btn" href="#">Cancel</a>
+			</p>
+		</div>-->
+
+	</div>
+</div>
+
+<div class="row">
+	<div class="span12">
+		<a class="btn btn-inverse" onclick="submit();">
+			Save Changes
+		</a>
+	</div>
+</div>
+
+<div style="margin-bottom:25px;"></div>
+
+{% endblock %}
