@@ -1,0 +1,175 @@
+{% extends "maintemplate.html" %}
+
+{% block title %}Manage{% endblock %}
+
+{% block style %}
+
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery-ui-1.10.2.custom.min.css') }}" />
+
+<style type="text/css">
+	a.alert-link {
+		color: #dd5600;
+		cursor: pointer;
+	}
+	
+	a.alert-link:hover {
+		color: #dd5600;
+	}
+</style>
+
+{% endblock %}
+
+{% block script %}
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery-ui-1.10.2.custom.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.tablesorter.min.js') }}"></script>
+
+<script type="text/javascript">
+	var lastRemoveLink;
+	var lastRemoveItemKey;
+	var lastRemoveItemType;
+
+	function remove_item(item_subtype, item_key, itemTitle, button){
+		$(button).attr("disabled", "disabled");
+		$.ajax({
+			url:"/library/" + item_subtype + "/" + item_key,
+			type: 'DELETE',
+			success: function(data) {
+				$(button).parent().parent().hide();
+				$("#undoMessage").show();
+				$("#undoMessageItem").text(itemTitle);
+				lastRemoveLink = button;
+				lastRemoveItemKey = item_key;
+				lastRemoveItemType = item_subtype;
+				$(button).removeAttr("disabled");
+			},
+			error: function() {
+				$(button).removeAttr("disabled");
+			}
+		});
+		return false;
+	}
+	
+	function hide_undo_message() {
+		$("#undoMessage").hide();
+		return false;
+	}
+	
+	function undo_remove() {
+		$.post("/library/" + lastRemoveItemType + "/" + lastRemoveItemKey, function(data) {
+			$(lastRemoveLink).parent().parent().show();
+			$("#undoMessage").hide();
+		})
+		return false;
+	}
+	
+	function requestCheckIn(itemCopyID, button) {
+	// Request to check in item user is borrowing
+		$.ajax({
+			url: "/return_item/" + itemCopyID,
+			type: 'GET',
+			success: function(data) {
+				$(button).attr("disabled", "");
+				$(button).attr("onclick", "");
+				$(button).html("Pending Confirmation");
+			}
+		});
+		
+		return false;
+	}
+	
+	function checkIn(itemCopyID, button) {
+	// Check in item user is lending
+		$.ajax({
+			url: "/return_item/" + itemCopyID,
+			type: 'GET',
+			success: function(data) {
+				$(button).parent().parent().hide();
+				if($("#items_lending tr:visible").length == 1) {
+					$("#items_lending").html("<tr><td colspan='3'>You aren't currently lending any items. When you are, they'll show up here.");
+				}
+			}
+		});
+		
+		return false;
+	}
+	
+	function add_hash(url_hash){
+		window.location.hash = url_hash;
+	}
+
+	$(function(){
+		if(window.location.hash){
+			if(window.location.hash == "#LendedItems") $("#lended_items").click();
+			else if (window.location.hash == "#BorrowedItems") $("#borrowed_items").click();
+		}
+	})
+	
+	$(function() {
+		$(".tooltip-button").tooltip({trigger: "hover"});
+	});
+	
+	// Not sure why this doesn't work--haven't tried to figure it out yet.
+	$(function() {
+		$("#MyItemsTable").tablesorter({ sortList: [[1,0]] });
+	});
+	
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+<br>
+
+<div class="row">
+	
+</div>
+
+<div class="row" style="position: relative">
+	<div class="span6 offset3" style="position: absolute; top: 50px;">
+		<div id="undoMessage" class="alert" style="display: none;">
+			<a class="close" onclick="hide_undo_message()">&times;</a>
+			<span id="undoMessageItem"></span> was removed from your library.&nbsp;&nbsp;
+			<strong><a onclick="undo_remove()" class="alert-link">Undo</a></strong>
+		</div>
+	</div>
+  <div class="span12">
+	
+          <h3 style="margin-top:-4px">Manage Que</h3>
+          <table class="table table-striped table-bordered" id="MyItemsTable">
+            {% if guestlist|length < 1 %}
+              <tr>
+                <td colspan="4">There are no guests in the que. Once guests have signed in, they'll show up here.</td>
+            {% else %}
+				<tr>
+				  <th class="header">Name</th>
+				  <th class="header">Contact</th>
+				  <th class="header">Check-in Time</th>
+				  <th class="header" style="width:100px"></th>
+				</tr>
+				{% for item in guestlist %}
+				  <tr>
+					<td>{{guest.firstName}} {{guest.lastName}}</td>
+					<td>{% if guest.preferredContact=='sms' %}{{guest.sms}}{% elif guest.preferredContact=="email"%}{{guest.email}}</td>
+					<td>Time</td>
+					<td style="text-align:center">
+						<a class="btn btn-small" onclick="">
+							<i class="icon-remove"></i>&nbsp;&nbsp;Send Reminder
+						</a>
+						<a class="btn btn-small" onclick="">
+							<i class="icon-remove"></i>&nbsp;&nbsp;Custom Reminder
+						</a>
+						<a class="btn btn-small" onclick="">
+							<i class="icon-remove"></i>&nbsp;&nbsp;Check In
+						</a>
+					</td>
+				  </tr>
+				{% endfor %}
+			{% endif %}
+          </table>
+	</div>
+    
+</div>
+
+{% endblock %}

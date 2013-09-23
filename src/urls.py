@@ -64,10 +64,17 @@ app.add_url_rule('/user/<userID>',view_func=views.profile)
 # Report a Bug
 app.add_url_rule('/reportbug',view_func=views.reportbug,methods=["GET","POST"])
 
+# Guest Sign In
+app.add_url_rule('/guest-signin',view_func=views.guest_signin,methods=["GET","POST"])
+
+# Manage Guests
+app.add_url_rule('/manage', view_func=views.manage,methods=["GET","POST"])
+
 # Book Info
 #app.add_url_rule('/book/<OLKey>',view_func=views.book_info)
 
 ######################## Internal calls (to be called by ajax) ##########################
+
 # Get book list
 #	Returns:
 #		JSON object with the following info about each book the user owns

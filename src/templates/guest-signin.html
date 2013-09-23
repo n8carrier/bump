@@ -1,0 +1,177 @@
+{% extends "maintemplate.html" %}
+
+{% block title %}Guest Sign-in{% endblock %}
+
+{% block style %}
+
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery-ui-1.10.2.custom.min.css') }}" />
+
+{% endblock %}
+
+{% block script %}
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery-ui-1.10.2.custom.min.js') }}"></script>
+
+<script type="text/javascript">
+
+	function submit() {
+		alert("hi");
+		if(true) { // TODO: incorporate validate
+			alert($("#submissionForm").serialize());
+			$("#validationError").hide();
+			$("#submitButton").attr("disabled", "disabled");
+			$.ajax({
+				url:"/guest-signin",
+				type: 'POST',
+				data: $("#submissionForm").serialize(),
+				success: function(data) {
+					$("#submitSuccess").show();
+					$("#submitError").hide();
+				},
+				error: function() {
+					$("#submitError").show();
+					$("#submitSuccess").hide();
+					$("#submitButton").removeAttr("disabled");
+				}
+			});
+		}
+		else {
+			$("#validationError").show();
+			$("#submitSuccess").hide();
+			$("#submitError").hide();
+		}
+		
+		return false;
+	}
+	
+	function validate() {
+		var validateNames = ["submitterName","submitterEmail","issueName","issueType","issueDescription"]
+		
+		// Test that each field to see if it has at least one letter or number
+		for (var i = 0; i < validateNames.length; i++) {	
+			var validates = true;
+			var reName = /\w/;
+			if(!reName.test($("#" + validateNames[i]).val())) {
+				validates = false;
+				$("#" + validateNames[i]).parent().removeClass("success").addClass("error");
+				$("#" + validateNames[i] + "Help").show();
+			}
+			else {
+				$("#" + validateNames[i]).parent().removeClass("error").addClass("success");
+				$("#" + validateNames[i] + "Help").hide();
+				// Test that the issue description does not exceed 2000 characters
+				if(validateNames[i]=="issueDescription") {
+					if($("#issueDescription").val().length > 2000) {
+						validates = false;
+						$("#issueDescription").parent().removeClass("success").addClass("error");
+						$("#issueDescriptionHelp").show();
+					}
+				}
+			}
+		}
+		
+		return validates;
+	}
+	
+	function togglePreferred() {
+		if($('input[name=preferredContact]:radio:checked').val()=="sms") {
+			$("#contactInfoLabel").text("Phone Number");
+			$("#contactInfo").attr("name","smsNumber");
+			$("#contactInfo").attr("placeholder","e.g. 801-555-5555");
+		} else if($('input[name=preferredContact]:radio:checked').val()=="email") {
+			$("#contactInfoLabel").text("Email Address");
+			$("#contactInfo").attr("name","email");
+			$("#contactInfo").attr("placeholder","e.g. john.doe@example.com");
+		}
+	}
+	
+</script>
+
+{% endblock %}
+
+{% block content %}
+<div class="span6">
+	<div class="well">
+		<form class="form-horizontal" id="submissionForm" method="post" action="/guest-signin" style="margin-bottom:0px">
+			<fieldset>	
+				<legend>Notify Me</legend>
+				
+				<div class="control-group">
+					<label for="firstName" class="control-label">First Name</label>
+					<div class="controls">
+						<input type="text" id="firstName" name="firstName">
+					</div>
+					<span id="firstNameHelp" class="help-inline" style="display: none;">Please enter your first name.</span> 
+				</div>
+
+				<div class="control-group"> 
+					<label for="lastName" class="control-label">Last Name</label>
+					<div class="controls">
+						<input type="text" id="lastName" name="lastName">
+					</div>
+				</div>
+
+				<div class="controls-group">
+					<label class="control-label">Notify me by</label>
+					<div class="controls">
+						<div class="radio">
+							<label>
+								<input type="radio" name="preferredContact" id="preferredContactSMS" value="sms" onClick="togglePreferred()" checked>SMS
+							</label>
+						</div>
+						<div class="radio">
+							<label>
+								<input type="radio" name="preferredContact" id="preferredContactEmail" value="email" onClick="togglePreferred()">Email
+							</label>
+						</div>
+					</div>
+				</div>
+				<br>
+				<div class="controls-group">
+					<label for="contactInfo" id="contactInfoLabel" class="control-label">Phone Number</label>
+					<div class="controls">
+						<input type="text" id="contactInfo" name="smsNumber" placeholder="e.g. 801-555-5555">
+					</div>
+				</div>
+				
+				<br>
+				<div class="controls-group">
+					<label for="optIn" class="control-label">Optional</label>
+					<div class="controls">
+						<label class="checkbox">
+							<input type="checkbox" id="optIn" name="optIn" checked>
+							Please send me coupons and other promos
+						</label>
+					</div>
+				</div>
+				<br>
+				<div class="controls-group">
+					<label for="submitButton" class="control-label"></label>
+					<a id="submitButton" class="btn btn-inverse" onclick="submit();">
+						Submit
+					</a>
+				</div>
+			</fieldset>
+		</form>
+		<div class="row">
+			<div class="span4">
+
+				<div id="validationError" class="alert alert-error" style="display:none;">
+					<strong>Unable to submit issue</strong>&nbsp; Please fix the errors and try again.
+				</div>
+				
+				<div id="submitError" class="alert alert-error" style="display:none;">
+					<strong>Unable to submit issue</strong>&nbsp; Something went wrong. Please send an email to admin<strong></strong>@<strong></strong>sharing<strong></strong>commons.com
+				</div>
+				
+				<div id="submitSuccess" class="alert alert-success" style="display:none;">
+					<strong>Your issue has been submitted.</strong>
+				</div>
+				
+			</div>
+		</div>
+	</div>
+</div>
+<div style="margin-bottom:25px;"></div>
+
+{% endblock %}

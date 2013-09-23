@@ -3,6 +3,7 @@ from google.appengine.api import users
 from flask import Response, jsonify, render_template, request, url_for, redirect, flash
 from flaskext.login import login_required, login_user, logout_user
 from src.items.models import Item,ItemCopy
+from src.guests.models import Guest
 from activity.models import RequestToBorrow, WaitingToBorrow
 import logging
 from decorators import crossdomain
@@ -254,6 +255,52 @@ def settings():
 		else:
 			return False
 	return render_response('settings.html')
+	
+def guest_signin():
+	if request.method == 'POST':
+		firstName = request.form["firstName"]
+		lastName = request.form["lastName"]
+		preferredContact = request.form["preferredContact"]
+		if preferredContact == 'sms':
+			smsNumber = request.form["smsNumber"]
+			email = None
+		elif preferredContact == 'email':
+			email = request.form["email"]
+			smsNumber = None
+		try:
+			if request.form["optIn"] == 'on':
+				optIn = True
+			else:
+				optIn = False
+		except:
+			optIn = False
+		# Add guest to database
+		# First, check if guest is already in databases
+		if preferredContact == 'sms':
+			guest = Guest.query(Guest.first_name==firstName,Guest.last_name==lastName,Guest.sms_number==smsNumber).get()
+		elif preferredContact == 'email':
+			guest = Guest.query(Guest.first_name==firstName,Guest.last_name==lastName,Guest.email==email).get()
+		if guest:
+			guest.in_que = True
+		else:
+			guest = Guest(first_name=firstName, last_name=lastName, sms_number = smsNumber, email=email, preferred_contact=preferredContact, opt_in=optIn, in_que=True)
+		guest.put()
+	return render_response("guest-signin.html")
+
+def manage():
+	# Create a list of guests (as dicts) within the user's library
+	guestlist = []
+	useraccount = current_user()
+	#for record in useraccount.get_guests():
+	#	guest = Guest.query(Guest.key == record.item).get().to_dict()
+	#	guestlist.append(guest)
+	# Sort itemlist alphabetically, with title as the primary sort key,
+	# author as secondary, and item_subtype as tertiary
+	# guestlist.sort(key=lambda item: item["item_subtype"])
+	# guestlist.sort(key=lambda item: item["author_director"].lower())
+	# guestlist.sort(key=lambda item: item["title"].lower())
+	
+	return render_response("manage.html", guestlist=guestlist)	
 	
 def reportbug():
 	if request.method == 'POST' and "submitterName" in request.form and "submitterEmail" in request.form and "issueName" in request.form and "issueDescription" in request.form:

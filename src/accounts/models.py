@@ -16,12 +16,13 @@ class UserAccount(ndb.Model):
 	
 	name = ndb.StringProperty(required=True)
 	email = ndb.StringProperty(required=True)
-	item_count = ndb.IntegerProperty(default=0)
-	lending_length = ndb.StringProperty(default="14")
-	notification = ndb.StringProperty(default="email")
-	info = ndb.StringProperty(default="")
-
-	connected_accounts = ndb.StructuredProperty(Connection,repeated=True)
+	#item_count = ndb.IntegerProperty(default=0)
+	#lending_length = ndb.StringProperty(default="14")
+	#notification = ndb.StringProperty(default="email")
+	#info = ndb.StringProperty(default="")
+	#connected_accounts = ndb.StructuredProperty(Connection,repeated=True)
+	default_msg_ready = ndb.StringProperty(default="{firstName}, your table will be ready in a few min. Need more time? Text ""bump 10"" to postpone 10 min. Hint: we understand more numbers")
+	default_checkbox_promos = ndb.BooleanProperty(default=False)
 	
 	@property
 	def pending_actions(self):
@@ -189,6 +190,10 @@ class UserAccount(ndb.Model):
 		"""
 		from src.items.models import ItemCopy
 		return ItemCopy.query(ItemCopy.owner==self.key).fetch()
+	
+	#def get_guests(self):
+	#	from src.guests.models import Guest
+	#	return Guest.query(Guest.restaurant_key==self.key).fetch()
 	
 	def get_item(self,item_subtype,item):
 		"""retrieve the user's copy of a particular item
