@@ -4,7 +4,7 @@
 
 <head>
 
-	<title>{% block title %}{% endblock %} | Sharing Commons</title>
+	<title>{% block title %}{% endblock %} | bump</title>
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -17,100 +17,6 @@
 	{% block style %}{% endblock %}
 
 	<script type="text/javascript">
-	
-		function initiateSearch() {
-			$('#searchBarForm').submit();
-		}
-		
-		function update_search_filter(button) {
-			if(button.id=="filter-all-books") {
-				// Update button name
-				$("#searchFilter").html("All Books <span class='caret'></span>");
-				$("#filter-all-books").addClass("active")
-				$("#filter-books").removeClass("active")
-				$("#filter-ebooks").removeClass("active")
-				$("#filter-audiobooks").removeClass("active")
-				// Set filter attributes
-				$("#filter-item-type").attr("name", "type")
-				$("#filter-item-type").attr("value", "book")
-				$("#filter-subtype-book").removeAttr("name")
-				$("#filter-subtype-book").removeAttr("value")
-				$("#filter-subtype-ebook").removeAttr("name")
-				$("#filter-subtype-ebook").removeAttr("value")
-				$("#filter-subtype-audiobook").removeAttr("name")
-				$("#filter-subtype-audiobook").removeAttr("value")
-				//Update placeholder
-				$("#nav_search_input").attr("placeholder","Search books by title, author, or ISBN")
-			} else if(button.id=="filter-books") {
-				// Update button name
-				$("#searchFilter").html("Books <span class='caret'></span>");
-				$("#filter-all-books").removeClass("active")
-				$("#filter-books").addClass("active")
-				$("#filter-ebooks").removeClass("active")
-				$("#filter-audiobooks").removeClass("active")
-				// Set filter attributes
-				$("#filter-item-type").removeAttr("name")
-				$("#filter-item-type").removeAttr("value")
-				$("#filter-subtype-book").attr("name", "subtype_book")
-				$("#filter-subtype-book").attr("value", "true")
-				$("#filter-subtype-ebook").removeAttr("name")
-				$("#filter-subtype-ebook").removeAttr("value")
-				$("#filter-subtype-audiobook").removeAttr("name")
-				$("#filter-subtype-audiobook").removeAttr("value")
-				//Update placeholder
-				$("#nav_search_input").attr("placeholder","Search books by title, author, or ISBN")
-			} else if(button.id=="filter-ebooks") {
-				// Update button name
-				$("#searchFilter").html("eBooks <span class='caret'></span>");
-				$("#filter-all-books").removeClass("active")
-				$("#filter-books").removeClass("active")
-				$("#filter-ebooks").addClass("active")
-				$("#filter-audiobooks").removeClass("active")
-				// Set filter attributes
-				$("#filter-item-type").removeAttr("name")
-				$("#filter-item-type").removeAttr("value")
-				$("#filter-subtype-book").removeAttr("name")
-				$("#filter-subtype-book").removeAttr("value")
-				$("#filter-subtype-ebook").attr("name", "subtype_ebook")
-				$("#filter-subtype-ebook").attr("value", "true")
-				$("#filter-subtype-audiobook").removeAttr("name")
-				$("#filter-subtype-audiobook").removeAttr("value")
-				//Update placeholder
-				$("#nav_search_input").attr("placeholder","Search ebooks by title, author, or ISBN")
-			} else if(button.id=="filter-audiobooks") {
-				$("#searchFilter").html("Audiobooks <span class='caret'></span>");
-				// Update button name
-				$("#filter-all-books").removeClass("active")
-				$("#filter-books").removeClass("active")
-				$("#filter-ebooks").removeClass("active")
-				$("#filter-audiobooks").addClass("active")
-				// Set filter attributes
-				$("#filter-item-type").removeAttr("name")
-				$("#filter-item-type").removeAttr("value")
-				$("#filter-subtype-book").removeAttr("name")
-				$("#filter-subtype-book").removeAttr("value")
-				$("#filter-subtype-ebook").removeAttr("name")
-				$("#filter-subtype-ebook").removeAttr("value")
-				$("#filter-subtype-audiobook").attr("name", "subtype_audiobook")
-				$("#filter-subtype-audiobook").attr("value", "true")
-				//Update placeholder
-				$("#nav_search_input").attr("placeholder","Search audiobooks by title, author, or ISBN")
-			}			
-		}
-	
-	</script>
-	
-	<script type="text/javascript">
-	
-		// Google Analytics tracking code
-		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-		ga('create', 'UA-40614102-1', 'sharingcommons.com');
-		ga('send', 'pageview');
-
 	</script>
 
 </head>

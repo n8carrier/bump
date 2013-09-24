@@ -21,7 +21,7 @@ class UserAccount(ndb.Model):
 	#notification = ndb.StringProperty(default="email")
 	#info = ndb.StringProperty(default="")
 	#connected_accounts = ndb.StructuredProperty(Connection,repeated=True)
-	default_msg_ready = ndb.StringProperty(default="{firstName}, your table will be ready in a few min. Need more time? Text ""bump 10"" to postpone 10 min. Hint: we understand more numbers")
+	default_msg_ready = ndb.StringProperty(default="{firstName}, your table will be ready in a few min. Need more time? Text ""bump 10"" to postpone 10 min. Hint: we understand more numbers.")
 	default_checkbox_promos = ndb.BooleanProperty(default=False)
 	
 	@property
@@ -67,23 +67,11 @@ class UserAccount(ndb.Model):
 			connections.append(UserAccount.query(UserAccount.key==connection.user).get())
 		return connections
 	
-	def update(self,name,lending_length,notifications,info):
-		"""update the user's settings
-
-		Arguments:
-		name - the name the user would like to have displayed
-		lending_length - the default number of days that this user lends out his/her items 
-		notification - a string saying how this user will recieve notifications (email, mobile, both)
-		info - a string, additional information about the user that will be displayed to other users
+	def update(self,defaultMessage, promoDefault):
 		
-		Return value:
-		True if successfull
-		"""
 		# validate name
-		self.name = name
-		self.lending_length = lending_length
-		self.notification = notifications
-		self.info = info
+		self.default_msg_ready = defaultMessage
+		self.default_checkbox_promos = promoDefault
 		self.put()
 		return True
 
@@ -191,9 +179,9 @@ class UserAccount(ndb.Model):
 		from src.items.models import ItemCopy
 		return ItemCopy.query(ItemCopy.owner==self.key).fetch()
 	
-	#def get_guests(self):
-	#	from src.guests.models import Guest
-	#	return Guest.query(Guest.restaurant_key==self.key).fetch()
+	def get_guests(self):
+		from src.guests.models import Guest
+		return Guest.query(Guest.restaurant_key==self.key).fetch()
 	
 	def get_item(self,item_subtype,item):
 		"""retrieve the user's copy of a particular item

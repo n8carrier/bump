@@ -25,28 +25,32 @@
 <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.tablesorter.min.js') }}"></script>
 
 <script type="text/javascript">
+	
+	var lastRemoveGuestID;
 	var lastRemoveLink;
-	var lastRemoveItemKey;
-	var lastRemoveItemType;
-
-	function remove_item(item_subtype, item_key, itemTitle, button){
-		$(button).attr("disabled", "disabled");
+	
+	function hide_undo_message() {
+		$("#undoMessage").hide();
+		return false;
+	}
+	
+	function checkIn(guestID, firstName, lastName, button) {
+	// Check in item user is lending
 		$.ajax({
-			url:"/library/" + item_subtype + "/" + item_key,
-			type: 'DELETE',
+			url: "/checkin/" + guestID,
+			type: 'GET',
 			success: function(data) {
 				$(button).parent().parent().hide();
 				$("#undoMessage").show();
-				$("#undoMessageItem").text(itemTitle);
-				lastRemoveLink = button;
-				lastRemoveItemKey = item_key;
-				lastRemoveItemType = item_subtype;
-				$(button).removeAttr("disabled");
-			},
-			error: function() {
-				$(button).removeAttr("disabled");
+				$("#undoMessageName").text(firstName + ' ' + lastName);
+				lastRemoveGuestID = guestID;
+				lastRemoveLink = button; // Gor some reason nothing is coming through. It worked in managelibrary.html
+				if($("#guestQueue tr:visible").length == 1) {
+					$("#guestQueue").html("<tr><td colspan='4'>There are no guests in the queue. Once guests have signed in, they'll show up here.</td></tr>");
+				}
 			}
 		});
+		
 		return false;
 	}
 	
@@ -55,64 +59,30 @@
 		return false;
 	}
 	
-	function undo_remove() {
-		$.post("/library/" + lastRemoveItemType + "/" + lastRemoveItemKey, function(data) {
+	function undo_checkin() {
+		$.post("/undo_checkin/" + lastRemoveGuestID, function(data) {
 			$(lastRemoveLink).parent().parent().show();
 			$("#undoMessage").hide();
 		})
 		return false;
 	}
 	
-	function requestCheckIn(itemCopyID, button) {
-	// Request to check in item user is borrowing
-		$.ajax({
-			url: "/return_item/" + itemCopyID,
-			type: 'GET',
-			success: function(data) {
-				$(button).attr("disabled", "");
-				$(button).attr("onclick", "");
-				$(button).html("Pending Confirmation");
-			}
-		});
-		
-		return false;
+	function sendDefaultMsg(guestID, button) {
+	
 	}
 	
-	function checkIn(itemCopyID, button) {
-	// Check in item user is lending
-		$.ajax({
-			url: "/return_item/" + itemCopyID,
-			type: 'GET',
-			success: function(data) {
-				$(button).parent().parent().hide();
-				if($("#items_lending tr:visible").length == 1) {
-					$("#items_lending").html("<tr><td colspan='3'>You aren't currently lending any items. When you are, they'll show up here.");
-				}
-			}
-		});
-		
-		return false;
+	function customMsgModal(guestID, firstName, lastName, button) {
+		var msg = "{{ cur_user.default_msg_ready }}";
+		var msg = msg.replace("{firstName}",firstName);
+		var msg = msg.replace("{lastName}",lastName);
+		$("#customMsgModalText").text(msg);
+		$("#customMsgModal").modal('show');
+		// Add guestID to onClick for send button (for calling sendCustomMsg)
 	}
 	
-	function add_hash(url_hash){
-		window.location.hash = url_hash;
+	function sendCustomMsg(guestID, button) {
+		msg = $("#customMsgModalText").text();
 	}
-
-	$(function(){
-		if(window.location.hash){
-			if(window.location.hash == "#LendedItems") $("#lended_items").click();
-			else if (window.location.hash == "#BorrowedItems") $("#borrowed_items").click();
-		}
-	})
-	
-	$(function() {
-		$(".tooltip-button").tooltip({trigger: "hover"});
-	});
-	
-	// Not sure why this doesn't work--haven't tried to figure it out yet.
-	$(function() {
-		$("#MyItemsTable").tablesorter({ sortList: [[1,0]] });
-	});
 	
 </script>
 
@@ -127,41 +97,56 @@
 </div>
 
 <div class="row" style="position: relative">
-	<div class="span6 offset3" style="position: absolute; top: 50px;">
+	<div class="span6 offset3" style="position: absolute;">
 		<div id="undoMessage" class="alert" style="display: none;">
 			<a class="close" onclick="hide_undo_message()">&times;</a>
-			<span id="undoMessageItem"></span> was removed from your library.&nbsp;&nbsp;
-			<strong><a onclick="undo_remove()" class="alert-link">Undo</a></strong>
+			<span id="undoMessageName"></span> has been checked in.&nbsp;&nbsp;
+			<strong><a onclick="undo_checkin()" class="alert-link">Undo</a></strong>
 		</div>
 	</div>
+	
+	<div id="customMsgModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="customMsgModalLabel" aria-hidden="true">
+	  <div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		<h3 id="customMsgModalLabel">Send Custom Message</h3>
+	  </div>
+	  <div class="modal-body">
+		<textarea id="customMsgModalText" rows="3" style="width:516px"></textarea>
+	  </div>
+	  <div class="modal-footer">
+		<button class="btn btn-primary" dat-dismiss="modal" area-hidden="true" onClick="sendCustomMsg">Send</button>
+		<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+	  </div>
+	</div>
+	
   <div class="span12">
 	
-          <h3 style="margin-top:-4px">Manage Que</h3>
-          <table class="table table-striped table-bordered" id="MyItemsTable">
+          <h3 style="margin-top:-4px">Manage Queue</h3>
+          <table class="table table-striped table-bordered" id="guestQueue">
             {% if guestlist|length < 1 %}
               <tr>
-                <td colspan="4">There are no guests in the que. Once guests have signed in, they'll show up here.</td>
+                <td colspan="4">There are no guests in the queue. Once guests have signed in, they'll show up here.</td>
             {% else %}
 				<tr>
 				  <th class="header">Name</th>
 				  <th class="header">Contact</th>
 				  <th class="header">Check-in Time</th>
-				  <th class="header" style="width:100px"></th>
+				  <th class="header" style="width:340px">Actions</th>
 				</tr>
-				{% for item in guestlist %}
+				{% for guest in guestlist %}
 				  <tr>
-					<td>{{guest.firstName}} {{guest.lastName}}</td>
-					<td>{% if guest.preferredContact=='sms' %}{{guest.sms}}{% elif guest.preferredContact=="email"%}{{guest.email}}</td>
-					<td>Time</td>
+					<td>{{guest.first_name}} {{guest.last_name}}</td>
+					<td>{% if guest.sms_number %}{{guest.sms_number}}{% endif %}{% if guest.email%}{{guest.email}}{% endif %}</td>
+					<td>{{guest.last_checkin}}</td>
 					<td style="text-align:center">
-						<a class="btn btn-small" onclick="">
-							<i class="icon-remove"></i>&nbsp;&nbsp;Send Reminder
+						<a class="btn btn-primary btn-small" onclick="sendDefaultMsg('{{guest.key.id()}}',this)">
+							<!--<i class="icon-mobile-phone"></i>&nbsp;&nbsp;-->Send Reminder
 						</a>
-						<a class="btn btn-small" onclick="">
-							<i class="icon-remove"></i>&nbsp;&nbsp;Custom Reminder
+						<a class="btn btn-info btn-small" onclick="customMsgModal('{{guest.key.id()}}','{{guest.first_name}}','{{guest.last_name}}',this)">
+							Custom Reminder
 						</a>
-						<a class="btn btn-small" onclick="">
-							<i class="icon-remove"></i>&nbsp;&nbsp;Check In
+						<a class="btn btn-success btn-small" onclick="checkIn('{{guest.key.id()}}','{{guest.first_name}}','{{guest.last_name}}',this)">
+							<i class="icon-ok"></i>&nbsp;&nbsp;Check In
 						</a>
 					</td>
 				  </tr>

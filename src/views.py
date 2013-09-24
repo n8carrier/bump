@@ -244,63 +244,65 @@ def search():
 	return render_response('search.html', itemlist=itemlist, search=searchterm, attribute=attr, include_type=item_type, subtype_book=subtype_book, subtype_ebook=subtype_ebook, subtype_audiobook=subtype_audiobook, subtype_specified=subtype_specified)
 	
 def settings():
-	if request.method == 'POST' and "displayName" in request.form and "lendingLength" in request.form and "notifications" in request.form and "additionalInfo" in request.form:
+	if request.method == 'POST' and "defaultMessage" in request.form and "promoDefault" in request.form:
 		user = current_user()
-		name = request.form["displayName"]
-		length = request.form["lendingLength"]
-		notify = request.form["notifications"]
-		info = request.form["additionalInfo"]
-		if user.update(name, length, notify, info):
+		defaultMessage = request.form["defaultMessage"]
+		promoDefault = request.form["promoDefault"]
+		if user.update(defaultMessage, promoDefault):
 			return "Success"
 		else:
 			return False
 	return render_response('settings.html')
 	
 def guest_signin():
-	if request.method == 'POST':
-		firstName = request.form["firstName"]
-		lastName = request.form["lastName"]
-		preferredContact = request.form["preferredContact"]
-		if preferredContact == 'sms':
-			smsNumber = request.form["smsNumber"]
-			email = None
-		elif preferredContact == 'email':
-			email = request.form["email"]
-			smsNumber = None
-		try:
-			if request.form["optIn"] == 'on':
-				optIn = True
-			else:
+	cur_user = current_user()
+	if cur_user:
+		if request.method == 'POST':
+			firstName = request.form["firstName"]
+			lastName = request.form["lastName"]
+			preferredContact = request.form["preferredContact"]
+			if preferredContact == 'sms':
+				smsNumber = request.form["smsNumber"]
+				email = None
+			elif preferredContact == 'email':
+				email = request.form["email"]
+				smsNumber = None
+			try:
+				if request.form["optIn"] == 'on':
+					optIn = True
+				else:
+					optIn = False
+			except:
 				optIn = False
-		except:
-			optIn = False
-		# Add guest to database
-		# First, check if guest is already in databases
-		if preferredContact == 'sms':
-			guest = Guest.query(Guest.first_name==firstName,Guest.last_name==lastName,Guest.sms_number==smsNumber).get()
-		elif preferredContact == 'email':
-			guest = Guest.query(Guest.first_name==firstName,Guest.last_name==lastName,Guest.email==email).get()
-		if guest:
-			guest.in_que = True
-		else:
-			guest = Guest(first_name=firstName, last_name=lastName, sms_number = smsNumber, email=email, preferred_contact=preferredContact, opt_in=optIn, in_que=True)
-		guest.put()
+			# Add guest to database
+			# First, check if guest is already in databases
+			if preferredContact == 'sms':
+				guest = Guest.query(Guest.first_name==firstName,Guest.last_name==lastName,Guest.sms_number==smsNumber,Guest.restaurant_key==current_user().key).get()
+			elif preferredContact == 'email':
+				guest = Guest.query(Guest.first_name==firstName,Guest.last_name==lastName,Guest.email==email,Guest.restaurant_key==current_user().key).get()
+			if guest:
+				guest.in_que = True
+				guest.last_checkin = datetime.time
+				guest.restaurant_key
+			else:
+				guest = Guest(first_name=firstName, last_name=lastName, sms_number = smsNumber, email=email, preferred_contact=preferredContact, opt_in=optIn, in_que=True, restaurant_key=current_user().key)
+			guest.put()
 	return render_response("guest-signin.html")
 
 def manage():
-	# Create a list of guests (as dicts) within the user's library
+	
+	cur_user = current_user()
 	guestlist = []
-	useraccount = current_user()
-	#for record in useraccount.get_guests():
-	#	guest = Guest.query(Guest.key == record.item).get().to_dict()
-	#	guestlist.append(guest)
+	if cur_user:
+	# Create a list of guests (as dicts) within the user's library
+		for record in cur_user.get_guests():
+			guestlist.append(record)
 	# Sort itemlist alphabetically, with title as the primary sort key,
 	# author as secondary, and item_subtype as tertiary
 	# guestlist.sort(key=lambda item: item["item_subtype"])
 	# guestlist.sort(key=lambda item: item["author_director"].lower())
 	# guestlist.sort(key=lambda item: item["title"].lower())
-	
-	return render_response("manage.html", guestlist=guestlist)	
+	return render_response("manage.html", guestlist=guestlist, cur_user=cur_user)	
 	
 def reportbug():
 	if request.method == 'POST' and "submitterName" in request.form and "submitterEmail" in request.form and "issueName" in request.form and "issueDescription" in request.form:
@@ -379,7 +381,8 @@ def login():
 	g_user = users.get_current_user()
 	if g_user:
 		if login_account(g_user):
-			return redirect(request.args.get("next") or url_for("index"))
+			#return redirect(request.args.get("next") or url_for("index"))
+			return redirect(url_for("manage"))
 		else:
 			return render_response('join.html',invalid_login=True)
 	return redirect(users.create_login_url(request.url))

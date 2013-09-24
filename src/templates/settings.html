@@ -39,54 +39,6 @@
 	
 	function validate() {
 		var validates = true;
-		
-		// Test that lending length is between 1 and 99
-		var reLength = /^\d{1,2}$/;
-		if(!reLength.test($("#lending_length").val()) || $("#lending_length").val() == "0") {
-			validates = false;
-			$("#lendingLengthControlGroup").removeClass("success").addClass("error");
-			$("#lendingLengthHelp").show();
-		}
-		else {
-			$("#lendingLengthControlGroup").removeClass("error").addClass("success");
-			$("#lendingLengthHelp").hide();
-		}
-		
-		// Test that display name has at least one letter or number
-		var reName = /\w/;
-		if(!reName.test($("#display_name").val())) {
-			validates = false;
-			$("#display_name").parent().removeClass("success").addClass("error");
-			$("#displayNameHelp").show();
-		}
-		else {
-			$("#display_name").parent().removeClass("error").addClass("success");
-			$("#displayNameHelp").hide();
-		}
-		
-		// Test that the info does not exceed 2000 characters
-		if($("#additional_info").val().length > 2000) {
-			validates = false;
-			$("#additional_info").parent().removeClass("success").addClass("error");
-			$("#additionalInfoHelp").show();
-		}
-		else {
-			$("#additional_info").parent().removeClass("error").addClass("success");
-			$("#additionalInfoHelp").hide();
-		}
-		
-		// Test if user is mobile user
-		// We don't have a way of knowing this yet, so assume all users are web only
-		if($("#notification_settings option:selected").val() != "email") {
-			validates = false;
-			$("#notification_settings").parent().removeClass("success").addClass("error");
-			$("#notificationSettingsHelp").show();
-		}
-		else {
-			$("#notification_settings").parent().removeClass("error").addClass("success");
-			$("#notificationSettingsHelp").hide();
-		}
-		
 		return validates;
 	}
 	
@@ -138,43 +90,25 @@
 
 <div class="row">
 	<div class="span5">
-
-		<h3>Lending Settings</h3>
-
-		<div id="lendingLengthControlGroup" class="control-group">
-			<label for="lending_length" style="display:inline-block">Default lending length (days):&nbsp;</label>
-			<input id="lending_length" name="lendingLength" style="width:1.5em;" value="{{ user.lending_length }}" />
-			<span id="lendingLengthHelp" class="help-inline" style="display: none;">Must be between 1 and 99.</span>
+		
+		<h3>Default Message</h3>
+		
+		<div class="control-group">
+			<textarea name="defaultMessage" id="defaultMessage" rows="3" style="width:400px"
+			placeholder="Enter the default message to send when a table is almost ready. Use {firstName} and {lastName} to pull in the user's first and/or last name."
+			>{{ user.default_msg_ready }}</textarea>
+			<span id="defaultMessageHelp" class="help-inline" style="display: none;">Message cannot exceed 140 characters.</span> 
 		</div>
 
-		<h3>Notifications</h3>
+		<h3>Default for Promos</h3>
+		
 		<div class="control-group">
-			Receive notifications via:&nbsp;
-			<select id="notification_settings" name="notifications" style="vertical-align:baseline">
-				<option {% if user.notification == "email" %} selected="true" {% endif %} value="email">Email</option>
-				<option {% if user.notification == "mobile" %} selected="true" {% endif %} value="mobile">Mobile App</option>
-				<option {% if user.notification == "both" %} selected="true" {% endif %} value="both">Both</option>
+			Default setting for subscribing to coupons/promos:&nbsp;
+			<select id="promoDefault" name="promoDefault" style="vertical-align:baseline">
+				<option {% if user.default_checkbox_promos == True %} selected="true" {% endif %} value="true">Default to checked (subscribe)</option>
+				<option {% if user.default_checkbox_promos == False %} selected="true" {% endif %} value="false">Default to unchecked (guest must check to subscribe)</option>
 			</select>
-			<span id="notificationSettingsHelp" class="help-inline" style="display: none;">Must be a mobile app user to select options other than Email.</span> 
 		</div>
-		
-		<h3>User Profile</h3>
-		
-		<div class="control-group">
-			Display name to connections:&nbsp;
-			<input type="text" id="display_name" name="displayName" value="{{ user.name }}" style="vertical-align:baseline" />
-			<span id="displayNameHelp" class="help-inline" style="display: none;">Must have at least one letter or number.</span> 
-		</div>
-		
-		<p>Additional info available to connections:</p>
-		
-		<div class="control-group">
-			<textarea name="additionalInfo" id="additional_info" style="width:400px;height:125px;"
-			placeholder="Enter any additional info you would like to have visible to your contacts, such as your contact info, address, or favorite food."
-			>{{ user.info }}</textarea>
-			<span id="additionalInfoHelp" class="help-inline" style="display: none;">Info cannot exceed 2000 characters.</span> 
-		</div>
-
 	</div>
 
 	<div class="span3">
