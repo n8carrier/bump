@@ -75,6 +75,12 @@ app.add_url_rule('/manage', view_func=views.manage,methods=["GET","POST"])
 
 ######################## Internal calls (to be called by ajax) ##########################
 
+# Check in Guest
+app.add_url_rule('/checkin/<guest_ID>',view_func=views.checkin_guest,methods=['GET'])
+
+# Check in Guest
+app.add_url_rule('/undo_checkin/<guest_ID>',view_func=views.undo_checkin_guest,methods=['GET'])
+
 # Get book list
 #	Returns:
 #		JSON object with the following info about each book the user owns

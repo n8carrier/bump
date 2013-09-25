@@ -282,7 +282,7 @@ def guest_signin():
 				guest = Guest.query(Guest.first_name==firstName,Guest.last_name==lastName,Guest.email==email,Guest.restaurant_key==current_user().key).get()
 			if guest:
 				guest.in_que = True
-				guest.last_checkin = datetime.time
+				guest.last_checkin = datetime.datetime.now()
 				guest.restaurant_key
 			else:
 				guest = Guest(first_name=firstName, last_name=lastName, sms_number = smsNumber, email=email, preferred_contact=preferredContact, opt_in=optIn, in_que=True, restaurant_key=current_user().key)
@@ -296,13 +296,65 @@ def manage():
 	if cur_user:
 	# Create a list of guests (as dicts) within the user's library
 		for record in cur_user.get_guests():
-			guestlist.append(record)
+			if record.in_que:
+				guest = {}
+				guest["id"] = record.key.id()
+				guest["firstName"] = record.first_name
+				guest["lastName"] = record.last_name
+				guest["sms"] = record.sms_number
+				guest["email"] = record.email
+				guest["last_checkin"] = record.last_checkin
+				checkin_timestamp = record.last_checkin - timedelta(hours=6)
+				checkin_month = '0' + str(checkin_timestamp.month)
+				checkin_month = checkin_month[-2:]
+				checkin_day = '0' + str(checkin_timestamp.day)
+				checkin_day = checkin_day[-2:]
+				checkin_year = str(checkin_timestamp.year)
+				if checkin_timestamp.hour <= 12: #TODO: 12am to 1am comes out as 00:30
+					checkin_hour = '0' + str(checkin_timestamp.hour)
+					checkin_hour = checkin_hour[-2:]
+				else:
+					checkin_hour = '0' + str(checkin_timestamp.hour - 12)
+					checkin_hour = checkin_hour[-2:]
+				if checkin_timestamp.hour <= 11:
+					checkin_ampm = 'AM'
+				else:
+					checkin_ampm = 'PM'
+				checkin_minute = '0' + str(checkin_timestamp.minute)
+				checkin_minute = checkin_minute[-2:]
+				guest["checkin_date"] = checkin_month + '/' + checkin_day + '/' + checkin_year
+				guest["checkin_time"] = checkin_hour + ':' + checkin_minute + ' ' + checkin_ampm
+				guestlist.append(guest)
 	# Sort itemlist alphabetically, with title as the primary sort key,
 	# author as secondary, and item_subtype as tertiary
-	# guestlist.sort(key=lambda item: item["item_subtype"])
+	guestlist.sort(key=lambda guest: guest["last_checkin"])
 	# guestlist.sort(key=lambda item: item["author_director"].lower())
 	# guestlist.sort(key=lambda item: item["title"].lower())
 	return render_response("manage.html", guestlist=guestlist, cur_user=cur_user)	
+
+def checkin_guest(guest_ID):
+	cur_user = current_user()
+	if not cur_user:
+		logging.info("there is not a user logged in")
+		return "Error"
+	else:
+		guest = Guest.get_by_id(int(guest_ID))
+		guest.in_que = False
+		guest.put()
+	return "Success"
+
+def undo_checkin_guest(guest_ID):
+	cur_user = current_user()
+	if not cur_user:
+		logging.info("there is not a user logged in")
+		return "Error"
+	else:
+		guest = Guest.get_by_id(int(guest_ID))
+		guest.in_que = True
+		guest.put()
+	return "Success"
+	
+	
 	
 def reportbug():
 	if request.method == 'POST' and "submitterName" in request.form and "submitterEmail" in request.form and "issueName" in request.form and "issueDescription" in request.form:

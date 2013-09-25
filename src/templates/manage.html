@@ -44,7 +44,7 @@
 				$("#undoMessage").show();
 				$("#undoMessageName").text(firstName + ' ' + lastName);
 				lastRemoveGuestID = guestID;
-				lastRemoveLink = button; // Gor some reason nothing is coming through. It worked in managelibrary.html
+				lastRemoveLink = button; // for some reason nothing is coming through. It worked in managelibrary.html
 				if($("#guestQueue tr:visible").length == 1) {
 					$("#guestQueue").html("<tr><td colspan='4'>There are no guests in the queue. Once guests have signed in, they'll show up here.</td></tr>");
 				}
@@ -60,7 +60,7 @@
 	}
 	
 	function undo_checkin() {
-		$.post("/undo_checkin/" + lastRemoveGuestID, function(data) {
+		$.get("/undo_checkin/" + lastRemoveGuestID, function(data) {
 			$(lastRemoveLink).parent().parent().show();
 			$("#undoMessage").hide();
 		})
@@ -135,17 +135,17 @@
 				</tr>
 				{% for guest in guestlist %}
 				  <tr>
-					<td>{{guest.first_name}} {{guest.last_name}}</td>
-					<td>{% if guest.sms_number %}{{guest.sms_number}}{% endif %}{% if guest.email%}{{guest.email}}{% endif %}</td>
-					<td>{{guest.last_checkin}}</td>
+					<td>{{guest.firstName}} {{guest.lastName}}</td>
+					<td>{% if guest.sms %}{{guest.sms}}{% endif %}{% if guest.email%}{{guest.email}}{% endif %}</td>
+					<td>{{guest.checkin_time}}</td>
 					<td style="text-align:center">
-						<a class="btn btn-primary btn-small" onclick="sendDefaultMsg('{{guest.key.id()}}',this)">
+						<a class="btn btn-primary btn-small" onclick="sendDefaultMsg('{{guest.id}}',this)">
 							<!--<i class="icon-mobile-phone"></i>&nbsp;&nbsp;-->Send Reminder
 						</a>
-						<a class="btn btn-info btn-small" onclick="customMsgModal('{{guest.key.id()}}','{{guest.first_name}}','{{guest.last_name}}',this)">
+						<a class="btn btn-info btn-small" onclick="customMsgModal('{{guest.id}}','{{guest.firstName}}','{{guest.lastName}}',this)">
 							Custom Reminder
 						</a>
-						<a class="btn btn-success btn-small" onclick="checkIn('{{guest.key.id()}}','{{guest.first_name}}','{{guest.last_name}}',this)">
+						<a class="btn btn-success btn-small" onclick="checkIn('{{guest.id}}','{{guest.firstName}}','{{guest.lastName}}',this)">
 							<i class="icon-ok"></i>&nbsp;&nbsp;Check In
 						</a>
 					</td>
