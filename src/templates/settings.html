@@ -92,7 +92,7 @@
 	<div class="span5">
 		
 		<h3>Default Message</h3>
-		
+		<p>Enter your default message for table reminders. Use {firstName} or {lastName} to use the guest's first or last name.
 		<div class="control-group">
 			<textarea name="defaultMessage" id="defaultMessage" rows="3" style="width:400px"
 			placeholder="Enter the default message to send when a table is almost ready. Use {firstName} and {lastName} to pull in the user's first and/or last name."
@@ -104,10 +104,22 @@
 		
 		<div class="control-group">
 			Default setting for subscribing to coupons/promos:&nbsp;
-			<select id="promoDefault" name="promoDefault" style="vertical-align:baseline">
+			<div class="controls">
+				<div class="radio">
+					<label>
+						<input type="radio" name="promoDefault" id="promoDefaultTrue" value="true" onClick="togglePreferred()" {% if user.default_checkbox_promos %}checked{% endif %}>Default to checked (subscribe)
+					</label>
+				</div>
+				<div class="radio">
+					<label>
+						<input type="radio" name="promoDefault" id="promoDefaultFalse" value="false" onClick="togglePreferred()" {% if not user.default_checkbox_promos %}checked{% endif %}>Default to unchecked (guest must check to subscribe)
+					</label>
+				</div>
+			</div>
+			<!--<select id="promoDefault" name="promoDefault" style="vertical-align:baseline">
 				<option {% if user.default_checkbox_promos == True %} selected="true" {% endif %} value="true">Default to checked (subscribe)</option>
 				<option {% if user.default_checkbox_promos == False %} selected="true" {% endif %} value="false">Default to unchecked (guest must check to subscribe)</option>
-			</select>
+			</select>-->
 		</div>
 	</div>
 

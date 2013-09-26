@@ -78,8 +78,14 @@ app.add_url_rule('/manage', view_func=views.manage,methods=["GET","POST"])
 # Check in Guest
 app.add_url_rule('/checkin/<guest_ID>',view_func=views.checkin_guest,methods=['GET'])
 
-# Check in Guest
+# Undo Guest Check in
 app.add_url_rule('/undo_checkin/<guest_ID>',view_func=views.undo_checkin_guest,methods=['GET'])
+
+# Send Default Reminder
+app.add_url_rule('/send_default/<guest_ID>',view_func=views.send_default_msg,methods=['GET'])
+
+# Send Custom Reminder
+app.add_url_rule('/send_custom/<guest_ID>', view_func=views.send_custom_msg,methods=['POST'])
 
 # Get book list
 #	Returns:

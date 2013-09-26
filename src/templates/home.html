@@ -1,6 +1,6 @@
 {% extends "maintemplate.html" %}
 
-{% block title %}Sharing Commons: The Place to Share{% endblock %}
+{% block title %}Bump: Restaurant Queue Management{% endblock %}
 
 {% block script %}
 
@@ -12,19 +12,61 @@
 
 {% block content %}
 
-<h3>Welcome to bump</h3>
+<h1 style="text-align:center;color:#1D4C67;">Gain Control of Your Restaurant's Queue</h1>
+<hr><br><br>
+<div class="row">
+	<div class="span6">
+		<img src="{{ url_for('static', filename='img/signin.png') }}">
+	</div>
+	<div class="span1">
+	</div>
+	<div class="span5">
+		<h3>Text/Email Notifications for Guests</h3>
+		<p>
+			Do you enjoy a half hour wait in the lobby for your table? Neither do your guests. 
+			They also don't like being constrained to 100 feet by your pager system. With 
+			Bump you can allow your guests to sign up for text or email notifications 
+			when their table is ready. That way they can do what <em>they</em> want while they wait.
+		</p>
+	</div>
+</div>
+<br><br><hr><br><br>
+<div class="row">
+	<div class="span5">
+		<h3>Close the Loop</h3>
+		<p>
+			Looking for insight into when your guests will actually be ready to be seated? Guess no longer. 
+			Bump gives you the power to send notifications to your guests and let's them 
+			respond if they're running late. That gives you the power to keep your tables full and your 
+			guests happy.
+		</p>
+	</div>
+	<div class="span1">
+	</div>
+	<div class="span6">
+		<img src="{{ url_for('static', filename='img/queue.png') }}">
+	</div>
+</div>
+<br><br><hr><br><br>
+<div class="row">
+	<div class="span1">
+	</div>
+	<div class="span4">
+		<img src="{{ url_for('static', filename='img/edit-find.png') }}">
+	</div>
+	<div class="span1">
+	</div>
+	<div class="span5">
+		<h3>Gain Marketing Insights</h3>
+		<p>
+			Bump allows you to gain insight into the frequency of visits of your loyal 
+			customers. Have you noticed some of your main customers have been coming less frequently? 
+			Send them coupons and promos to keep them coming. As long as your guests have checked the 
+			box to allow you to send coupons and promos, you have the power to leverage targeted advertising 
+			and keep your business running well.
+		</p>
+	</div>
+</div>
 
-{% if user.is_authenticated() %}
-
-<h4>Links:</h4>
-<a href="/guest-signin">Guest Sign-in</a>
 <br>
-<a href="/manage">Manage Queue</a>
-
-{% else %}
-
-<a href="{{ url_for('login') }}">Click here to login</a>
-
-{% endif %}
-
 {% endblock %}

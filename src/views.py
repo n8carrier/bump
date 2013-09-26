@@ -2,6 +2,8 @@
 from google.appengine.api import users
 from flask import Response, jsonify, render_template, request, url_for, redirect, flash
 from flaskext.login import login_required, login_user, logout_user
+#from googlevoice.voice import Voice
+#from googlevoice.util import input
 from src.items.models import Item,ItemCopy
 from src.guests.models import Guest
 from activity.models import RequestToBorrow, WaitingToBorrow
@@ -247,7 +249,10 @@ def settings():
 	if request.method == 'POST' and "defaultMessage" in request.form and "promoDefault" in request.form:
 		user = current_user()
 		defaultMessage = request.form["defaultMessage"]
-		promoDefault = request.form["promoDefault"]
+		if request.form["promoDefault"].lower() == "true":
+			promoDefault = True
+		elif request.form["promoDefault"].lower() == "false":
+			promoDefault = False
 		if user.update(defaultMessage, promoDefault):
 			return "Success"
 		else:
@@ -354,7 +359,40 @@ def undo_checkin_guest(guest_ID):
 		guest.put()
 	return "Success"
 	
-	
+def send_default_msg(guest_ID):
+	cur_user = current_user()
+	guest = Guest.get_by_id(int(guest_ID))
+	msg = cur_user.default_msg_ready
+	msg = msg.replace('{firstName}',guest.first_name).replace('{lastName}',guest.last_name)
+	if guest.preferred_contact == 'email':
+		mail.send_mail(sender=cur_user.email,
+		to=guest.email,
+		subject="Table Notification",
+		body=msg)
+	#elif guest.preferred_contact == 'sms':
+	#	voice = Voice()
+	#	voice.login('nate@consultboost.com','BumpGVB0t')
+	#	phoneNumber = guest.sms_number
+	#	text = input(msg)
+	#	voice.send_sms(phoneNumber, text)
+	return "Success"
+
+def send_custom_msg(guest_ID):
+	cur_user = current_user()
+	guest = Guest.get_by_id(int(guest_ID))
+	msg = cur_user.default_msg_ready #TODO: Use posted data
+	if guest.preferred_contact == 'email':
+		mail.send_mail(sender=cur_user.email,
+		to=guest.email,
+		subject="Table Notification",
+		body=msg)
+	#elif guest.preferred_contact == 'sms':
+	#	voice = Voice()
+	#	voice.login('nate@consultboost.com','BumpGVB0t')
+	#	phoneNumber = guest.sms_number
+	#	text = input(msg)
+	#	voice.send_sms(phoneNumber, text)
+	return "Success"
 	
 def reportbug():
 	if request.method == 'POST' and "submitterName" in request.form and "submitterEmail" in request.form and "issueName" in request.form and "issueDescription" in request.form:

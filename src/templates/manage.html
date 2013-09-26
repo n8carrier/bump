@@ -41,6 +41,7 @@
 			type: 'GET',
 			success: function(data) {
 				$(button).parent().parent().hide();
+				$("#reminderSent").hide();
 				$("#undoMessage").show();
 				$("#undoMessageName").text(firstName + ' ' + lastName);
 				lastRemoveGuestID = guestID;
@@ -59,6 +60,11 @@
 		return false;
 	}
 	
+	function hide_sent_message() {
+		$("#reminderSent").hide();
+		return false;
+	}
+	
 	function undo_checkin() {
 		$.get("/undo_checkin/" + lastRemoveGuestID, function(data) {
 			$(lastRemoveLink).parent().parent().show();
@@ -67,21 +73,37 @@
 		return false;
 	}
 	
-	function sendDefaultMsg(guestID, button) {
-	
+	function sendDefaultMsg(guestID, firstName, lastName, button) {
+		$.get("/send_default/" + guestID, function(data) {
+			$("#undoMessage").hide();
+			$("#reminderSent").show();
+			$("#reminderName").text(firstName + ' ' + lastName);
+		})
 	}
 	
 	function customMsgModal(guestID, firstName, lastName, button) {
-		var msg = "{{ cur_user.default_msg_ready }}";
+		var msg = decodeEntities("{{ cur_user.default_msg_ready }}");
 		var msg = msg.replace("{firstName}",firstName);
 		var msg = msg.replace("{lastName}",lastName);
 		$("#customMsgModalText").text(msg);
+		$("#sendCustomMsgButton").attr("onClick","sendCustomMsg(" + guestID + ",this)");
 		$("#customMsgModal").modal('show');
 		// Add guestID to onClick for send button (for calling sendCustomMsg)
 	}
 	
 	function sendCustomMsg(guestID, button) {
 		msg = $("#customMsgModalText").text();
+		$.post("/send_custom/" + guestID, function(msg) {
+			alert("Success");
+		})
+	}
+	
+	function decodeEntities(s){
+		var str, temp= document.createElement('p');
+		temp.innerHTML= s;
+		str= temp.textContent || temp.innerText;
+		temp=null;
+		return str;
 	}
 	
 </script>
@@ -104,6 +126,12 @@
 			<strong><a onclick="undo_checkin()" class="alert-link">Undo</a></strong>
 		</div>
 	</div>
+	<div class="span6 offset3" style="position: absolute;">
+		<div id="reminderSent" class="alert alert-success" style="display: none;">
+			<a class="close" onclick="hide_sent_message()">&times;</a>
+			You have sent a reminder to <span id="reminderName"></span>. To remove a guest from the queue, click the "Check In" button.
+		</div>
+	</div>
 	
 	<div id="customMsgModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="customMsgModalLabel" aria-hidden="true">
 	  <div class="modal-header">
@@ -114,7 +142,7 @@
 		<textarea id="customMsgModalText" rows="3" style="width:516px"></textarea>
 	  </div>
 	  <div class="modal-footer">
-		<button class="btn btn-primary" dat-dismiss="modal" area-hidden="true" onClick="sendCustomMsg">Send</button>
+		<button id="sendCustomMsgButton" class="btn btn-primary" dat-dismiss="modal" area-hidden="true" onClick="sendCustomMsg()">Send</button>
 		<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
 	  </div>
 	</div>
@@ -131,7 +159,7 @@
 				  <th class="header">Name</th>
 				  <th class="header">Contact</th>
 				  <th class="header">Check-in Time</th>
-				  <th class="header" style="width:340px">Actions</th>
+				  <th class="header" style="width:380px">Actions</th>
 				</tr>
 				{% for guest in guestlist %}
 				  <tr>
@@ -139,11 +167,11 @@
 					<td>{% if guest.sms %}{{guest.sms}}{% endif %}{% if guest.email%}{{guest.email}}{% endif %}</td>
 					<td>{{guest.checkin_time}}</td>
 					<td style="text-align:center">
-						<a class="btn btn-primary btn-small" onclick="sendDefaultMsg('{{guest.id}}',this)">
-							<!--<i class="icon-mobile-phone"></i>&nbsp;&nbsp;-->Send Reminder
+						<a class="btn btn-primary btn-small" onclick="sendDefaultMsg('{{guest.id}}','{{guest.firstName}}','{{guest.lastName}}',this)">
+							<i class="icon-envelope-alt"></i>&nbsp;&nbsp;Send Notification
 						</a>
-						<a class="btn btn-info btn-small" onclick="customMsgModal('{{guest.id}}','{{guest.firstName}}','{{guest.lastName}}',this)">
-							Custom Reminder
+						<a class="btn btn-primary btn-inverse btn-small" onclick="customMsgModal('{{guest.id}}','{{guest.firstName}}','{{guest.lastName}}',this)">
+							<i class="icon-edit"></i>&nbsp;&nbsp;Custom Notification
 						</a>
 						<a class="btn btn-success btn-small" onclick="checkIn('{{guest.id}}','{{guest.firstName}}','{{guest.lastName}}',this)">
 							<i class="icon-ok"></i>&nbsp;&nbsp;Check In

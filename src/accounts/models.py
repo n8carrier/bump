@@ -21,7 +21,7 @@ class UserAccount(ndb.Model):
 	#notification = ndb.StringProperty(default="email")
 	#info = ndb.StringProperty(default="")
 	#connected_accounts = ndb.StructuredProperty(Connection,repeated=True)
-	default_msg_ready = ndb.StringProperty(default="{firstName}, your table will be ready in a few min. Need more time? Text ""bump 10"" to postpone 10 min. Hint: we understand more numbers.")
+	default_msg_ready = ndb.StringProperty(default="{firstName}, your table is almost ready. Need more time? Reply ""bump"" and the # of minutes you'd like.")
 	default_checkbox_promos = ndb.BooleanProperty(default=False)
 	
 	@property
