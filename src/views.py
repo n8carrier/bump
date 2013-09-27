@@ -64,40 +64,8 @@ def render_response(template, *args, **kwargs):
 
 ################################ Website landing pages ##################################
 def index():
-	# Each user has an invitation link (in /network) which they send to other users to
-	# invite them to connect. Currently, this is the only method of connecting
-	# users. The link adds an argument to the index link (?connect=) with the inviter's
-	# user ID. A modal appears in the view if otherUserID is not 0.
-	
-	# Grab User ID from connection invitation
-	otherUserID = request.args.get('connect')
-	
-	# If no connect argument is present (just a regular visit to the dashboard), set to 0 (ignored in view)
-	if otherUserID is None:
-		connectionType = 0 #No connection request is being made
-		otherUserID = 0
-		otherUserName = 0
-	else:
-		# Get User Name from User ID
-		otherUserObj = UserAccount.get_by_id(int(otherUserID))
-		# Set invalid objects to invalid
-		if otherUserObj is None:
-			otherUserID = 0
-			otherUserName = 0
-			connectionType = 1 #Invalid User ID
-		else:
-			otherUserName = otherUserObj.name
-			connectionType = 2 #Valid User
-	
-		# Don't let a user connect with him/herself, set to 0 so they get nothing
-		if int(otherUserID) == current_user().get_id():
-			connectionType = 3 #Own self
-			
-		# Don't let a user connect with an existing connection
-		#if otherUserObj in current_user().connected_accounts:
-		#	connectionType = 4 #Existing Connection
-			
-	return render_response('home.html',connectUserID=otherUserID,connectUserName=otherUserName,connectType=connectionType)
+	whitelist = request.args.get('whitelist')
+	return render_response('home.html',whitelist=whitelist)
 	
 def library():
 	# Create a list of items (as dicts) within the user's library
@@ -481,7 +449,7 @@ def login():
 			if join_account(g_user):
 				return redirect(url_for("manage"))
 			else:
-				return render_response('home.html',invalid_join=True)
+				return redirect(url_for("index") + '?whitelist=false')
 	else:
 		return redirect(users.create_login_url(request.url))
 			

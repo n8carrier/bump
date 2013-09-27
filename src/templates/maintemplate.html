@@ -89,7 +89,7 @@
 			{% if user.is_authenticated() %}<p class="pull-right"><a href="/reportbug">Report a Bug</a></p>{% endif %}
 			<div class="links">
 				<a href="{{ url_for('licenses') }}">Licenses</a>
-				{% if invalid_join %}<a href="/logout">Logout</a>{% endif %}
+				{% if whitelist=="false" %}<a href="/logout">Logout</a>{% endif %}
 			</div>
 		</footer>
 	</div>
