@@ -23,7 +23,7 @@ app.add_url_rule('/_ah/warmup',view_func=views.warmup)
 
 ################################ Website landing pages ##################################
 # Home page
-app.add_url_rule('/',view_func=views.index)
+app.add_url_rule('/',view_func=views.index,methods=["GET","POST"])
 
 # Library
 app.add_url_rule('/library',view_func=views.library)

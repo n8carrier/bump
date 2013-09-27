@@ -65,6 +65,18 @@ def render_response(template, *args, **kwargs):
 ################################ Website landing pages ##################################
 def index():
 	whitelist = request.args.get('whitelist')
+	
+	if request.method == 'POST':
+		restaurantName = request.form["restaurantName"]
+		fullName = request.form["fullName"]
+		phoneNumber = request.form["phoneNumber"]
+		emailAddress =  request.form["emailAddress"]
+		msg = "The following individual has expressed interest in Bump:\r\n\r\nRestaurant: " + restaurantName + "\r\nName: " + fullName + "\r\nPhone Number: " + phoneNumber + "\r\nEmail Adress: " + emailAddress
+		mail.send_mail(sender="nate@bumpapp.co",
+			to="nate@bumpapp.co",
+			subject="Interest in Bump",
+			body=msg)
+	
 	return render_response('home.html',whitelist=whitelist)
 	
 def library():
