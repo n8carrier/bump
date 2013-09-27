@@ -1,6 +1,6 @@
 {% extends "maintemplate.html" %}
 
-{% block title %}Guest Sign-in{% endblock %}
+{% block title %}Whitelist{% endblock %}
 
 {% block style %}
 
@@ -26,7 +26,7 @@
 			$("#validationError").hide();
 			$("#submitButton").attr("disabled", "disabled");
 			$.ajax({
-				url:"/guest-signin",
+				url:"/whitelist",
 				type: 'POST',
 				data: $("#submissionForm").serialize(),
 				success: function(data) {
@@ -97,68 +97,19 @@
 {% block content %}
 <div class="row">
 	<div class="span5">
-		<form class="form-horizontal" id="submissionForm" method="post" action="/guest-signin" style="margin-bottom:0px">
+		<form class="form-horizontal" id="submissionForm" method="post" action="/whitelist" style="margin-bottom:0px">
 			<fieldset>	
-				<legend><h3>Guest Sign-in</h3></legend>
-				
-				<div class="control-group">
-					<label for="firstName" class="control-label">First Name</label>
-					<div class="controls">
-						<input type="text" id="firstName" name="firstName" placeholder="e.g., John">
-					</div>
-					<span id="firstNameHelp" class="help-inline" style="display: none;">Please enter your first name.</span> 
-				</div>
-
-				<div class="control-group"> 
-					<label for="lastName" class="control-label">Last Name</label>
-					<div class="controls">
-						<input type="text" id="lastName" name="lastName" placeholder="e.g., Doe">
-					</div>
-				</div>
-
-				<div class="control-group">
-					<label class="control-label">Notify me by</label>
-					<div class="controls">
-						<div class="radio">
-							<label>
-								<input type="radio" name="preferredContact" id="preferredContactSMS" value="sms" onClick="togglePreferred()" checked>Text Message
-							</label>
-						</div>
-						<div class="radio">
-							<label>
-								<input type="radio" name="preferredContact" id="preferredContactEmail" value="email" onClick="togglePreferred()">Email
-							</label>
-						</div>
-					</div>
-				</div>
-				
-				<div class="control-group">
-					<label for="contactInfo" id="contactInfoLabel" class="control-label">Phone Number</label>
-					<div class="controls">
-						<input type="text" id="contactInfo" name="smsNumber" placeholder="e.g., 801-555-5555">
-					</div>
-				</div>
-				
-				<div class="control-group">
-					<label for="optIn" class="control-label">Optional</label>
-					<div class="controls">
-						<label class="checkbox">
-							<input type="checkbox" id="optIn" name="optIn" {% if user.default_checkbox_promos %}checked{% endif %}>
-							Please send me coupons and promos
-						</label>
-					</div>
-				</div>
-				
-				<div class="control-group">
-					<label for="submitButton" class="control-label"></label>
-					<a id="submitButton" class="btn btn-inverse" onclick="submit();">
-						Submit
-					</a>
-				</div>
+				<legend><h3>Add to Whitelist</h3></legend>
+				<label>Domain or Email Address</label>
+				<input type="text" class="input-xlarge" id="domain" name="domain" placeholder="e.g., bumpapp.co or nate@bumpapp.co">
+				<a id="submitButton" class="btn btn-inverse" onclick="submit();">
+					Submit
+				</a>
+				<span class="help-block" style="margin-top:4px"><strong>Attention:</strong> Please do not add public domains such as gmail.com. Instead, add a specific email address.</span>
 			</fieldset>
 		</form>
 		<div class="row">
-			<div class="span4">
+			<div class="span5">
 				
 				<div id="validationError" class="alert alert-error" style="display:none;">
 					<strong>Unable to submit issue</strong>&nbsp; Please fix the errors and try again.
@@ -173,19 +124,6 @@
 				</div>
 				
 			</div>
-		</div>
-	</div>
-	<div class="span1">
-	</div>
-	<div class="span5">
-		<div class="well">
-			<h3>Privacy Policy</h3>
-			<ul>
-				<li>Your information will never be shared with anyone</li>
-				<li>We'll send you a message when your table is almost ready</li>
-				<li>We'll only send followup messages if you reply or don't show</li>
-				<li>We'll only send you promos if you've checked the promo box</li>
-			</ul>
 		</div>
 	</div>
 </div>

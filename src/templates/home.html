@@ -5,14 +5,33 @@
 {% block script %}
 
 <script type="text/javascript">
-
+	if("{{invalid_join}}"=="True") {
+		$("#failedJoinModal").modal('show');
+	}
 </script>
 
 {% endblock %}
 
 {% block content %}
 
-<h1 style="text-align:center;color:#222222;">Gain Control of Your Restaurant's Queue</h1>
+<div id="failedJoinModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="failedJoinModalLabel" aria-hidden="true">
+  <div class="modal-header">
+	<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	<h3 id="failedJoinModalLabel">Unable to Login</h3>
+  </div>
+  <div class="modal-body">
+	<p>
+		Your domain has not been whitelisted for account creation. 
+		Please provide your contact information through the form 
+		at the bottom of this page if you are interested in Bump. Thanks!
+	</p>
+  </div>
+  <div class="modal-footer">
+	<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+  </div>
+</div>
+
+<h1 style="text-align:center;color:#222222;">Drive Your Restaurant with Bump</h1>
 <hr><br><br>
 <div class="row">
 	<div class="span6">
@@ -28,6 +47,12 @@
 			Bump you can allow your guests to sign up for text or email notifications 
 			when their table is ready. That way they can do what <em>they</em> want while they wait.
 		</p>
+		<ul>
+			<li>Provide your guests with the flexibility they desire</li>
+			<li>Allow guests to sign up for SMS or Email notifications</li>
+			<li>Run Bump on any web-enabled device</li>
+			<li>Eliminate the need to invest in expensive pager systems</li>
+		</ul>
 	</div>
 </div>
 <br><br><hr><br><br>
@@ -40,6 +65,11 @@
 			respond if they're running late. That gives you the power to keep your tables full and your 
 			guests happy.
 		</p>
+		<ul>
+			<li>Send standard or custom notifications to your guests</li>
+			<li>Gain tighter control of your tables by knowing when reservations will be late</li>
+			<li>Maintain full control of your queue</li>
+		</ul>
 	</div>
 	<div class="span1">
 	</div>
@@ -65,8 +95,88 @@
 			box to allow you to send coupons and promos, you have the power to leverage targeted advertising 
 			and keep your business running well.
 		</p>
+		<ul>
+			<li>Understand how often your guests come and when they drop off</li>
+			<li>Leverage targeted messaging on the preferred channel of your customer</li>
+			<li>Analyze trends to better manage your restaurant</li>
+		</ul>
 	</div>
 </div>
-
+<br><br><hr><br><br>
+<div class="row">
+	<div class="span5">
+		<h3>Find Out More</h3>
+		<p>
+			Bump is currently in private beta, by invitation only. If you own or manage a restaurant in 
+			Utah or Salt Lake counties and you could benefit from Bump, please provide your contact information. 
+			Our team will set up a time to meet with you and discuss your needs. Bump is looking for restaurants 
+			that meet the following criteria:
+		</p>
+		<ul>
+			<li>Wait times of 30 minutes or more at least twice weekly</li>
+			<li>At least one dedicated host during wait times</li>
+			<li>Location near or within a mall, shopping area, or other high traffic area</li>
+			<li>Desire to gain a competitive advantage through early adoption of technology</li>
+		</ul>
+	</div>
+	<div class="span1">
+	</div>
+	<div class="span6">
+		<div class="well">
+		<form id="submissionForm" method="post" action="/" style="margin-bottom:0px">
+			<fieldset>
+				<legend>Submit Contact Info</legend>
+				<div class="row">
+					<div class="span2">
+						<label>Restaurant</label>
+						<input type="text" id="restaurantName" name="restaurantName" placeholder="e.g., Tony's Gourmet Italian">
+						<span id="restaurantNameHelp" class="help-block" style="display: none;">Please enter the name of your restaurant.</span> 
+					</div>
+					<div class="span2" style="margin-left:80px">
+						<label>Name</label>
+						<input type="text" id="fullName" name="fullName" placeholder="e.g., John Doe">
+						<span id="firstNameHelp" class="help-block" style="display: none;">Please enter your name.</span>
+					</div>
+				</div>
+				<div class="row">
+					<div class="span2">
+						<label>Phone Number</label>
+						<input type="text" id="phoneNumber" name="phoneNumber" placeholder="e.g., 801-555-5555">
+					</div>
+					<div class="span2" style="margin-left:80px">
+						<label>Email Address</label>
+						<input type="text" id="emailAddress" name="emailAddress" placeholder="e.g., john.doe@example.com">
+					</div>
+				</div>
+				<div class="row">
+					<div class="span1">
+						<a id="submitButton" class="btn btn-inverse" onclick="submit();" style="margin-top:10px">
+							Submit
+						</a>
+					</div>
+				</div>
+				
+			</fieldset>
+		</form>
+		</div>
+		<div class="row">
+			<div class="span4">
+				
+				<div id="validationError" class="alert alert-error" style="display:none;">
+					<strong>Unable to send information</strong>&nbsp; Please fix the errors and try again.
+				</div>
+				
+				<div id="submitError" class="alert alert-error" style="display:none;">
+					<strong>Unable to send information</strong>&nbsp; Something went wrong. Please send an email to info<strong></strong>@<strong></strong>bump</strong>app.co.
+				</div>
+				
+				<div id="submitSuccess" class="alert alert-success" style="display:none;">
+					Your information has been sent. Please expect to hear back within 24-48 hours.</strong>
+				</div>
+				
+			</div>
+		</div>
+	</div>
+</div>
 <br>
 {% endblock %}

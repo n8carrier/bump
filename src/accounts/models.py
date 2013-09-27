@@ -23,6 +23,7 @@ class UserAccount(ndb.Model):
 	#connected_accounts = ndb.StructuredProperty(Connection,repeated=True)
 	default_msg_ready = ndb.StringProperty(default="{firstName}, your table is almost ready. Need more time? Reply ""bump"" and the # of minutes you'd like.")
 	default_checkbox_promos = ndb.BooleanProperty(default=False)
+	is_admin = ndb.BooleanProperty(default=False)
 	
 	@property
 	def pending_actions(self):
@@ -132,16 +133,6 @@ class UserAccount(ndb.Model):
 
 	@classmethod
 	def can_delete_user(cls,user):
-		"""Checks to see if a user can be deleted
-		A user cannot be deleted if it is borrowing or lending items
-
-		Return Value:
-		True if it can be deleted, false if not
-		"""
-		borrowed = user.get_borrowed_items()
-		lent = user.get_lent_items()
-		if borrowed or lent:
-			return None
 		return True
 
 	@classmethod
@@ -153,10 +144,6 @@ class UserAccount(ndb.Model):
 		user - The UserAccount object that should be deleted
 		"""
 		if UserAccount.can_delete_user(user):
-			for connection in user.connections:
-				user.remove_connection(connection,True)
-			for copy in user.get_library():
-				copy.key.delete()
 			user.key.delete()
 			return True
 		return None

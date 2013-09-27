@@ -6,6 +6,7 @@ from flaskext.login import login_required, login_user, logout_user
 #from googlevoice.util import input
 from src.items.models import Item,ItemCopy
 from src.guests.models import Guest
+from src.whitelist.models import Whitelist
 from activity.models import RequestToBorrow, WaitingToBorrow
 import logging
 from decorators import crossdomain
@@ -294,6 +295,17 @@ def guest_signin():
 			guest.put()
 	return render_response("guest-signin.html")
 
+def whitelist():
+	cur_user = current_user()
+	if cur_user:
+		if request.method == 'POST':
+			domain = request.form["domain"]
+			whitelistDomain = Whitelist.query(Whitelist.domain==domain).get()			
+			if not whitelistDomain:
+				whitelistDomain = Whitelist(domain=domain)
+				whitelistDomain.put()
+	return render_response("whitelist.html")
+
 def manage():
 	
 	cur_user = current_user()
@@ -458,29 +470,28 @@ def profile(userID):
 def join():
 	return render_response('join.html')
 
-def handle_join():
-	g_user = users.get_current_user()
-	if g_user:
-		if join_account(g_user):
-			return redirect(request.args.get("next") or url_for("index"))
-		else:
-			return render_response('join.html',invalid_join=True)
-	return redirect(users.create_login_url(request.url))
-
 def login():
 	g_user = users.get_current_user()
 	if g_user:
 		if login_account(g_user):
-			#return redirect(request.args.get("next") or url_for("index"))
+			# Login successful, send to manage page
 			return redirect(url_for("manage"))
 		else:
-			return render_response('join.html',invalid_login=True)
-	return redirect(users.create_login_url(request.url))
-
+			# A user account has not yet been created for this google account, check whitelist then create
+			if join_account(g_user):
+				return redirect(url_for("manage"))
+			else:
+				return render_response('home.html',invalid_join=True)
+	else:
+		return redirect(users.create_login_url(request.url))
+			
 def logout():
 	# Logs out User
 	logout_account()
 	return redirect(users.create_logout_url("/"))
+
+def licenses():
+	return render_response('licenses.html')
 
 ######################## Internal calls (to be called by ajax) ##########################
 def delete_user():

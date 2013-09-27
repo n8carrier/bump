@@ -1,11 +1,23 @@
 from models import UserAccount
+from src.whitelist.models import Whitelist
 from flaskext import login as flasklogin
 import logging
 
 def join(account, remember=False):
-	user = UserAccount.create_user(account)
-	if user and flasklogin.login_user(user, remember):
-		return True
+	# First check domain in whitelist
+	domain = account._User__email[account._User__email.index('@')+1:]
+	whitelistUser = Whitelist.query(Whitelist.domain==domain).get()
+	if whitelistUser:
+		user = UserAccount.create_user(account)
+		if user and flasklogin.login_user(user, remember):
+			return True
+	else:
+		# Domain not in whitelist, check email address
+		whitelistUser = Whitelist.query(Whitelist.domain==account._User__email).get()
+		if whitelistUser:
+			user = UserAccount.create_user(account)
+			if user and flasklogin.login_user(user, remember):
+				return True
 	return False
 
 def login(account, remember=False):

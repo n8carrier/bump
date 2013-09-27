@@ -46,9 +46,6 @@ app.add_url_rule('/login',view_func=views.login,methods=["GET","POST"])
 # Join
 app.add_url_rule('/join',view_func=views.join)
 
-# Handle-join
-app.add_url_rule('/handle-join',view_func=views.handle_join)
-
 # About
 app.add_url_rule('/about',view_func=views.about)
 
@@ -67,8 +64,14 @@ app.add_url_rule('/reportbug',view_func=views.reportbug,methods=["GET","POST"])
 # Guest Sign In
 app.add_url_rule('/guest-signin',view_func=views.guest_signin,methods=["GET","POST"])
 
+# Whitelist
+app.add_url_rule('/whitelist', view_func=views.whitelist,methods=["GET","POST"])
+
 # Manage Guests
 app.add_url_rule('/manage', view_func=views.manage,methods=["GET","POST"])
+
+# Licenses
+app.add_url_rule('/licenses', view_func=views.licenses)
 
 # Book Info
 #app.add_url_rule('/book/<OLKey>',view_func=views.book_info)
