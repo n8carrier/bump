@@ -278,13 +278,17 @@ def guest_signin():
 def whitelist():
 	cur_user = current_user()
 	if cur_user:
-		if request.method == 'POST':
-			domain = request.form["domain"]
-			whitelistDomain = Whitelist.query(Whitelist.domain==domain).get()			
-			if not whitelistDomain:
-				whitelistDomain = Whitelist(domain=domain)
-				whitelistDomain.put()
-	return render_response("whitelist.html")
+		if cur_user.is_admin:
+			if request.method == 'POST':
+				domain = request.form["domain"]
+				whitelistDomain = Whitelist.query(Whitelist.domain==domain).get()			
+				if not whitelistDomain:
+					whitelistDomain = Whitelist(domain=domain)
+					whitelistDomain.put()
+			return render_response("whitelist.html")
+		else:
+			logging.info("User is not admin, cannot access whitelist")
+			return redirect(url_for("index"))
 
 def manage():
 	
