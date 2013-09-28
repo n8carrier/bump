@@ -92,10 +92,16 @@
 	}
 	
 	function sendCustomMsg(guestID, button) {
-		msg = $("#customMsgModalText").text();
-		$.post("/send_custom/" + guestID, function(msg) {
-			alert("Custom messages aren't quite finishd yet, but will be soon.");
+		var msg = $("#customMsgModalText").val();
+		$.ajax({
+			type: "POST",
+			url: "/send_custom/" + guestID,
+			data: {'msg': msg},
+			cache: false
 		})
+		.done(function(data) {
+			$("#customMsgModal").modal('hide');
+		});
 	}
 	
 	function decodeEntities(s){
