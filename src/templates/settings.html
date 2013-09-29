@@ -121,6 +121,18 @@
 				<option {% if user.default_checkbox_promos == False %} selected="true" {% endif %} value="false">Default to unchecked (guest must check to subscribe)</option>
 			</select>-->
 		</div>
+		
+		<h3>Google Voice Email Address</h3>
+		<p>Bump uses Google Voice to send text messages. Please provide the email address associated with your Google Voice account</p>
+		<div class="control-group">
+			<input type="text" name="gvEmail" id="gvEmail" value="{{ user.email}}">
+		</div>
+		
+		<h3>Google Voice Password</h3>
+		<p>Please provide your Google Voice password. Unfortunately, Bump cannot encrypt your Google Voice password on our servers. Please use a Google Account specifically created for Bump</p>
+		<div class="control-group">
+			<input type="password" name="gvPW" id="gvPW">
+		</div>
 	</div>
 
 	<div class="span3">

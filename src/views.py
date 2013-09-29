@@ -2,8 +2,8 @@
 from google.appengine.api import users
 from flask import Response, jsonify, render_template, request, url_for, redirect, flash
 from flaskext.login import login_required, login_user, logout_user
-#from googlevoice.voice import Voice
-#from googlevoice.util import input
+from googlevoice.voice import Voice
+from googlevoice.util import input
 from src.items.models import Item,ItemCopy
 from src.guests.models import Guest
 from src.whitelist.models import Whitelist
@@ -234,7 +234,9 @@ def settings():
 			promoDefault = True
 		elif request.form["promoDefault"].lower() == "false":
 			promoDefault = False
-		if user.update(defaultMessage, promoDefault):
+		gv_email = request.form["gvEmail"]
+		gv_password = request.form["gvPW"]
+		if user.update(defaultMessage, promoDefault, gv_email, gv_password):
 			return "Success"
 		else:
 			return False
@@ -365,12 +367,12 @@ def send_default_msg(guest_ID):
 		to=guest.email,
 		subject="Table Notification",
 		body=msg)
-	#elif guest.preferred_contact == 'sms':
-	#	voice = Voice()
-	#	voice.login('nate@consultboost.com','BumpGVB0t')
-	#	phoneNumber = guest.sms_number
-	#	text = input(msg)
-	#	voice.send_sms(phoneNumber, text)
+	elif guest.preferred_contact == 'sms':		
+		voice = Voice()
+		voice.login(cur_user.gv_email,cur_user.gv_password)
+		phoneNumber = guest.sms_number
+		text = msg
+		voice.send_sms(phoneNumber, text)
 	return "Success"
 
 def send_custom_msg(guest_ID):
@@ -383,30 +385,11 @@ def send_custom_msg(guest_ID):
 		subject="Table Notification",
 		body=msg)
 	elif guest.preferred_contact == 'sms':
-		#from src.twilio.rest import TwilioRestClient
-		twilioSID = 'ACdf3f6f33b69f3f8bea701e7d472e40e3'
-		twilioAuth = '64cdb9d41061adf1bbc2eadaea99b8af'
-		twilioSender = '+14355038740'
-		twilioRecipient = '+18014770852'
-		url = 'https://api.twilio.com/2010-04-01/Accounts/' + twilioSID + '/Messages'
-		twilio_msg = {
-			"body": msg,
-			"to": twilioRecipient,
-			"from": twilioSender}
-		import base64
-		from google.appengine.api import urlfetch
-		result = urlfetch.fetch(url=url,
-							payload=twilio_msg,
-							method=urlfetch.POST,
-							headers={
-								"Authorization": "Basic %s" % base64.b64encode(twilioSID + ":" + twilioAuth),
-					            "User-Agent": "twilio-python",
-					            "Accept-Charset": "utf-8",
-					        })
-		#twilioClient = TwilioRestClient(twilioSID,twilioAuth)
-		#twilioMsg = twilioClient.messages.create(body=msg,to=twilioRecipient,from_=twilioSender)
-		#logging.info(twilioMsg.sid)
-		
+		voice = Voice()
+		voice.login(cur_user.gv_email,cur_user.gv_password)
+		phoneNumber = guest.sms_number
+		text = msg
+		voice.send_sms(phoneNumber, text)
 	return "Success"
 	
 def reportbug():

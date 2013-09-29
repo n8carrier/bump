@@ -101,6 +101,9 @@
 		})
 		.done(function(data) {
 			$("#customMsgModal").modal('hide');
+			$("#undoMessage").hide();
+			$("#reminderSent").show();
+			$("#reminderName").text(firstName + ' ' + lastName);
 		});
 	}
 	
@@ -135,7 +138,7 @@
 	<div class="span6 offset3" style="position: absolute;">
 		<div id="reminderSent" class="alert alert-success" style="display: none;">
 			<a class="close" onclick="hide_sent_message()">&times;</a>
-			You have sent a reminder to <span id="reminderName"></span>. To remove a guest from the queue, click the "Check In" button.
+			You have sent a message to <span id="reminderName"></span>. To remove a guest from the queue, click the "Check In" button.
 		</div>
 	</div>
 	

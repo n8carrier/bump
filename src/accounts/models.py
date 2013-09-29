@@ -24,6 +24,8 @@ class UserAccount(ndb.Model):
 	default_msg_ready = ndb.StringProperty(default="{firstName}, your table is almost ready. Need more time? Reply ""bump"" and the # of minutes you'd like.")
 	default_checkbox_promos = ndb.BooleanProperty(default=False)
 	is_admin = ndb.BooleanProperty(default=False)
+	gv_email  = ndb.StringProperty(required=False)
+	gv_password = ndb.StringProperty(required=False)
 	
 	@property
 	def pending_actions(self):
@@ -68,11 +70,13 @@ class UserAccount(ndb.Model):
 			connections.append(UserAccount.query(UserAccount.key==connection.user).get())
 		return connections
 	
-	def update(self,defaultMessage, promoDefault):
+	def update(self,defaultMessage, promoDefault, gv_email, gv_password):
 		
 		# validate name
 		self.default_msg_ready = defaultMessage
 		self.default_checkbox_promos = promoDefault
+		self.gv_email = gv_email
+		self.gv_password = gv_password
 		self.put()
 		return True
 
