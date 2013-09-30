@@ -71,7 +71,7 @@ app.add_url_rule('/whitelist', view_func=views.whitelist,methods=["GET","POST"])
 app.add_url_rule('/manage', view_func=views.manage,methods=["GET","POST"])
 
 # Licenses
-app.add_url_rule('/licenses', view_func=views.licenses)
+app.add_url_rule('/licenses', view_func=views.open_source_licenses)
 
 # Book Info
 #app.add_url_rule('/book/<OLKey>',view_func=views.book_info)

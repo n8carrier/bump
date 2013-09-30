@@ -127,7 +127,7 @@
 		<footer id="footer">
 			{% if user.is_authenticated() %}<p class="pull-right"><a href="/reportbug">Report a Bug</a></p>{% endif %}
 			<div class="links">
-				<a href="{{ url_for('licenses') }}">Licenses</a>
+				<a href="{{ url_for('open_source_licenses') }}">Licenses</a>
 				{% if whitelist=="false" %}<a href="/logout">Logout</a>{% endif %}
 			</div>
 		</footer>

@@ -502,8 +502,8 @@ def logout():
 	logout_account()
 	return redirect(users.create_logout_url("/"))
 
-def licenses():
-	return render_response('licenses.html')
+def open_source_licenses():
+	return render_response('open-source-licenses.html')
 
 ######################## Internal calls (to be called by ajax) ##########################
 def delete_user():
