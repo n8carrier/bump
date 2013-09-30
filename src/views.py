@@ -234,9 +234,11 @@ def settings():
 			promoDefault = True
 		elif request.form["promoDefault"].lower() == "false":
 			promoDefault = False
-		gv_email = request.form["gvEmail"]
-		gv_password = request.form["gvPW"]
-		if user.update(defaultMessage, promoDefault, gv_email, gv_password):
+		if request.form["gvPW"]:
+			gv_email = request.form["gvEmail"]
+			gv_password = request.form["gvPW"]
+		reply_to_email = request.form["replyEmail"]
+		if user.update(defaultMessage, promoDefault, gv_email, gv_password, reply_to_email):
 			return "Success"
 		else:
 			return False
@@ -282,7 +284,7 @@ def whitelist():
 	if cur_user:
 		if cur_user.is_admin:
 			if request.method == 'POST':
-				domain = request.form["domain"]
+				domain = request.form["domain"].lower()
 				whitelistDomain = Whitelist.query(Whitelist.domain==domain).get()			
 				if not whitelistDomain:
 					whitelistDomain = Whitelist(domain=domain)
@@ -362,14 +364,26 @@ def send_default_msg(guest_ID):
 	guest = Guest.get_by_id(int(guest_ID))
 	msg = cur_user.default_msg_ready
 	msg = msg.replace('{firstName}',guest.first_name).replace('{lastName}',guest.last_name)
+	if cur_user.reply_to_email:
+		sender = cur_user.reply_to_email
+	else:
+		sender = cur_user.email
 	if guest.preferred_contact == 'email':
-		mail.send_mail(sender=cur_user.email,
+		mail.send_mail(sender=sender,
 		to=guest.email,
 		subject="Table Notification",
 		body=msg)
-	elif guest.preferred_contact == 'sms':		
+	elif guest.preferred_contact == 'sms':
+		if cur_user.gv_email and cur_user.gv_password:
+			gv_email = cur_user.gv_email
+		else:
+			gv_email = 'nate@consultboost.com'
+		if cur_user.gv_email and cur_user.gv_password:
+			gv_password = cur_user.gv_password
+		else:
+			gv_password = 'BumpGVB0t'
 		voice = Voice()
-		voice.login(cur_user.gv_email,cur_user.gv_password)
+		voice.login(gv_email,gv_password)
 		phoneNumber = guest.sms_number
 		text = msg
 		voice.send_sms(phoneNumber, text)
@@ -379,14 +393,26 @@ def send_custom_msg(guest_ID):
 	cur_user = current_user()
 	guest = Guest.get_by_id(int(guest_ID))
 	msg = request.form["msg"]
+	if cur_user.reply_to_email:
+		sender = cur_user.reply_to_email
+	else:
+		sender = cur_user.email
 	if guest.preferred_contact == 'email':
-		mail.send_mail(sender=cur_user.email,
+		mail.send_mail(sender=sender,
 		to=guest.email,
 		subject="Table Notification",
 		body=msg)
 	elif guest.preferred_contact == 'sms':
+		if cur_user.gv_email and cur_user.gv_password:
+			gv_email = cur_user.gv_email
+		else:
+			gv_email = 'nate@consultboost.com'
+		if cur_user.gv_email and cur_user.gv_password:
+			gv_password = cur_user.gv_password
+		else:
+			gv_password = 'BumpGVB0t'
 		voice = Voice()
-		voice.login(cur_user.gv_email,cur_user.gv_password)
+		voice.login(gv_email,gv_password)
 		phoneNumber = guest.sms_number
 		text = msg
 		voice.send_sms(phoneNumber, text)

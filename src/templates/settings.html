@@ -122,16 +122,22 @@
 			</select>-->
 		</div>
 		
-		<h3>Google Voice Email Address</h3>
-		<p>Bump uses Google Voice to send text messages. Please provide the email address associated with your Google Voice account</p>
+		<h3>Google Voice Settings</h3>
+		<p>Bump uses Google Voice to send text messages. Please provide the email address and password associated with your Google Voice account. Unfortunately, Bump cannot encrypt your Google Voice password on our servers. Please use a Google Account specifically created for Bump.</p>
 		<div class="control-group">
-			<input type="text" name="gvEmail" id="gvEmail" value="{{ user.email}}">
+			<label>Google Voice Email Address</label>
+			<input type="text" name="gvEmail" id="gvEmail" value="{% if user.gv_email %}{{ user.gv_email }}{% else %}{{ user.email}}{% endif %}">
+		</div>
+		<div class="control-group">
+			<label>Google Voice Account Password</label>
+			<input type="password" name="gvPW" id="gvPW">
 		</div>
 		
-		<h3>Google Voice Password</h3>
-		<p>Please provide your Google Voice password. Unfortunately, Bump cannot encrypt your Google Voice password on our servers. Please use a Google Account specifically created for Bump</p>
+		<h3>Reply-to Email Address</h3>
+		<p>Emails from Bump include a reply-to email address, which ensures that you receive any replies from guests. If different from your Bump account email address, please provide a reply-to email address here.</p>
 		<div class="control-group">
-			<input type="password" name="gvPW" id="gvPW">
+			<label>Reply-to Email Address</label>
+			<input type="text" name="replyEmail" id="replyEmail" value="{% if user.reply_to_email %}{{ user.reply_to_email }}{% else %}{{ user.email}}{% endif %}">
 		</div>
 	</div>
 

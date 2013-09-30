@@ -6,15 +6,19 @@ import logging
 def join(account, remember=False):
 	# First check domain in whitelist
 	domain = account._User__email[account._User__email.index('@')+1:]
-	whitelistUser = Whitelist.query(Whitelist.domain==domain).get()
+	logging.info("Checking domain %s for whitelist", domain)
+	whitelistUser = Whitelist.query(Whitelist.domain==domain.lower()).get()
 	if whitelistUser:
+		logging.info("Domain %s is whitelisted, creating user account %s", domain, account._User__email)
 		user = UserAccount.create_user(account)
 		if user and flasklogin.login_user(user, remember):
 			return True
 	else:
 		# Domain not in whitelist, check email address
-		whitelistUser = Whitelist.query(Whitelist.domain==account._User__email).get()
+		logging.info("Checking email address %s for whitelist", account._User__email)
+		whitelistUser = Whitelist.query(Whitelist.domain==account._User__email.lower()).get()
 		if whitelistUser:
+			logging.info("Email address %s is whitelisted, creating user account", account._User__email)
 			user = UserAccount.create_user(account)
 			if user and flasklogin.login_user(user, remember):
 				return True

@@ -26,6 +26,7 @@ class UserAccount(ndb.Model):
 	is_admin = ndb.BooleanProperty(default=False)
 	gv_email  = ndb.StringProperty(required=False)
 	gv_password = ndb.StringProperty(required=False)
+	reply_to_email  = ndb.StringProperty(required=False)
 	
 	@property
 	def pending_actions(self):
@@ -70,13 +71,14 @@ class UserAccount(ndb.Model):
 			connections.append(UserAccount.query(UserAccount.key==connection.user).get())
 		return connections
 	
-	def update(self,defaultMessage, promoDefault, gv_email, gv_password):
+	def update(self,defaultMessage, promoDefault, gv_email, gv_password, reply_to_email):
 		
 		# validate name
 		self.default_msg_ready = defaultMessage
 		self.default_checkbox_promos = promoDefault
 		self.gv_email = gv_email
 		self.gv_password = gv_password
+		self.reply_to_email = reply_to_email
 		self.put()
 		return True
 
