@@ -5,7 +5,8 @@
 {% block style %}
 
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery-ui-1.10.2.custom.min.css') }}" />
-
+<meta name="apple-mobile-web-app-capable" content="yes" /> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style type="text/css">
 	label.control-label {
 		font-weight:bold;
@@ -81,10 +82,12 @@
 		if($('input[name=preferredContact]:radio:checked').val()=="sms") {
 			$("#contactInfoLabel").text("Phone Number");
 			$("#contactInfo").attr("name","smsNumber");
+			$("#contactInfo").attr("type","tel");
 			$("#contactInfo").attr("placeholder","e.g., 801-555-5555");
 		} else if($('input[name=preferredContact]:radio:checked').val()=="email") {
 			$("#contactInfoLabel").text("Email Address");
 			$("#contactInfo").attr("name","email");
+			$("#contactInfo").attr("type","email");
 			$("#contactInfo").attr("placeholder","e.g., john.doe@example.com");
 		}
 	}
@@ -134,7 +137,7 @@
 				<div class="control-group">
 					<label for="contactInfo" id="contactInfoLabel" class="control-label">Phone Number</label>
 					<div class="controls">
-						<input type="text" id="contactInfo" name="smsNumber" placeholder="e.g., 801-555-5555">
+						<input type="tel" id="contactInfo" name="smsNumber" placeholder="e.g., 801-555-5555">
 					</div>
 				</div>
 				
