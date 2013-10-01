@@ -5,8 +5,7 @@
 {% block style %}
 
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery-ui-1.10.2.custom.min.css') }}" />
-<meta name="apple-mobile-web-app-capable" content="yes" /> 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style type="text/css">
 	label.control-label {
 		font-weight:bold;
@@ -106,7 +105,7 @@
 				<div class="control-group">
 					<label for="firstName" class="control-label">First Name</label>
 					<div class="controls">
-						<input type="text" id="firstName" name="firstName" placeholder="e.g., John">
+						<input type="text" id="firstName" name="firstName" placeholder="e.g., John" inputmode="autocapitalized" autocapitalize="on" autocorrect="off">
 					</div>
 					<span id="firstNameHelp" class="help-inline" style="display: none;">Please enter your first name.</span> 
 				</div>
@@ -114,7 +113,7 @@
 				<div class="control-group"> 
 					<label for="lastName" class="control-label">Last Name</label>
 					<div class="controls">
-						<input type="text" id="lastName" name="lastName" placeholder="e.g., Doe">
+						<input type="text" id="lastName" name="lastName" placeholder="e.g., Doe" inputmode="autocapitalized" autocapitalize="on" autocorrect="off">
 					</div>
 				</div>
 
@@ -137,7 +136,7 @@
 				<div class="control-group">
 					<label for="contactInfo" id="contactInfoLabel" class="control-label">Phone Number</label>
 					<div class="controls">
-						<input type="tel" id="contactInfo" name="smsNumber" placeholder="e.g., 801-555-5555">
+						<input type="tel" id="contactInfo" name="smsNumber" placeholder="e.g., 801-555-5555" autocapitalize="off" autocorrect="off">
 					</div>
 				</div>
 				
