@@ -20,6 +20,19 @@
 
 <script type="text/javascript">
 
+	if("{{demo}}"=="continue") {
+		var o = $("#privacy-well").offset();
+		$("#tour3").css("left", o.left);
+		$("#tour3").show();
+		$("#submissionForm").attr("action","/guest-signin?demo=continue");
+	}
+	
+	function tour4() {
+		if("{{demo}}"=="continue") {
+			window.location = "{{ url_for('manage') }}" + "?demo=continue";
+		}
+	}
+
 	function submit() {
 		if(true) { // TODO: incorporate validate
 			$("#validationError").hide();
@@ -31,6 +44,7 @@
 				success: function(data) {
 					$("#submitSuccess").show();
 					$("#submitError").hide();
+					window.location = "{{ url_for('manage') }}" + "?demo=continue";
 				},
 				error: function() {
 					$("#submitError").show();
@@ -98,7 +112,7 @@
 {% block content %}
 <div class="row">
 	<div class="span5">
-		<form class="form-horizontal" id="submissionForm" method="post" action="/guest-signin" style="margin-bottom:0px">
+		<form class="form-horizontal" id="submissionForm" method="post" action="/guest-signin" onsubmit="tour4()" style="margin-bottom:0px">
 			<fieldset>	
 				<legend><h3>Guest Sign-in</h3></legend>
 				
@@ -179,7 +193,7 @@
 	<div class="span1">
 	</div>
 	<div class="span5">
-		<div class="well">
+		<div class="well" id="privacy-well">
 			<h3>Privacy Policy</h3>
 			<ul>
 				<li>Your information will never be shared with anyone</li>
@@ -187,6 +201,16 @@
 				<li>We'll only send followup messages if you reply or don't show</li>
 				<li>We'll only send you promos if you've checked the promo box</li>
 			</ul>
+		</div>
+	</div>
+</div>
+
+<div id="tour3" class="tooltip fade right in" style="top: 300px; left: 620px; display: none;width: 400px;">
+	<div class="tooltip-arrow">
+	</div>
+	<div class="tooltip-inner">
+		<div style="font-size: 12pt; text-align: left;">
+		This is where your guests enter their information. Try it out by adding your information. Don't worry, all guests signed in during a demo session will be cleared when you sign out.<br><br>Once you enter the information and click "Submit", this tour will continue.
 		</div>
 	</div>
 </div>

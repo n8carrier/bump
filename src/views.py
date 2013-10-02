@@ -251,6 +251,7 @@ def settings():
 		
 def guest_signin():
 	cur_user = current_user()
+	demo = request.args.get('demo')
 	if cur_user:
 		if request.method == 'POST':
 			firstName = request.form["firstName"]
@@ -285,7 +286,12 @@ def guest_signin():
 				from flaskext import login as flasklogin
 				guest.session_id = str(flasklogin.get_session_id())
 			guest.put()
-	return render_response("guest-signin.html")
+			if demo == "continue":
+				# Hack to make sure name gets stored in database before page loads
+				import time
+				time.sleep(.05)
+				return redirect(url_for("manage") + '?demo=continue')
+	return render_response("guest-signin.html", demo=demo)
 
 def whitelist():
 	cur_user = current_user()
@@ -537,7 +543,7 @@ def demo_login():
 	user = UserAccount.get_by_email('demo@bumpapp.co')
 	from flaskext import login as flasklogin
 	if user and flasklogin.login_user(user,False):
-		return redirect(url_for("manage") + '?demo=true')
+		return redirect(url_for("manage") + '?demo=start')
 	return redirect(url_for("index") + '?whitelist=false')
 			
 def logout():
