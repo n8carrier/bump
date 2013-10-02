@@ -99,11 +99,11 @@
 						<ul class="nav">
 							{% if user.is_authenticated() %}
 								{% if request.endpoint != 'guest_signin' %}
-									<li><a href="{{ url_for('guest_signin') }}" target="_blank">Guest Sign-in</a></li>
 									<li><a href="{{ url_for('manage') }}">Manage</a></li>
 									{% if user.is_admin %}
 										<li><a href="{{ url_for('whitelist') }}">Whitelist</a></li>
 									{% endif %}
+									<li><a href="{{ url_for('guest_signin') }}" target="_blank">Guest Sign-in</a></li>
 								{% endif %}
 							{% else %}
 								<li><a href="{{ url_for('login') }}">Login</a></li>
