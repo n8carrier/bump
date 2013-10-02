@@ -90,7 +90,7 @@
 		var msg = msg.replace("{firstName}",firstName);
 		var msg = msg.replace("{lastName}",lastName);
 		$("#customMsgModalText").text(msg);
-		$("#MsgButton").attr("onClick","sendCustomMsg(" + guestID + ", " + firstName + ", " + lastName + ",this)");
+		$("#sendCustomMsgButton").attr("onClick","sendCustomMsg('" + guestID + "', '" + firstName + "', '" + lastName + "',this)");
 		$("#customMsgModal").modal('show');
 		// Add guestID to onClick for send button (for calling sendCustomMsg)
 	}
