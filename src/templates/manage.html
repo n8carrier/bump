@@ -90,12 +90,12 @@
 		var msg = msg.replace("{firstName}",firstName);
 		var msg = msg.replace("{lastName}",lastName);
 		$("#customMsgModalText").text(msg);
-		$("#sendCustomMsgButton").attr("onClick","sendCustomMsg(" + guestID + ",this)");
+		$("#MsgButton").attr("onClick","sendCustomMsg(" + guestID + ", " + firstName + ", " + lastName + ",this)");
 		$("#customMsgModal").modal('show');
 		// Add guestID to onClick for send button (for calling sendCustomMsg)
 	}
 	
-	function sendCustomMsg(guestID, button) {
+	function sendCustomMsg(guestID, firstName, lastName, button) {
 		var msg = $("#customMsgModalText").val();
 		$.ajax({
 			type: "POST",
@@ -168,7 +168,7 @@
 	  </div>
 	  <div class="modal-footer">
 		<button id="sendCustomMsgButton" class="btn btn-primary" dat-dismiss="modal" area-hidden="true" onClick="sendCustomMsg()">Send</button>
-		<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+		<button class="btn" data-dismiss="modal" aria-hidden="true">Continue</button>
 	  </div>
 	</div>
 	
