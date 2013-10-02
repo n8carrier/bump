@@ -376,16 +376,23 @@ def send_default_msg(guest_ID):
 	guest = Guest.get_by_id(int(guest_ID))
 	msg = cur_user.default_msg_ready
 	msg = msg.replace('{firstName}',guest.first_name).replace('{lastName}',guest.last_name)
-	# TODO: It may be preferred to send from the logged in user, rather than using reply-to.
-	# If this is done, all emails coming from @bumpapp.co domains need to be sent from admin@bumpapp.co
-	# because it is the only active email address (demo@bumpapp.co is an alias).
-	if cur_user.reply_to_email:
-		reply_to = cur_user.reply_to_email
-	else:
-		reply_to = cur_user.email
+	if cur_user.demo_mode():
+		msg = msg + " -- SENT BY BUMP DEMO: http://bumpapp.co"
 	if guest.preferred_contact == 'email':
+		if cur_user.reply_to_email:
+			# User provided a reply-to email different from their account email. Emails must be sent out by the account, so a reply-to email is used.
+			reply_to = cur_user.reply_to_email
+			sender_email = cur_user.email
+		else:
+			if cur_user.demo_mode():
+				# Demo mode is not a real account, so it must be sent from admin@bumpapp.co
+				reply_to = "demo@bumpapp.co"
+				sender_email = "admin@bumpapp.co"
+			else:
+				sender_email = cur_user.email
+				reply_to = cur_user.email
 		mail.send_mail(
-					sender="admin@bumpapp.co",
+					sender=cur_user.name + " <" + sender_email + ">",
 					reply_to=reply_to,
 					to=guest.email,
 					subject="Table Notification",
@@ -410,16 +417,23 @@ def send_custom_msg(guest_ID):
 	cur_user = current_user()
 	guest = Guest.get_by_id(int(guest_ID))
 	msg = request.form["msg"]
-	# TODO: It may be preferred to send from the logged in user, rather than using reply-to.
-	# If this is done, all emails coming from @bumpapp.co domains need to be sent from admin@bumpapp.co
-	# because it is the only active email address (demo@bumpapp.co is an alias).
-	if cur_user.reply_to_email:
-		reply_to = cur_user.reply_to_email
-	else:
-		reply_to = cur_user.email
+	if cur_user.demo_mode():
+		msg = msg + " -- SENT BY BUMP DEMO: http://bumpapp.co"
 	if guest.preferred_contact == 'email':
+		if cur_user.reply_to_email:
+			# User provided a reply-to email different from their account email. Emails must be sent out by the account, so a reply-to email is used.
+			reply_to = cur_user.reply_to_email
+			sender_email = cur_user.email
+		else:
+			if cur_user.demo_mode():
+				# Demo mode is not a real account, so it must be sent from admin@bumpapp.co
+				reply_to = "demo@bumpapp.co"
+				sender_email = "admin@bumpapp.co"
+			else:
+				sender_email = cur_user.email
+				reply_to = cur_user.email
 		mail.send_mail(
-					sender="admin@bumpapp.co",
+					sender=cur_user.name + " <" + sender_email + ">",
 					reply_to=reply_to,
 					to=guest.email,
 					subject="Table Notification",
