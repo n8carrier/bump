@@ -84,7 +84,7 @@
 									<li class="divider"></li>
 									<li><a href="#" id="launchFullScreen" onclick="toggleFullScreen()">Launch Full Screen</a></li>
 									<li class="divider"></li>
-									<li><a href="/settings">Settings</a></li>
+									<li{% if user.email == 'demo@bumpapp.co' %} class="disabled"{% endif %}><a href="{% if user.email == 'demo@bumpapp.co' %}#{% else %}/settings{% endif %}">Settings</a></li>
 									<li><a href="/logout">Sign Out</a></li>
 								</ul>
 							</li>
@@ -107,6 +107,7 @@
 								{% endif %}
 							{% else %}
 								<li><a href="{{ url_for('login') }}">Login</a></li>
+								<li><a href="{{ url_for('demo_login') }}">Demo</a></li>
 							{% endif %}
 						</ul>
 					</div>

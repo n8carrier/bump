@@ -432,6 +432,13 @@ def login_user(user, remember=False, force=False):
     user_id = user.get_id()
     session["user_id"] = user_id
     session["_fresh"] = True
+    
+    #################################
+    # save session for trial users
+    import uuid
+    session["uid"] = uuid.uuid4()
+    #################################
+    
     if remember:
         session["remember"] = "set"
     app = current_app._get_current_object()
@@ -439,6 +446,8 @@ def login_user(user, remember=False, force=False):
     user_logged_in.send(current_app._get_current_object(), user=_get_user())
     return True
 
+def get_session_id():
+    return session["uid"]
 
 def logout_user():
     """
@@ -449,6 +458,13 @@ def logout_user():
         del session["user_id"]
     if "_fresh" in session:
         del session["_fresh"]
+    
+    #################################
+    # Clear session for trial users
+    if "uid" in session:
+        del session["uid"]
+    #################################
+    
     cookie_name = current_app.config.get("REMEMBER_COOKIE_NAME", COOKIE_NAME)
     if cookie_name in request.cookies:
         session["remember"] = "clear"

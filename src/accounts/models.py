@@ -28,6 +28,12 @@ class UserAccount(ndb.Model):
 	gv_password = ndb.StringProperty(required=False)
 	reply_to_email  = ndb.StringProperty(required=False)
 	
+	def demo_mode(self):
+		if self.email == 'demo@bumpapp.co':
+			return True
+		else:
+			return False
+	
 	@property
 	def pending_actions(self):
 		from src.activity.models import Action

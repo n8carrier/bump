@@ -73,6 +73,9 @@ app.add_url_rule('/manage', view_func=views.manage,methods=["GET","POST"])
 # Licenses
 app.add_url_rule('/licenses', view_func=views.open_source_licenses)
 
+# demo login
+app.add_url_rule('/demo',view_func=views.demo_login)
+
 # Book Info
 #app.add_url_rule('/book/<OLKey>',view_func=views.book_info)
 

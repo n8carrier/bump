@@ -227,23 +227,28 @@ def search():
 	return render_response('search.html', itemlist=itemlist, search=searchterm, attribute=attr, include_type=item_type, subtype_book=subtype_book, subtype_ebook=subtype_ebook, subtype_audiobook=subtype_audiobook, subtype_specified=subtype_specified)
 	
 def settings():
-	if request.method == 'POST' and "defaultMessage" in request.form and "promoDefault" in request.form:
-		user = current_user()
-		defaultMessage = request.form["defaultMessage"]
-		if request.form["promoDefault"].lower() == "true":
-			promoDefault = True
-		elif request.form["promoDefault"].lower() == "false":
-			promoDefault = False
-		if request.form["gvPW"]:
-			gv_email = request.form["gvEmail"]
-			gv_password = request.form["gvPW"]
-		reply_to_email = request.form["replyEmail"]
-		if user.update(defaultMessage, promoDefault, gv_email, gv_password, reply_to_email):
-			return "Success"
-		else:
-			return False
-	return render_response('settings.html')
 	
+	user = current_user()
+	if user.demo_mode():
+		# Don't let demo into settings
+		return redirect(url_for("index"))
+	else:
+		if request.method == 'POST' and "defaultMessage" in request.form and "promoDefault" in request.form:
+			defaultMessage = request.form["defaultMessage"]
+			if request.form["promoDefault"].lower() == "true":
+				promoDefault = True
+			elif request.form["promoDefault"].lower() == "false":
+				promoDefault = False
+			if request.form["gvPW"]:
+				gv_email = request.form["gvEmail"]
+				gv_password = request.form["gvPW"]
+			reply_to_email = request.form["replyEmail"]
+			if user.update(defaultMessage, promoDefault, gv_email, gv_password, reply_to_email):
+				return "Success"
+			else:
+				return False
+		return render_response('settings.html')
+		
 def guest_signin():
 	cur_user = current_user()
 	if cur_user:
@@ -276,6 +281,9 @@ def guest_signin():
 				guest.restaurant_key
 			else:
 				guest = Guest(first_name=firstName, last_name=lastName, sms_number = smsNumber, email=email, preferred_contact=preferredContact, opt_in=optIn, in_que=True, restaurant_key=current_user().key)
+			if cur_user.demo_mode():
+				from flaskext import login as flasklogin
+				guest.session_id = str(flasklogin.get_session_id())
 			guest.put()
 	return render_response("guest-signin.html")
 
@@ -295,47 +303,51 @@ def whitelist():
 			return redirect(url_for("index"))
 
 def manage():
-	
+	demo = request.args.get('demo')
 	cur_user = current_user()
 	guestlist = []
 	if cur_user:
 	# Create a list of guests (as dicts) within the user's library
 		for record in cur_user.get_guests():
 			if record.in_que:
-				guest = {}
-				guest["id"] = record.key.id()
-				guest["firstName"] = record.first_name
-				guest["lastName"] = record.last_name
-				guest["sms"] = record.sms_number
-				guest["email"] = record.email
-				guest["last_checkin"] = record.last_checkin
-				checkin_timestamp = record.last_checkin - timedelta(hours=6)
-				checkin_month = '0' + str(checkin_timestamp.month)
-				checkin_month = checkin_month[-2:]
-				checkin_day = '0' + str(checkin_timestamp.day)
-				checkin_day = checkin_day[-2:]
-				checkin_year = str(checkin_timestamp.year)
-				if checkin_timestamp.hour <= 12: #TODO: 12am to 1am comes out as 00:30
-					checkin_hour = '0' + str(checkin_timestamp.hour)
-					checkin_hour = checkin_hour[-2:]
-				else:
-					checkin_hour = '0' + str(checkin_timestamp.hour - 12)
-					checkin_hour = checkin_hour[-2:]
-				if checkin_timestamp.hour <= 11:
-					checkin_ampm = 'AM'
-				else:
-					checkin_ampm = 'PM'
-				checkin_minute = '0' + str(checkin_timestamp.minute)
-				checkin_minute = checkin_minute[-2:]
-				guest["checkin_date"] = checkin_month + '/' + checkin_day + '/' + checkin_year
-				guest["checkin_time"] = checkin_hour + ':' + checkin_minute + ' ' + checkin_ampm
-				guestlist.append(guest)
+				# Includes session_id, demo account (include only if session_id matches
+				from flaskext import login as flasklogin
+				demo_session_id = str(flasklogin.get_session_id())
+				if "session_id" not in record.to_dict() or record.session_id == demo_session_id:
+					guest = {}
+					guest["id"] = record.key.id()
+					guest["firstName"] = record.first_name
+					guest["lastName"] = record.last_name
+					guest["sms"] = record.sms_number
+					guest["email"] = record.email
+					guest["last_checkin"] = record.last_checkin
+					checkin_timestamp = record.last_checkin - timedelta(hours=6)
+					checkin_month = '0' + str(checkin_timestamp.month)
+					checkin_month = checkin_month[-2:]
+					checkin_day = '0' + str(checkin_timestamp.day)
+					checkin_day = checkin_day[-2:]
+					checkin_year = str(checkin_timestamp.year)
+					if checkin_timestamp.hour <= 12: #TODO: 12am to 1am comes out as 00:30
+						checkin_hour = '0' + str(checkin_timestamp.hour)
+						checkin_hour = checkin_hour[-2:]
+					else:
+						checkin_hour = '0' + str(checkin_timestamp.hour - 12)
+						checkin_hour = checkin_hour[-2:]
+					if checkin_timestamp.hour <= 11:
+						checkin_ampm = 'AM'
+					else:
+						checkin_ampm = 'PM'
+					checkin_minute = '0' + str(checkin_timestamp.minute)
+					checkin_minute = checkin_minute[-2:]
+					guest["checkin_date"] = checkin_month + '/' + checkin_day + '/' + checkin_year
+					guest["checkin_time"] = checkin_hour + ':' + checkin_minute + ' ' + checkin_ampm
+					guestlist.append(guest)
 	# Sort itemlist alphabetically, with title as the primary sort key,
 	# author as secondary, and item_subtype as tertiary
 	guestlist.sort(key=lambda guest: guest["last_checkin"])
 	# guestlist.sort(key=lambda item: item["author_director"].lower())
 	# guestlist.sort(key=lambda item: item["title"].lower())
-	return render_response("manage.html", guestlist=guestlist, cur_user=cur_user)	
+	return render_response("manage.html", guestlist=guestlist, cur_user=cur_user, demo=demo)	
 
 def checkin_guest(guest_ID):
 	cur_user = current_user()
@@ -425,11 +437,11 @@ def reportbug():
 		labels = request.form["issueType"]
 		import requests
 		import json
-		AUTH = ("sharingcommonsbot", "Sh4r3B0t")
+		AUTH = ("bumpbot", "GitBumpB0t")
 		GITHUB_URL = "https://api.github.com"
 		HEADERS = {'Content-Type': 'application/json'}
 		repo_owner = "natecarrier"
-		repo = "sharingcommons"
+		repo = "bump"
 		issues_url = "{0}/{1}".format(GITHUB_URL, "/".join(
 				["repos", repo_owner, repo, "issues"]))
 		data = {"title": title,
@@ -496,8 +508,22 @@ def login():
 				return redirect(url_for("index") + '?whitelist=false')
 	else:
 		return redirect(users.create_login_url(request.url))
+
+def demo_login():
+	user = UserAccount.get_by_email('demo@bumpapp.co')
+	from flaskext import login as flasklogin
+	if user and flasklogin.login_user(user,False):
+		return redirect(url_for("manage") + '?demo=true')
+	return redirect(url_for("index") + '?whitelist=false')
 			
 def logout():
+	# Clear out guests if demo account
+	cur_user = current_user()
+	if cur_user.demo_mode():
+		from flaskext import login as flasklogin
+		guests = Guest.query(Guest.session_id==str(flasklogin.get_session_id())).fetch()
+		for guest in guests:
+			guest.key.delete()
 	# Logs out User
 	logout_account()
 	return redirect(users.create_logout_url("/"))

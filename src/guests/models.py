@@ -16,6 +16,7 @@ class Guest(ndb.Model):
 	in_que = ndb.BooleanProperty(required=True)
 	restaurant_key = ndb.KeyProperty(kind=UserAccount)
 	last_checkin = ndb.DateTimeProperty(auto_now_add=True)
+	session_id = ndb.StringProperty(required=False) #For demo login only (so we can clear them)
 	#item_key = ndb.StringProperty(required=True) #Unique, Key
 	#item_type = ndb.StringProperty(required=True)
 	#last_update = ndb.DateTimeProperty()
