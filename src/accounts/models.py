@@ -182,6 +182,11 @@ class UserAccount(ndb.Model):
 		from src.guests.models import Guest
 		return Guest.query(Guest.restaurant_key==self.key).fetch()
 	
+	def get_checkedin_guests(self):
+		from src.guests.models import Guest
+		from src.checkins.models import CheckIn
+		return CheckIn.query(CheckIn.restaurant_key==self.key,CheckIn.in_queue==True).fetch()
+	
 	def get_item(self,item_subtype,item):
 		"""retrieve the user's copy of a particular item
 		

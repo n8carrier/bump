@@ -6,6 +6,7 @@ from googlevoice.voice import Voice
 from googlevoice.util import input
 from src.items.models import Item,ItemCopy
 from src.guests.models import Guest
+from src.checkins.models import CheckIn
 from src.whitelist.models import Whitelist
 from activity.models import RequestToBorrow, WaitingToBorrow
 import logging
@@ -273,19 +274,35 @@ def guest_signin():
 			# Add guest to database
 			# First, check if guest is already in databases
 			if preferredContact == 'sms':
-				guest = Guest.query(Guest.first_name==firstName,Guest.last_name==lastName,Guest.sms_number==smsNumber,Guest.restaurant_key==current_user().key).get()
+				guest = Guest.query(Guest.sms_number==smsNumber,Guest.restaurant_key==cur_user.key).get()
 			elif preferredContact == 'email':
-				guest = Guest.query(Guest.first_name==firstName,Guest.last_name==lastName,Guest.email==email,Guest.restaurant_key==current_user().key).get()
+				guest = Guest.query(Guest.email==email,Guest.restaurant_key==cur_user.key).get()
 			if guest:
-				guest.in_que = True
-				guest.last_checkin = datetime.datetime.now()
-				guest.restaurant_key
+				# Update Guest in case info has changed
+				guest.first_name = firstName
+				guest.last_name = lastName
+				guest.preferred_contact = preferredContact
+				guest.opt_in = optIn
+				guest.put()
+				# See if guest is already in queue, if so overwrite
+				checkin = CheckIn.query(CheckIn.guest_key==guest.key, CheckIn.restaurant_key==cur_user.key, CheckIn.in_queue==True).get()
+				if checkin:
+					checkin.last_name=lastName
+					checkin.first_name=firstName
+					checkin.signin_time=datetime.datetime.now()
+				else:
+				# Sign in Guest
+					checkin = CheckIn(guest_key=guest.key, restaurant_key=cur_user.key, first_name=firstName, last_name=lastName, in_queue=True, signin_time =datetime.datetime.now())
 			else:
-				guest = Guest(first_name=firstName, last_name=lastName, sms_number = smsNumber, email=email, preferred_contact=preferredContact, opt_in=optIn, in_que=True, restaurant_key=current_user().key)
-			if cur_user.demo_mode():
-				from flaskext import login as flasklogin
-				guest.session_id = str(flasklogin.get_session_id())
-			guest.put()
+				# Create New Guest
+				guest = Guest(first_name=firstName, last_name=lastName, sms_number = smsNumber, email=email, preferred_contact=preferredContact, opt_in=optIn, restaurant_key=cur_user.key)
+				if cur_user.demo_mode():
+					from flaskext import login as flasklogin
+					guest.session_id = str(flasklogin.get_session_id())
+				guest.put()
+				# Sign in Guest
+				checkin = CheckIn(guest_key=guest.key, restaurant_key=cur_user.key, first_name=firstName, last_name=lastName, in_queue=True, signin_time =datetime.datetime.now())
+			checkin.put()
 			if demo == "continue":
 				# Hack to make sure name gets stored in database before page loads
 				import time
@@ -314,40 +331,43 @@ def manage():
 	guestlist = []
 	if cur_user:
 	# Create a list of guests (as dicts) within the user's library
-		for record in cur_user.get_guests():
-			if record.in_que:
-				# Includes session_id, demo account (include only if session_id matches
-				from flaskext import login as flasklogin
-				demo_session_id = str(flasklogin.get_session_id())
-				if "session_id" not in record.to_dict() or record.session_id == demo_session_id:
-					guest = {}
-					guest["id"] = record.key.id()
-					guest["firstName"] = record.first_name
-					guest["lastName"] = record.last_name
-					guest["sms"] = record.sms_number
-					guest["email"] = record.email
-					guest["last_checkin"] = record.last_checkin
-					checkin_timestamp = record.last_checkin - timedelta(hours=6)
-					checkin_month = '0' + str(checkin_timestamp.month)
-					checkin_month = checkin_month[-2:]
-					checkin_day = '0' + str(checkin_timestamp.day)
-					checkin_day = checkin_day[-2:]
-					checkin_year = str(checkin_timestamp.year)
-					if checkin_timestamp.hour <= 12: #TODO: 12am to 1am comes out as 00:30
-						checkin_hour = '0' + str(checkin_timestamp.hour)
-						checkin_hour = checkin_hour[-2:]
-					else:
-						checkin_hour = '0' + str(checkin_timestamp.hour - 12)
-						checkin_hour = checkin_hour[-2:]
-					if checkin_timestamp.hour <= 11:
-						checkin_ampm = 'AM'
-					else:
-						checkin_ampm = 'PM'
-					checkin_minute = '0' + str(checkin_timestamp.minute)
-					checkin_minute = checkin_minute[-2:]
-					guest["checkin_date"] = checkin_month + '/' + checkin_day + '/' + checkin_year
-					guest["checkin_time"] = checkin_hour + ':' + checkin_minute + ' ' + checkin_ampm
-					guestlist.append(guest)
+		for record in cur_user.get_checkedin_guests():
+			# Includes session_id, demo account (include only if session_id matches 
+			guest = Guest.get_by_id(record.guest_key.id())
+			from flaskext import login as flasklogin
+			demo_session_id = str(flasklogin.get_session_id())
+			if "session_id" not in guest.to_dict():
+				# Fix for old data
+				guest.session_id = None
+			if not guest.session_id or guest.session_id == demo_session_id:
+				checkedinGuest = {}
+				checkedinGuest["id"] = record.guest_key.id()
+				checkedinGuest["firstName"] = guest.first_name
+				checkedinGuest["lastName"] = guest.last_name
+				checkedinGuest["sms"] = guest.sms_number
+				checkedinGuest["email"] = guest.email
+				checkedinGuest["last_checkin"] = record.signin_time
+				checkin_timestamp = record.signin_time - timedelta(hours=6)
+				checkin_month = '0' + str(checkin_timestamp.month)
+				checkin_month = checkin_month[-2:]
+				checkin_day = '0' + str(checkin_timestamp.day)
+				checkin_day = checkin_day[-2:]
+				checkin_year = str(checkin_timestamp.year)
+				if checkin_timestamp.hour <= 12: #TODO: 12am to 1am comes out as 00:30
+					checkin_hour = '0' + str(checkin_timestamp.hour)
+					checkin_hour = checkin_hour[-2:]
+				else:
+					checkin_hour = '0' + str(checkin_timestamp.hour - 12)
+					checkin_hour = checkin_hour[-2:]
+				if checkin_timestamp.hour <= 11:
+					checkin_ampm = 'AM'
+				else:
+					checkin_ampm = 'PM'
+				checkin_minute = '0' + str(checkin_timestamp.minute)
+				checkin_minute = checkin_minute[-2:]
+				checkedinGuest["checkin_date"] = checkin_month + '/' + checkin_day + '/' + checkin_year
+				checkedinGuest["checkin_time"] = checkin_hour + ':' + checkin_minute + ' ' + checkin_ampm
+				guestlist.append(checkedinGuest)
 	# Sort itemlist alphabetically, with title as the primary sort key,
 	# author as secondary, and item_subtype as tertiary
 	guestlist.sort(key=lambda guest: guest["last_checkin"])
@@ -362,8 +382,13 @@ def checkin_guest(guest_ID):
 		return "Error"
 	else:
 		guest = Guest.get_by_id(int(guest_ID))
-		guest.in_que = False
-		guest.put()
+		# Find checkin object and check in
+		checkin = CheckIn.query(CheckIn.guest_key==guest.key, CheckIn.restaurant_key==cur_user.key, CheckIn.in_queue==True).get()
+		checkin.in_queue = False
+		checkin.seat_time = datetime.datetime.now()
+		wait_time_timedelta = checkin.seat_time - checkin.signin_time
+		checkin.wait_time = wait_time_timedelta.seconds / 60 
+		checkin.put()
 	return "Success"
 
 def undo_checkin_guest(guest_ID):
@@ -372,9 +397,11 @@ def undo_checkin_guest(guest_ID):
 		logging.info("there is not a user logged in")
 		return "Error"
 	else:
-		guest = Guest.get_by_id(int(guest_ID))
-		guest.in_que = True
-		guest.put()
+		# Find most recent checkin
+		# TODO: .order() is not re-ordering propertly. Needs fix to return CheckIn of most recent signin_time
+		checkin = CheckIn.query(CheckIn.guest_key==Guest.get_by_id(int(guest_ID)).key).order(CheckIn.signin_time).get()
+		checkin.in_queue = True
+		checkin.put()
 	return "Success"
 	
 def send_default_msg(guest_ID):

@@ -15,6 +15,11 @@ indexes:
   - name: owner
   - name: borrower
 
+- kind: CheckIn
+  properties:
+  - name: guest_key
+  - name: signin_time
+
 - kind: ItemCopy
   properties:
   - name: owner

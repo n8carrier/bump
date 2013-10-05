@@ -44,7 +44,9 @@
 				success: function(data) {
 					$("#submitSuccess").show();
 					$("#submitError").hide();
-					window.location = "{{ url_for('manage') }}" + "?demo=continue";
+					if("{{demo}}"=="continue") {
+						window.location = "{{ url_for('manage') }}" + "?demo=continue";
+					}
 				},
 				error: function() {
 					$("#submitError").show();
@@ -205,12 +207,12 @@
 	</div>
 </div>
 
-<div id="tour3" class="tooltip fade right in" style="top: 300px; left: 620px; display: none;width: 400px;">
-	<div class="tooltip-arrow">
+<div id="tour3" class="tooltip fade right in" style="top: 300px; left: 620px; display: none;width: 400px;" opacity:0.9>
+	<div class="tooltip-arrow" style="border-right-color:#d41e24">
 	</div>
-	<div class="tooltip-inner">
+	<div class="tooltip-inner" style="background-color:#d41e24">
 		<div style="font-size: 12pt; text-align: left;">
-		This is where your guests enter their information. Try it out by adding your information. Don't worry, all guests signed in during a demo session will be cleared when you sign out.<br><br>Once you enter the information and click "Submit", this tour will continue.
+		Guests enter their information here. Try it out by adding your information. Don't worry, all guests signed in during a demo session will be cleared when you sign out.<br><br>Once you enter the information and click "Submit", this tour will continue.
 		</div>
 	</div>
 </div>
