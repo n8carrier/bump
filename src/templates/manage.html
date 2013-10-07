@@ -90,8 +90,9 @@
 				lastRemoveGuestID = guestID;
 				lastRemoveLink = button;
 				$(lastRemoveLink).parent().parent().hide();
-				$("#reminderSent").hide();
+				$("#notificationSent").hide();
 				$("#undoMessage").show();
+				autoClose("#undoMessage",5);
 				$("#undoMessageName").text(firstName + ' ' + lastName);
 				if($("#guestQueue tr:visible").length == 1) {
 					// swap header for no-guests row
@@ -110,7 +111,7 @@
 	}
 	
 	function hide_sent_message() {
-		$("#reminderSent").hide();
+		$("#notificationSent").hide();
 		return false;
 	}
 	
@@ -125,10 +126,15 @@
 	}
 	
 	function sendDefaultMsg(guestID, firstName, lastName, button) {
+		$("#undoMessage").hide();
+		$("#sentConfirmation").hide();
+		$(".sentTo").text(firstName + ' ' + lastName);
+		$("#sending").show();
+		$("#notificationSent").show();
 		$.get("/send_default/" + guestID, function(data) {
-			$("#undoMessage").hide();
-			$("#reminderSent").show();
-			$("#reminderName").text(firstName + ' ' + lastName);
+			$("#sending").hide();
+			$("#sentConfirmation").show();
+			autoClose("#notificationSent",8);
 		})
 	}
 	
@@ -139,11 +145,16 @@
 		$("#customMsgModalText").text(msg);
 		$("#sendCustomMsgButton").attr("onClick","sendCustomMsg('" + guestID + "', '" + firstName + "', '" + lastName + "',this)");
 		$("#customMsgModal").modal('show');
-		// Add guestID to onClick for send button (for calling sendCustomMsg)
 	}
 	
 	function sendCustomMsg(guestID, firstName, lastName, button) {
 		var msg = $("#customMsgModalText").val();
+		$("#undoMessage").hide();
+		$("#sentConfirmation").hide();
+		$(".sentTo").text(firstName + ' ' + lastName);
+		$("#sending").show();
+		$("#notificationSent").show();
+		$("#customMsgModal").modal('hide');
 		$.ajax({
 			type: "POST",
 			url: "/send_custom/" + guestID,
@@ -151,10 +162,9 @@
 			cache: false
 		})
 		.done(function(data) {
-			$("#customMsgModal").modal('hide');
-			$("#undoMessage").hide();
-			$("#reminderSent").show();
-			$("#reminderName").text(firstName + ' ' + lastName);
+			$("#sending").hide();
+			$("#sentConfirmation").show();
+			autoClose("#notificationSent",8);
 		});
 	}
 	
@@ -165,6 +175,10 @@
 		temp=null;
 		return str;
 	}
+	
+	function autoClose(selector, delay) {
+		window.setTimeout(function() { $(selector).hide() }, delay * 1000);
+}
 	
 </script>
 
@@ -210,9 +224,10 @@
 		</div>
 	</div>
 	<div class="span6 offset3" style="position: absolute;">
-		<div id="reminderSent" class="alert alert-success" style="display: none;">
+		<div id="notificationSent" class="alert alert-success" style="display: none;">
 			<a class="close" onclick="hide_sent_message()">&times;</a>
-			You have sent a message to <span id="reminderName"></span>. To remove a guest from the queue, click the "Check In" button.
+			<span id="sending"><i class="icon-spinner icon-spin"></i> Sending notification to <span class="sentTo"></span>...</span>
+			<span id="sentConfirmation">You have sent a message to <span class="sentTo"></span>. To remove a guest from the queue, click the "Check In" button.</span>
 		</div>
 	</div>
 	
@@ -242,7 +257,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr id="no-guests" style="display:{% if guestlist|length < 1 %}block{% else %}none{% endif %}">
+					<tr id="no-guests" {% if guestlist|length >= 1 %}style="display:none"{% endif %}>
 						<td colspan="4">There are no guests in the queue. Once guests have signed in, they'll show up here.</td>
 					</tr>
 				{% for guest in guestlist %}

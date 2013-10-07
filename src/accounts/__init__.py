@@ -4,6 +4,13 @@ from flaskext import login as flasklogin
 import logging
 
 def join(account, remember=False):
+	# If this is the first user account, then allow to create and make admin
+	users = UserAccount.query().fetch()
+	if not users:
+		logging.info("First user account, creating user as admin", account._User__email)
+		user = UserAccount.create_user(account,make_admin=True)
+		if user and flasklogin.login_user(user, remember):
+			return True
 	# First check domain in whitelist
 	domain = account._User__email[account._User__email.index('@')+1:]
 	logging.info("Checking domain %s for whitelist", domain)
