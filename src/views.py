@@ -155,7 +155,7 @@ def guest_signin():
 			if demo == "continue":
 				# Hack to make sure name gets stored in database before page loads
 				import time
-				time.sleep(.05)
+				time.sleep(.15)
 				return redirect(url_for("manage") + '?demo=continue')
 	return render_response("guest-signin.html", demo=demo)
 
