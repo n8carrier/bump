@@ -60,10 +60,10 @@ app.add_url_rule('/demo',view_func=views.demo_login)
 ######################## Internal calls (to be called by ajax) ##########################
 
 # Check in Guest
-app.add_url_rule('/checkin/<guest_ID>',view_func=views.checkin_guest,methods=['GET'])
+app.add_url_rule('/checkin/<checkin_ID>',view_func=views.checkin_guest,methods=['GET'])
 
 # Undo Guest Check in
-app.add_url_rule('/undo_checkin/<guest_ID>',view_func=views.undo_checkin_guest,methods=['GET'])
+app.add_url_rule('/undo_checkin/<checkin_ID>',view_func=views.undo_checkin_guest,methods=['GET'])
 
 # Send Default Reminder
 app.add_url_rule('/send_default/<guest_ID>',view_func=views.send_default_msg,methods=['GET'])

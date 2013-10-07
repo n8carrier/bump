@@ -66,6 +66,9 @@
 	function tour6() {
 		$("#tour5").hide();
 		$("#tour6").show();
+		// TODO: Update CheckIn button to check in, dismiss tour tooltip, delay a second, then launch ending modal
+		// TODO: update CheckIn button of first row to checkin_end(checkinID, firstName, lastName, button)
+		// TODO: We'll need to use a jquery to grab that first button, and then to update it, is there a replace in jquery
 	}
 	
 	function tour7() {
@@ -73,7 +76,13 @@
 		$("#tour7").modal('show');
 	}
 	
-	var lastRemoveGuestID;
+	function checkin_end(checkinID, firstName, lastName, button) {
+		$("#tour6").hide();
+		checkIn(checkinID, firstName, lastName, button);
+		window.setTimeout(function() { $("#tour7").modal('show') }, 1000);
+	}
+	
+	var lastRemoveCheckInID;
 	var lastRemoveLink;
 	
 	function hide_undo_message() {
@@ -81,13 +90,13 @@
 		return false;
 	}
 	
-	function checkIn(guestID, firstName, lastName, button) {
+	function checkIn(checkinID, firstName, lastName, button) {
 	// Check in item user is lending
 		$.ajax({
-			url: "/checkin/" + guestID,
+			url: "/checkin/" + checkinID,
 			type: 'GET',
 			success: function(data) {
-				lastRemoveGuestID = guestID;
+				lastRemoveCheckInID = checkinID;
 				lastRemoveLink = button;
 				$(lastRemoveLink).parent().parent().hide();
 				$("#notificationSent").hide();
@@ -116,7 +125,7 @@
 	}
 	
 	function undo_checkin() {
-		$.get("/undo_checkin/" + lastRemoveGuestID, function(data) {
+		$.get("/undo_checkin/" + lastRemoveCheckInID, function(data) {
 			$("#no-guests").hide();
 			$("#queue-header").show();
 			$(lastRemoveLink).parent().parent().show();
@@ -272,7 +281,7 @@
 							<a class="btn btn-primary btn-inverse btn-small" onclick="customMsgModal('{{guest.id}}','{{guest.firstName}}','{{guest.lastName}}',this)">
 								<i class="icon-edit"></i>&nbsp;&nbsp;Custom
 							</a>
-							<a class="btn btn-success btn-small" onclick="checkIn('{{guest.id}}','{{guest.firstName}}','{{guest.lastName}}',this)">
+							<a class="btn btn-success btn-small" onclick="checkIn('{{guest.checkin_ID}}','{{guest.firstName}}','{{guest.lastName}}',this)">
 								<i class="icon-ok"></i>&nbsp;&nbsp;Check In
 							</a>
 						</td>

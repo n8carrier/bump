@@ -191,6 +191,7 @@ def manage():
 			if not guest.session_id or guest.session_id == demo_session_id:
 				checkedinGuest = {}
 				checkedinGuest["id"] = record.guest_key.id()
+				checkedinGuest["checkin_ID"] = record.key.id()
 				checkedinGuest["firstName"] = guest.first_name
 				checkedinGuest["lastName"] = guest.last_name
 				checkedinGuest["sms"] = guest.sms_number
@@ -224,31 +225,30 @@ def manage():
 	# guestlist.sort(key=lambda item: item["title"].lower())
 	return render_response("manage.html", guestlist=guestlist, cur_user=cur_user, demo=demo)	
 
-def checkin_guest(guest_ID):
+def checkin_guest(checkin_ID):
 	cur_user = current_user()
 	if not cur_user:
 		logging.info("there is not a user logged in")
 		return "Error"
 	else:
-		guest = Guest.get_by_id(int(guest_ID))
+		checkin = CheckIn.get_by_id(int(checkin_ID))
 		# Find checkin object and check in
-		checkin = CheckIn.query(CheckIn.guest_key==guest.key, CheckIn.restaurant_key==cur_user.key, CheckIn.in_queue==True).get()
 		checkin.in_queue = False
 		checkin.seat_time = datetime.datetime.now()
 		wait_time_timedelta = checkin.seat_time - checkin.signin_time
-		checkin.wait_time = wait_time_timedelta.seconds / 60 
+		calculated_wait_time = float(wait_time_timedelta.seconds) / float(60)
+		checkin.wait_time = calculated_wait_time
 		checkin.put()
 	return "Success"
 
-def undo_checkin_guest(guest_ID):
+def undo_checkin_guest(checkin_ID):
 	cur_user = current_user()
 	if not cur_user:
 		logging.info("there is not a user logged in")
 		return "Error"
 	else:
-		# Find most recent checkin
-		# TODO: .order() is not re-ordering propertly. Needs fix to return CheckIn of most recent signin_time
-		checkin = CheckIn.query(CheckIn.guest_key==Guest.get_by_id(int(guest_ID)).key).order(CheckIn.signin_time).get()
+		# Place CheckIn back in queue 
+		checkin = CheckIn.get_by_id(int(checkin_ID))
 		checkin.in_queue = True
 		checkin.put()
 	return "Success"
