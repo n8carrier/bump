@@ -187,7 +187,38 @@
 	
 	function autoClose(selector, delay) {
 		window.setTimeout(function() { $(selector).hide() }, delay * 1000);
-}
+	}
+	
+	$(':input').bind('click keyup', function(){
+		input_type = event.target.id.substring(0,event.target.id.indexOf("-"));
+		checkin_id = event.target.id.substring(event.target.id.indexOf("-")+1);
+		if(input_type=="partySize") {
+			updatePartySize(checkin_id);
+		} else if(input_type="waitEstimate") {
+			updateWaitEstimate(checkin_id);
+		}
+	});
+	
+	function updatePartySize(checkin_ID) {
+		$.ajax({
+				type: "POST",
+				url: "/update_party_size/" + checkin_ID,
+				data: {'party-size': $("#partySize-" + checkin_ID).val()},
+				cache: false
+			})
+	}
+	
+	function updateWaitEstimate(checkin_ID) {
+		$.ajax({
+				type: "POST",
+				url: "/update_wait_estimate/" + checkin_ID,
+				data: {'wait-estimate': $("#waitEstimate-" + checkin_ID).val()},
+				cache: false
+			})
+		.done(function(data) {
+			$("#target-" + checkin_ID).text(data.target);
+		});
+	}
 	
 </script>
 
@@ -259,9 +290,11 @@
 			<table class="table table-striped table-bordered" id="guestQueue">
 				<thead id="queue-header" {% if guestlist|length < 1 %}style="display:none"{% endif %}>
 					<tr>
-						<th class="header">Name</th>
-						<th class="header">Contact</th>
-						<th class="header">Check-in Time</th>
+						<th class="header">Guest</th>
+						<th class="header">Party Size</th>
+						<th class="header">Arrival Time</th>
+						<th class="header">Estimated Wait</th>
+						<th class="header">Target Seating Time</th>
 						<th class="header" style="width:260px">Actions</th>
 					</tr>
 				</thead>
@@ -271,9 +304,12 @@
 					</tr>
 				{% for guest in guestlist %}
 					<tr id="row-{{guest.id}}">
-						<td>{{guest.firstName}} {{guest.lastName}}</td>
-						<td>{% if guest.sms %}{{guest.sms}}{% endif %}{% if guest.email%}{{guest.email}}{% endif %}</td>
-						<td>{{guest.checkin_time}}</td>
+						<td>{{guest.firstName}} {{guest.lastName}}
+						<br><em>{% if guest.sms %}{{guest.sms}}{% endif %}{% if guest.email%}{{guest.email}}{% endif %}</em></td>
+						<td><input type="number" class="partySize" id="partySize-{{guest.checkin_ID}}" min="1" value="{{guest.partySize}}" style="width:40px"></td>
+						<td>{{guest.arrival_time.strftime('%I:%M %p')}}</td>
+						<td><input type="number" name="waitEstimate" id="waitEstimate-{{guest.checkin_ID}}" min="1" value="{{guest.wait_estimate}}" style="width:40px"> min</td>
+						<td id="target-{{guest.checkin_ID}}">{{guest.target_time.strftime('%I:%M %p')}}</td>
 						<td style="text-align:center">
 							<a class="btn btn-primary btn-small" onclick="sendDefaultMsg('{{guest.id}}','{{guest.firstName}}','{{guest.lastName}}',this)">
 								<i class="icon-envelope-alt"></i>&nbsp;&nbsp;Default

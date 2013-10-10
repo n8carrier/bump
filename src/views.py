@@ -78,8 +78,13 @@ def settings():
 			if request.form["gvPW"]:
 				gv_email = request.form["gvEmail"]
 				gv_password = request.form["gvPW"]
+			else:
+				gv_email = None
+				gv_password = None
 			reply_to_email = request.form["replyEmail"]
-			if user.update(defaultMessage, promoDefault, gv_email, gv_password, reply_to_email):
+			if request.form["defaultWait"]:
+				default_wait = int(request.form["defaultWait"])
+			if user.update(defaultMessage, promoDefault, gv_email, gv_password, reply_to_email, default_wait):
 				return "Success"
 			else:
 				return False
@@ -137,9 +142,10 @@ def guest_signin():
 					checkin.last_name=lastName
 					checkin.first_name=firstName
 					checkin.signin_time=datetime.datetime.now()
+					checkin.wait_estimate=cur_user.default_wait
 				else:
 					# Sign in Guest
-					checkin = CheckIn(guest_key=guest.key, restaurant_key=cur_user.key, first_name=firstName, last_name=lastName, in_queue=True, signin_time =datetime.datetime.now())
+					checkin = CheckIn(guest_key=guest.key, restaurant_key=cur_user.key, first_name=firstName, last_name=lastName, in_queue=True, party_size=2, signin_time=datetime.datetime.now(), wait_estimate=cur_user.default_wait)
 			else:
 				# Create New Guest
 				if cur_user.demo_mode:
@@ -150,7 +156,7 @@ def guest_signin():
 					guest.session_id = str(flasklogin.get_session_id())
 				guest.put()
 				# Sign in Guest
-				checkin = CheckIn(guest_key=guest.key, restaurant_key=cur_user.key, first_name=firstName, last_name=lastName, in_queue=True, signin_time =datetime.datetime.now())
+				checkin = CheckIn(guest_key=guest.key, restaurant_key=cur_user.key, first_name=firstName, last_name=lastName, in_queue=True, party_size=2, signin_time =datetime.datetime.now(), wait_estimate=cur_user.default_wait)
 			checkin.put()
 			if demo == "continue":
 				# Hack to make sure name gets stored in database before page loads
@@ -196,27 +202,12 @@ def manage():
 				checkedinGuest["lastName"] = guest.last_name
 				checkedinGuest["sms"] = guest.sms_number
 				checkedinGuest["email"] = guest.email
+				checkedinGuest["partySize"] = record.party_size
 				checkedinGuest["last_checkin"] = record.signin_time
 				checkin_timestamp = record.signin_time - timedelta(hours=6)
-				checkin_month = '0' + str(checkin_timestamp.month)
-				checkin_month = checkin_month[-2:]
-				checkin_day = '0' + str(checkin_timestamp.day)
-				checkin_day = checkin_day[-2:]
-				checkin_year = str(checkin_timestamp.year)
-				if checkin_timestamp.hour <= 12: #TODO: 12am to 1am comes out as 00:30
-					checkin_hour = '0' + str(checkin_timestamp.hour)
-					checkin_hour = checkin_hour[-2:]
-				else:
-					checkin_hour = '0' + str(checkin_timestamp.hour - 12)
-					checkin_hour = checkin_hour[-2:]
-				if checkin_timestamp.hour <= 11:
-					checkin_ampm = 'AM'
-				else:
-					checkin_ampm = 'PM'
-				checkin_minute = '0' + str(checkin_timestamp.minute)
-				checkin_minute = checkin_minute[-2:]
-				checkedinGuest["checkin_date"] = checkin_month + '/' + checkin_day + '/' + checkin_year
-				checkedinGuest["checkin_time"] = checkin_hour + ':' + checkin_minute + ' ' + checkin_ampm
+				checkedinGuest["arrival_time"] = checkin_timestamp
+				checkedinGuest["wait_estimate"] = record.wait_estimate
+				checkedinGuest["target_time"] = checkin_timestamp + timedelta(minutes=record.wait_estimate)
 				guestlist.append(checkedinGuest)
 	# Sort itemlist alphabetically, with title as the primary sort key,
 	# author as secondary, and item_subtype as tertiary
@@ -224,6 +215,29 @@ def manage():
 	# guestlist.sort(key=lambda item: item["author_director"].lower())
 	# guestlist.sort(key=lambda item: item["title"].lower())
 	return render_response("manage.html", guestlist=guestlist, cur_user=cur_user, demo=demo)	
+
+def update_party_size(checkin_ID):
+	cur_user = current_user()
+	if not cur_user:
+		logging.info("there is not a user logged in")
+		return "Error"
+	else:
+		checkin = CheckIn.get_by_id(int(checkin_ID))
+		checkin.party_size = int(request.form["party-size"])
+		checkin.put()
+	return "Success"
+
+def update_wait_estimate(checkin_ID):
+	cur_user = current_user()
+	if not cur_user:
+		logging.info("there is not a user logged in")
+		return "Error"
+	else:
+		checkin = CheckIn.get_by_id(int(checkin_ID))
+		checkin.wait_estimate = int(request.form["wait-estimate"])
+		target_seating_time = checkin.signin_time - timedelta(hours=6) + timedelta(minutes=checkin.wait_estimate)
+		checkin.put()
+	return jsonify({"target": target_seating_time.strftime('%I:%M %p')})
 
 def checkin_guest(checkin_ID):
 	cur_user = current_user()

@@ -17,6 +17,7 @@ class UserAccount(ndb.Model):
 	gv_email  = ndb.StringProperty(required=False)
 	gv_password = ndb.StringProperty(required=False)
 	reply_to_email  = ndb.StringProperty(required=False)
+	default_wait = ndb.IntegerProperty(default=15)
 	
 	def demo_mode(self):
 		if self.email == 'demo@bumpapp.co':
@@ -24,14 +25,17 @@ class UserAccount(ndb.Model):
 		else:
 			return False
 	
-	def update(self,defaultMessage, promoDefault, gv_email, gv_password, reply_to_email):
+	def update(self,defaultMessage, promoDefault, gv_email, gv_password, reply_to_email, default_wait):
 		
 		# validate name
 		self.default_msg_ready = defaultMessage
 		self.default_checkbox_promos = promoDefault
-		self.gv_email = gv_email
-		self.gv_password = gv_password
+		if gv_password:
+			self.gv_email = gv_email
+			self.gv_password = gv_password
 		self.reply_to_email = reply_to_email
+		if default_wait:
+			self.default_wait = default_wait
 		self.put()
 		return True
 

@@ -74,6 +74,12 @@ app.add_url_rule('/send_custom/<guest_ID>', view_func=views.send_custom_msg,meth
 # Delete the current user
 app.add_url_rule('/delete',view_func=views.delete_user,methods=['GET'])
 
+# Update party size
+app.add_url_rule('/update_party_size/<checkin_ID>',view_func=views.update_party_size,methods=['GET','POST'])
+
+# Update party size
+app.add_url_rule('/update_wait_estimate/<checkin_ID>',view_func=views.update_wait_estimate,methods=['GET','POST'])
+
 ##################################### Error Handling ####################################
 ## Error Handlers
 @app.errorhandler(404)
