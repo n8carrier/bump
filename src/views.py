@@ -163,6 +163,7 @@ def guest_signin():
 				import time
 				time.sleep(.15)
 				return redirect(url_for("manage") + '?demo=continue')
+		return "Success"
 	return render_response("guest-signin.html", demo=demo)
 
 def whitelist():

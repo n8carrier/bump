@@ -34,6 +34,7 @@
 	}
 
 	function submit() {
+		tour4();
 		if(true) { // TODO: incorporate validate
 			$("#validationError").hide();
 			$("#submitButton").attr("disabled", "disabled");
@@ -42,11 +43,14 @@
 				type: 'POST',
 				data: $("#submissionForm").serialize(),
 				success: function(data) {
-					$("#submitSuccess").show();
+					$("#submitSuccess").show().delay(3000).fadeOut();
 					$("#submitError").hide();
 					if("{{demo}}"=="continue") {
 						window.location = "{{ url_for('manage') }}" + "?demo=continue";
 					}
+					//set timer for success message and reset the form to its default
+					window.setTimeout(function() { formDefault() }, 3000);
+					
 				},
 				error: function() {
 					$("#submitError").show();
@@ -62,6 +66,19 @@
 		}
 		
 		return false;
+	}
+	
+	function formDefault() {
+		$("#firstName").val('');
+		$("#lastName").val('');
+		$("#contactInfo").val('');
+		$("#preferredContactSMS").prop('checked', true);
+		$("#submitButton").removeAttr("disabled");
+		if ("{{user.default_checkbox_promos }}"=="True") {
+			$("#optIn").prop('checked', true);
+		}else {
+			$("#optIn").prop('checked', false);
+		}
 	}
 	
 	function validate() {
@@ -107,6 +124,19 @@
 		}
 	}
 	
+	//submit the form when enter is pressed
+	$(function() {
+		$('form').each(function() {
+			$(this).find('input').keypress(function(e) {
+				// Enter pressed?
+				if(e.which == 10 || e.which == 13) {
+					this.form.submit();
+				}
+			});
+
+			$(this).find('input[type=submit]').hide();
+		});
+	});
 </script>
 
 {% endblock %}
@@ -114,7 +144,7 @@
 {% block content %}
 <div class="row">
 	<div class="span5">
-		<form class="form-horizontal" id="submissionForm" method="post" action="/guest-signin" onsubmit="tour4()" style="margin-bottom:0px">
+		<form class="form-horizontal" id="submissionForm" action="javascript:submit()" style="margin-bottom:0px">
 			<fieldset>	
 				<legend><h3>Guest Sign-in</h3></legend>
 				
@@ -168,7 +198,7 @@
 				
 				<div class="control-group">
 					<label for="submitButton" class="control-label"></label>
-					<a id="submitButton" class="btn btn-inverse" onclick="submit();">
+					<a type="submit" id="submitButton" class="btn btn-inverse" onclick="submit();">
 						Submit
 					</a>
 				</div>
