@@ -157,9 +157,6 @@ def guest_signin():
 				checkin = CheckIn(guest_key=guest.key, restaurant_key=cur_user.key, first_name=firstName, last_name=lastName, in_queue=True, party_size=2, signin_time =datetime.datetime.now(), wait_estimate=cur_user.default_wait)
 			checkin.put()
 			if demo == "continue":
-				# Hack to make sure name gets stored in database before page loads
-				#import time
-				#time.sleep(.15)
 				return redirect(url_for("manage") + '?demo=continue')
 			return "Success"
 	return render_response("guest-signin.html", demo=demo)
@@ -207,11 +204,8 @@ def manage():
 				checkedinGuest["wait_estimate"] = record.wait_estimate
 				checkedinGuest["target_time"] = arrival_time + timedelta(minutes=record.wait_estimate)
 				guestlist.append(checkedinGuest)
-	# Sort itemlist alphabetically, with title as the primary sort key,
-	# author as secondary, and item_subtype as tertiary
+	# Sort guestlist by arrival time (oldest on top)
 	guestlist.sort(key=lambda guest: guest["arrival_time"])
-	# guestlist.sort(key=lambda item: item["author_director"].lower())
-	# guestlist.sort(key=lambda item: item["title"].lower())
 	return render_response("manage.html", guestlist=guestlist, cur_user=cur_user, demo=demo)	
 
 def update_party_size(checkin_ID):

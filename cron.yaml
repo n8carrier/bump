@@ -1,5 +1,0 @@
-cron:
-- description: item due reminders
-  url: /tasks/item_due_reminders
-  schedule: every day 00:01
-
