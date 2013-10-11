@@ -202,15 +202,14 @@ def manage():
 				checkedinGuest["sms"] = guest.sms_number
 				checkedinGuest["email"] = guest.email
 				checkedinGuest["partySize"] = record.party_size
-				checkedinGuest["last_checkin"] = record.signin_time
-				checkin_timestamp = record.signin_time - timedelta(hours=6)
-				checkedinGuest["arrival_time"] = checkin_timestamp
+				arrival_time = record.signin_time - timedelta(hours=6)
+				checkedinGuest["arrival_time"] = arrival_time
 				checkedinGuest["wait_estimate"] = record.wait_estimate
-				checkedinGuest["target_time"] = checkin_timestamp + timedelta(minutes=record.wait_estimate)
+				checkedinGuest["target_time"] = arrival_time + timedelta(minutes=record.wait_estimate)
 				guestlist.append(checkedinGuest)
 	# Sort itemlist alphabetically, with title as the primary sort key,
 	# author as secondary, and item_subtype as tertiary
-	guestlist.sort(key=lambda guest: guest["last_checkin"])
+	guestlist.sort(key=lambda guest: guest["arrival_time"])
 	# guestlist.sort(key=lambda item: item["author_director"].lower())
 	# guestlist.sort(key=lambda item: item["title"].lower())
 	return render_response("manage.html", guestlist=guestlist, cur_user=cur_user, demo=demo)	
