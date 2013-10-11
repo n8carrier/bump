@@ -15,6 +15,10 @@
 	a.alert-link:hover {
 		color: #dd5600;
 	}
+	
+	.waitlist-cell {
+		vertical-align:middle !important;
+	}
 </style>
 
 {% endblock %}
@@ -190,12 +194,17 @@
 	}
 	
 	$(':input').bind('click keyup', function(){
-		input_type = event.target.id.substring(0,event.target.id.indexOf("-"));
-		checkin_id = event.target.id.substring(event.target.id.indexOf("-")+1);
-		if(input_type=="partySize") {
-			updatePartySize(checkin_id);
-		} else if(input_type="waitEstimate") {
-			updateWaitEstimate(checkin_id);
+		if(event.target.id=="currentWait") {
+			updateCurrentWait();
+		} else {
+			// Element ID includes CheckIn ID, separate, then run appropriate function
+			input_type = event.target.id.substring(0,event.target.id.indexOf("-"));
+			checkin_id = event.target.id.substring(event.target.id.indexOf("-")+1);
+			if(input_type=="partySize") {
+				updatePartySize(checkin_id);
+			} else if(input_type=="waitEstimate") {
+				updateWaitEstimate(checkin_id);
+			}
 		}
 	});
 	
@@ -218,6 +227,15 @@
 		.done(function(data) {
 			$("#target-" + checkin_ID).text(data.target);
 		});
+	}
+	
+	function updateCurrentWait() {
+		$.ajax({
+				type: "POST",
+				url: "/update_current_wait",
+				data: {'current-wait': $("#currentWait").val()},
+				cache: false
+			})
 	}
 	
 </script>
@@ -257,7 +275,7 @@
 
 <div class="row" style="position: relative">
 	<div class="span6 offset3" style="position: absolute;">
-		<div id="undoMessage" class="alert" style="display: none;">
+		<div id="undoMessage" class="alert alert-success" style="display: none;">
 			<a class="close" onclick="hide_undo_message()">&times;</a>
 			<span id="undoMessageName"></span> has been checked in.&nbsp;&nbsp;
 			<strong><a onclick="undo_checkin()" class="alert-link">Undo</a></strong>
@@ -286,14 +304,21 @@
 	</div>
 	
 	<div class="span12">
-		<h3>Manage Queue</h3>
+		<div class="row">
+			<div class="span6">
+				<h3>Manage Waitlist</h3>
+			</div>
+			<div class="span6">
+				<p class="text-right" style="margin-top:15px">Current Wait Time (in minutes):&nbsp;&nbsp;<input type="number" name="currentWait" id="currentWait" value="{{ cur_user.default_wait }}" style="width:40px"></p>
+			</div>
+		</div>
 			<table class="table table-striped table-bordered" id="guestQueue">
 				<thead id="queue-header" {% if guestlist|length < 1 %}style="display:none"{% endif %}>
 					<tr>
 						<th class="header">Guest</th>
 						<th class="header">Party Size</th>
 						<th class="header">Arrival Time</th>
-						<th class="header">Estimated Wait</th>
+						<th class="header">Wait Estimate</th>
 						<th class="header">Target Seating Time</th>
 						<th class="header" style="width:260px">Actions</th>
 					</tr>
@@ -304,13 +329,18 @@
 					</tr>
 				{% for guest in guestlist %}
 					<tr id="row-{{guest.id}}">
-						<td>{{guest.firstName}} {{guest.lastName}}
-						<br><em>{% if guest.sms %}{{guest.sms}}{% endif %}{% if guest.email%}{{guest.email}}{% endif %}</em></td>
-						<td><input type="number" class="partySize" id="partySize-{{guest.checkin_ID}}" min="1" value="{{guest.partySize}}" style="width:40px"></td>
-						<td>{{guest.arrival_time.strftime('%I:%M %p')}}</td>
-						<td><input type="number" name="waitEstimate" id="waitEstimate-{{guest.checkin_ID}}" min="1" value="{{guest.wait_estimate}}" style="width:40px"> min</td>
-						<td id="target-{{guest.checkin_ID}}">{{guest.target_time.strftime('%I:%M %p')}}</td>
-						<td style="text-align:center">
+						<td class="waitlist-cell">{{guest.firstName}} {{guest.lastName}}
+						<br>&nbsp;&nbsp;&nbsp;<em>{% if guest.sms %}{{guest.sms}}{% endif %}{% if guest.email%}{{guest.email}}{% endif %}</em></td>
+						<td class="waitlist-cell">
+							<input type="number" class="partySize" id="partySize-{{guest.checkin_ID}}" min="1" value="{{guest.partySize}}" style="margin-bottom:0px;width:40px"></td>
+						<td class="waitlist-cell">{{guest.arrival_time.strftime('%I:%M %p')}}</td>
+						<td class="waitlist-cell">
+							<p style="margin-bottom:0px">
+								<input type="number" name="waitEstimate" id="waitEstimate-{{guest.checkin_ID}}" min="1" value="{{guest.wait_estimate}}" style="margin-bottom:0px;width:40px">&nbsp;&nbsp;min
+							</p>
+						</td>
+						<td class="waitlist-cell" id="target-{{guest.checkin_ID}}">{{guest.target_time.strftime('%I:%M %p')}}</td>
+						<td class="waitlist-cell" style="text-align:center">
 							<a class="btn btn-primary btn-small" onclick="sendDefaultMsg('{{guest.id}}','{{guest.firstName}}','{{guest.lastName}}',this)">
 								<i class="icon-envelope-alt"></i>&nbsp;&nbsp;Default
 							</a>
@@ -334,7 +364,7 @@
 					<a id="tour1next" class="btn btn-small" style="margin-left:466px" onclick="tour2()">&#x25b6;</a>
 				</div>
 			</div>
-			<div id="tour4" class="tooltip fade bottom in" style="top: 130px; left: 850px; display: none;width: 250px; opacity:0.9;">
+			<div id="tour4" class="tooltip fade bottom in" style="top: 142px; left: 850px; display: none;width: 250px; opacity:0.9;">
 				<div class="tooltip-arrow" style="border-bottom-color:#d41e24">
 				</div>
 				<div class="tooltip-inner" style="background-color:#d41e24">
@@ -344,7 +374,7 @@
 					<a id="tour4next" class="btn btn-small" style="margin-right: -200px;" onclick="tour5();">&#x25b6;</a>
 				</div>
 			</div>
-			<div id="tour5" class="tooltip fade bottom in" style="top: 130px; left: 930px; display: none;width: 250px; opacity:0.9;">
+			<div id="tour5" class="tooltip fade bottom in" style="top: 142px; left: 930px; display: none;width: 250px; opacity:0.9;">
 				<div class="tooltip-arrow" style="border-bottom-color:#d41e24">
 				</div>
 				<div class="tooltip-inner" style="background-color:#d41e24">
@@ -353,7 +383,7 @@
 					</div>
 					<a id="tour5prev" class="btn btn-small" style="margin-top:4px" onclick="tour4()">&#x25c0;</a><a id="tour5next" class="btn btn-small" style="margin-right: -160px;margin-left: 4px; margin-top:4px" onclick="tour6()">&#x25b6;</a>
 				</div>
-			</div><div id="tour6" class="tooltip fade bottom in" style="top: 130px; left: 1020px; display: none;width: 250px; opacity:0.9;">
+			</div><div id="tour6" class="tooltip fade bottom in" style="top: 142px; left: 1020px; display: none;width: 250px; opacity:0.9;">
 				<div class="tooltip-arrow" style="border-bottom-color:#d41e24">
 				</div>
 				<div class="tooltip-inner" style="background-color:#d41e24">

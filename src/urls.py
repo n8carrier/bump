@@ -80,6 +80,9 @@ app.add_url_rule('/update_party_size/<checkin_ID>',view_func=views.update_party_
 # Update party size
 app.add_url_rule('/update_wait_estimate/<checkin_ID>',view_func=views.update_wait_estimate,methods=['GET','POST'])
 
+# Updates the current wait time
+app.add_url_rule('/update_current_wait', view_func=views.update_current_wait,methods=['GET','POST'])
+
 ##################################### Error Handling ####################################
 ## Error Handlers
 @app.errorhandler(404)

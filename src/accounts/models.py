@@ -25,7 +25,7 @@ class UserAccount(ndb.Model):
 		else:
 			return False
 	
-	def update(self,defaultMessage, promoDefault, gv_email, gv_password, reply_to_email, default_wait):
+	def update(self,defaultMessage, promoDefault, gv_email, gv_password, reply_to_email):
 		
 		# validate name
 		self.default_msg_ready = defaultMessage
@@ -34,8 +34,6 @@ class UserAccount(ndb.Model):
 			self.gv_email = gv_email
 			self.gv_password = gv_password
 		self.reply_to_email = reply_to_email
-		if default_wait:
-			self.default_wait = default_wait
 		self.put()
 		return True
 

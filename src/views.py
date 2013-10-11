@@ -82,9 +82,7 @@ def settings():
 				gv_email = None
 				gv_password = None
 			reply_to_email = request.form["replyEmail"]
-			if request.form["defaultWait"]:
-				default_wait = int(request.form["defaultWait"])
-			if user.update(defaultMessage, promoDefault, gv_email, gv_password, reply_to_email, default_wait):
+			if user.update(defaultMessage, promoDefault, gv_email, gv_password, reply_to_email):
 				return "Success"
 			else:
 				return False
@@ -160,10 +158,10 @@ def guest_signin():
 			checkin.put()
 			if demo == "continue":
 				# Hack to make sure name gets stored in database before page loads
-				import time
-				time.sleep(.15)
+				#import time
+				#time.sleep(.15)
 				return redirect(url_for("manage") + '?demo=continue')
-		return "Success"
+			return "Success"
 	return render_response("guest-signin.html", demo=demo)
 
 def whitelist():
@@ -239,6 +237,16 @@ def update_wait_estimate(checkin_ID):
 		target_seating_time = checkin.signin_time - timedelta(hours=6) + timedelta(minutes=checkin.wait_estimate)
 		checkin.put()
 	return jsonify({"target": target_seating_time.strftime('%I:%M %p')})
+
+def update_current_wait():
+	cur_user = current_user()
+	if not cur_user:
+		logging.info("there is not a user logged in")
+		return "Error"
+	else:
+		cur_user.default_wait = int(request.form["current-wait"])
+		cur_user.put()
+	return "Success"
 
 def checkin_guest(checkin_ID):
 	cur_user = current_user()

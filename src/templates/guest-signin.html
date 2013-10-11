@@ -24,32 +24,24 @@
 		var o = $("#privacy-well").offset();
 		$("#tour3").css("left", o.left);
 		$("#tour3").show();
-		$("#submissionForm").attr("action","/guest-signin?demo=continue");
-	}
-	
-	function tour4() {
-		if("{{demo}}"=="continue") {
-			window.location = "{{ url_for('manage') }}" + "?demo=continue";
-		}
 	}
 
 	function submit() {
-		tour4();
 		if(true) { // TODO: incorporate validate
 			$("#validationError").hide();
 			$("#submitButton").attr("disabled", "disabled");
 			$.ajax({
-				url:"/guest-signin",
+				url:"/guest-signin{% if demo=='continue' %}?demo=continue{% endif %}",
 				type: 'POST',
 				data: $("#submissionForm").serialize(),
 				success: function(data) {
-					$("#submitSuccess").show().delay(3000).fadeOut();
 					$("#submitError").hide();
+					//set timer for success message and reset the form to its default
+					window.setTimeout(function() { formDefault() }, 3000);
+					$("#submitSuccess").show().delay(3000).fadeOut();
 					if("{{demo}}"=="continue") {
 						window.location = "{{ url_for('manage') }}" + "?demo=continue";
 					}
-					//set timer for success message and reset the form to its default
-					window.setTimeout(function() { formDefault() }, 3000);
 					
 				},
 				error: function() {
@@ -64,7 +56,6 @@
 			$("#submitSuccess").hide();
 			$("#submitError").hide();
 		}
-		
 		return false;
 	}
 	
@@ -208,15 +199,15 @@
 			<div class="span4">
 				
 				<div id="validationError" class="alert alert-error" style="display:none;">
-					<strong>Unable to submit issue</strong>&nbsp; Please fix the errors and try again.
+					<strong>Unable to submit info</strong>&nbsp; Please fix the errors and try again.
 				</div>
 				
 				<div id="submitError" class="alert alert-error" style="display:none;">
-					<strong>Unable to submit issue</strong>&nbsp; Something went wrong. Please send an email to admin</strong>@</strong>sharing</strong>commons.com
+					<strong>Unable to submit info</strong>&nbsp; Something went wrong. Please see the host.
 				</div>
 				
 				<div id="submitSuccess" class="alert alert-success" style="display:none;">
-					Your name has successfully been added to the queue</strong>
+					Your name has successfully been added to the waitlist</strong>
 				</div>
 				
 			</div>
