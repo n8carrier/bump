@@ -415,11 +415,14 @@ def demo_login():
 	return redirect(url_for("index") + '?whitelist=false')
 			
 def logout():
-	# Clear out guests if demo account
+	# Clear out guests and checkins if demo account
 	cur_user = current_user()
 	if cur_user.demo_mode():
 		guests = Guest.query(Guest.session_id==str(flasklogin.get_session_id())).fetch()
 		for guest in guests:
+			checkins = CheckIn.query(CheckIn.guest_key==guest.key).fetch()
+			for checkin in checkins:
+				checkin.key.delete()
 			guest.key.delete()
 	# Logs out User
 	logout_account()
