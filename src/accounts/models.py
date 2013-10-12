@@ -1,10 +1,5 @@
 from google.appengine.ext import ndb
-from google.appengine.api import users
-from google.appengine.api.datastore import Key
-from datetime import datetime,timedelta
 from flaskext.login import AnonymousUser
-from werkzeug.security import generate_password_hash, check_password_hash
-import logging
 
 class UserAccount(ndb.Model):
 	"""Stored information about a User"""

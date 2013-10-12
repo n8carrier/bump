@@ -8,16 +8,21 @@
 
 <style type="text/css">
 	a.alert-link {
-		color: #dd5600;
+		color: #356635;
 		cursor: pointer;
 	}
 	
 	a.alert-link:hover {
-		color: #dd5600;
+		color: #356635;
+		text-decoration: underline;
 	}
 	
 	.waitlist-cell {
 		vertical-align:middle !important;
+	}
+	
+	.quickadd-cell {
+		padding-right:20px
 	}
 </style>
 
@@ -91,11 +96,12 @@
 	
 	function hide_undo_message() {
 		$("#undoMessage").hide();
+		// TODO: Once the undo message is hidden, the row should be removed
 		return false;
 	}
 	
 	function checkIn(checkinID, firstName, lastName, button) {
-	// Check in item user is lending
+	// Check in guest
 		$.ajax({
 			url: "/checkin/" + checkinID,
 			type: 'GET',
@@ -236,10 +242,121 @@
 				data: {'current-wait': $("#currentWait").val()},
 				cache: false
 			})
+		$("#quickAddWaitEstimate").val($("#currentWait").val());
 	}
 	
-	// Look at this when building the continuous refresh function: http://stackoverflow.com/questions/1760250/how-to-tell-if-browser-tab-is-active
-	// We don't want to keep refreshing if the window is not in focus.
+	function togglePreferred() {
+		if($('input[name=preferredContact]:radio:checked').val()=="sms") {
+			$("#quickAddContactLabel").text("Phone Number");
+			$("#quickAddContact").attr("type","tel");
+			$("#quickAddContact").attr("placeholder","e.g., 801-555-5555");
+		} else if($('input[name=preferredContact]:radio:checked').val()=="email") {
+			$("#quickAddContactLabel").text("Email Address");
+			$("#quickAddContact").attr("type","email");
+			$("#quickAddContact").attr("placeholder","e.g., john@example.com");
+		}
+		$("#quickAddContact").select();
+	}
+	
+	function quickAdd() { // TODO: incorporate validate
+		$("#validationError").hide();
+		$("#addButton").attr("disabled", "disabled");
+		$.ajax({
+			url:"/quick_add",
+			type: 'POST',
+			data: $("#quickAddForm").serialize(),
+			success: function(data) {
+				$("#submitError").hide();
+				//set timer for success message and reset the form to its default
+				refreshManage();
+				window.setTimeout(function() { formDefault() }, 1000);
+				$("#submitSuccess").show().delay(1000).fadeOut();
+			},
+			error: function() {
+				$("#submitError").show();
+				$("#submitSuccess").hide();
+				$("#addButton").removeAttr("disabled");
+			}
+		});
+	}
+	
+	function formDefault() {
+		$("#quickAddName").val('');
+		$("#quickAddPartySize").val('2');
+		$("#quickAddWaitEstimate").val($("#currentWait").val());
+		$("#quickAddContactSMS").prop('checked', false);
+		$("#quickAddContactEmail").prop('checked', false);
+		$("#quickAddContact").val('');
+		$("#addButton").removeAttr("disabled");
+		$("#optIn").prop('checked', false);
+	}
+	
+	//submit the form when enter is pressed
+	$(function() {
+		$('form').each(function() {
+			$(this).find('input').keypress(function(e) {
+				// Enter pressed?
+				if(e.which == 10 || e.which == 13) {
+					this.form.submit();
+				}
+			});
+
+			$(this).find('input[type=submit]').hide();
+		});
+	});
+	
+	function refreshManage() {
+		// TODO: Should we get rid of all hidden rows?
+		$("#refreshButton").css("disabled"); // TODO: Not sure why this or the next doesn't work (the class is never added)
+		$("#refreshIcon").css("icon-spin");
+		$.ajax({
+			url: "/refresh_manage",
+			type: 'GET',
+			success: function(data) {
+				if(data.length>2) {
+					$("#no-guests").hide();
+					$("#queue-header").show();
+				}
+				$.each(JSON.parse(data), function(index, guest){
+					// Store variables and replace NULLs with empty strings
+					var firstName = guest.firstName;
+					var lastName = guest.lastName;
+					var sms = guest.sms;
+					var email = guest.email;
+					if(!firstName) {
+						firstName = ''
+					}
+					if(!lastName) {
+						lastName = ''
+					}
+					if(!sms) {
+						sms = ''
+					}
+					if(!email) {
+						email = ''
+					}
+					if($("#row-" + guest.guest_ID).length != 0) {
+						// Row exists, check if it's hidden, then update (if it's hidden but in the refresh data, it's been re-checked in... this is a terrible edge case, shouldn't have wasted my time.)
+						if($("#row-" + guest.guest_ID).is(":hidden")) {
+							$("#row-" + guest.guest_ID).html('<td class="waitlist-cell">' + firstName + ' ' + lastName + '<br>&nbsp;&nbsp;&nbsp;<em>' + sms + email + '</em></td><td class="waitlist-cell"><input type="number" class="partySize" id="partySize-' + guest.checkin_ID + '" min="1" value="' + guest.partySize + '" style="margin-bottom:0px;width:40px"></td></td><td class="waitlist-cell">' + guest.arrival_time + '</td><td class="waitlist-cell"><p style="margin-bottom:0px"><input type="number" name="waitEstimate" id="waitEstimate-' + guest.checkin_ID + '" min="1" value="' + guest.wait_estimate + '" style="margin-bottom:0px;width:40px">&nbsp;&nbsp;min</p></td><td class="waitlist-cell" id="target-' + guest.checkin_ID + '">' + guest.target_time + '</td><td class="waitlist-cell" style="text-align:center"><a class="btn btn-primary btn-small" onclick="sendDefaultMsg(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-envelope-alt"></i>&nbsp;&nbsp;Default</a><a class="btn btn-primary btn-inverse btn-small" style="margin-left:4px;margin-right:4px" onclick="customMsgModal(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-edit"></i>&nbsp;&nbsp;Custom</a><a class="btn btn-success btn-small" onclick="checkIn(\'' + guest.checkin_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-ok"></i>&nbsp;&nbsp;Check In</a></td>');
+							$("#row-" + guest.guest_ID).show();
+						}
+					} else {
+						$('#guestQueue tr:last').after('<tr id="row-' + guest.guest_ID + '"><td class="waitlist-cell">' + firstName + ' ' + lastName + '<br>&nbsp;&nbsp;&nbsp;<em>' + sms + email + '</em></td><td class="waitlist-cell"><input type="number" class="partySize" id="partySize-' + guest.checkin_ID + '" min="1" value="' + guest.partySize + '" style="margin-bottom:0px;width:40px"></td></td><td class="waitlist-cell">' + guest.arrival_time + '</td><td class="waitlist-cell"><p style="margin-bottom:0px"><input type="number" name="waitEstimate" id="waitEstimate-' + guest.checkin_ID + '" min="1" value="' + guest.wait_estimate + '" style="margin-bottom:0px;width:40px">&nbsp;&nbsp;min</p></td><td class="waitlist-cell" id="target-' + guest.checkin_ID + '">' + guest.target_time + '</td><td class="waitlist-cell" style="text-align:center"><a class="btn btn-primary btn-small" onclick="sendDefaultMsg(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-envelope-alt"></i>&nbsp;&nbsp;Default</a><a class="btn btn-primary btn-inverse btn-small" style="margin-left:4px;margin-right:4px" onclick="customMsgModal(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-edit"></i>&nbsp;&nbsp;Custom</a><a class="btn btn-success btn-small" onclick="checkIn(\'' + guest.checkin_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-ok"></i>&nbsp;&nbsp;Check In</a></td></tr>');
+					}
+				});
+			}
+		});
+		$("#refreshButton").removeClass("disabled");
+		$("#refreshIcon").removeClass("icon-spin");
+	}
+	
+	// refresh every 30 seconds
+	// TODO: Don't continue refreshing if the window is not in focus. http://stackoverflow.com/questions/1760250/how-to-tell-if-browser-tab-is-active
+	window.setInterval(function(){
+		refreshManage();
+	}, 30000)
+	
 	
 </script>
 
@@ -308,10 +425,13 @@
 	
 	<div class="span12">
 		<div class="row">
-			<div class="span6">
+			<div class="span3">
 				<h3>Manage Waitlist</h3>
 			</div>
-			<div class="span6">
+			<div class="span1">
+				<a id="refreshButton" class="btn btn-large" onclick="refreshManage()" style="margin-left:-50px;margin-top:6px;"><i id="refreshIcon" class="icon-refresh icon-medium"></i></a>
+			</div>
+			<div class="span8">
 				<p class="text-right" style="margin-top:15px">Current Wait Time (in minutes):&nbsp;&nbsp;<input type="number" name="currentWait" id="currentWait" value="{{ cur_user.default_wait }}" style="width:40px"></p>
 			</div>
 		</div>
@@ -331,8 +451,8 @@
 						<td colspan="4">There are no guests in the queue. Once guests have signed in, they'll show up here.</td>
 					</tr>
 				{% for guest in guestlist %}
-					<tr id="row-{{guest.id}}">
-						<td class="waitlist-cell">{{guest.firstName}} {{guest.lastName}}
+					<tr id="row-{{guest.guest_ID}}">
+						<td class="waitlist-cell">{{guest.firstName}}{% if guest.lastName %} {{guest.lastName}}{% endif %}
 						<br>&nbsp;&nbsp;&nbsp;<em>{% if guest.sms %}{{guest.sms}}{% endif %}{% if guest.email%}{{guest.email}}{% endif %}</em></td>
 						<td class="waitlist-cell">
 							<input type="number" class="partySize" id="partySize-{{guest.checkin_ID}}" min="1" value="{{guest.partySize}}" style="margin-bottom:0px;width:40px"></td>
@@ -344,10 +464,10 @@
 						</td>
 						<td class="waitlist-cell" id="target-{{guest.checkin_ID}}">{{guest.target_time.strftime('%I:%M %p')}}</td>
 						<td class="waitlist-cell" style="text-align:center">
-							<a class="btn btn-primary btn-small" onclick="sendDefaultMsg('{{guest.id}}','{{guest.firstName}}','{{guest.lastName}}',this)">
+							<a class="btn btn-primary btn-small" onclick="sendDefaultMsg('{{guest.guest_ID}}','{{guest.firstName}}','{{guest.lastName}}',this)">
 								<i class="icon-envelope-alt"></i>&nbsp;&nbsp;Default
 							</a>
-							<a class="btn btn-primary btn-inverse btn-small" onclick="customMsgModal('{{guest.id}}','{{guest.firstName}}','{{guest.lastName}}',this)">
+							<a class="btn btn-primary btn-inverse btn-small" onclick="customMsgModal('{{guest.guest_ID}}','{{guest.firstName}}','{{guest.lastName}}',this)">
 								<i class="icon-edit"></i>&nbsp;&nbsp;Custom
 							</a>
 							<a class="btn btn-success btn-small" onclick="checkIn('{{guest.checkin_ID}}','{{guest.firstName}}','{{guest.lastName}}',this)">
@@ -396,7 +516,77 @@
 					<a id="tour6prev" class="btn btn-small" style="margin-top:4px" onclick="tour5()">&#x25c0;</a><a id="tour6next" class="btn btn-small" style="margin-right: -160px;margin-left: 4px; margin-top:4px" onclick="tour7()">&#x25b6;</a>
 				</div>
 			</div>
-          </table>
+		</table>
+		<h4 style="padding-top:20px">Quick Add</h4>
+		<form id="quickAddForm" action="javascript:quickAdd()">
+			<fieldset>
+				<table>
+					<tbody>
+						<tr>
+							<td class="quickadd-cell">
+								<label for="quickAddName">Guest Name</label>
+								<input type="text" class="input-medium" name="quickAddName" id="quickAddName" placeholder="e.g., John">
+							</td>
+							<td class="quickadd-cell">
+								<label for="quickAddPartySize">Party Size</label>
+								<input type="number" class="partySize" id="quickAddPartySize" name="quickAddPartySize" min="1" value="2" style="width:40px"></td>
+							</td>
+							<td class="quickadd-cell">
+								<label for="quickAddWaitEstimate">Estimated Wait</label>
+								<p>
+									<input type="number" name="quickAddWaitEstimate" id="quickAddWaitEstimate" min="1" value="{{ cur_user.default_wait }}" style="margin-bottom:0px;width:40px">&nbsp;&nbsp;min
+								</p>
+							</td>
+							<td style="padding-right:4px">
+								<label style="margin-top:-10px" onclick="$('#quickAddContactSMS').prop('checked', false);$('#quickAddContactEmail').prop('checked', false);">Contact</label>
+								<div class="radio">
+									<label style="margin-top:10px">
+										<input type="radio" name="preferredContact" id="quickAddContactSMS" value="sms" onClick="togglePreferred()">SMS
+									</label>
+								</div>
+							</td>
+							<td class="quickadd-cell">
+								<label style="margin-top:-10px" onclick="$('#quickAddContactSMS').prop('checked', false);$('#quickAddContactEmail').prop('checked', false);">(Optional)</label>
+								<div class="radio" style="margin-left:4px">
+									<label style="margin-top:10px">
+										<input type="radio" name="preferredContact" id="quickAddContactEmail" value="email" onClick="togglePreferred()">Email
+									</label>
+								</div>
+							</td>
+							<td class="quickadd-cell">
+								<label id="quickAddContactLabel" for="quickAddContact">Phone or Email</label>
+								<input type="text" class="input-large" name="quickAddContact" id="quickAddContact" placeholder="e.g., 801-555-5555">
+							</td>
+							<td class="quickadd-cell">
+								<label id="quickAddOptInLabel" for="quickAddOptIn" style="margin-top:-10px">Opt In</label>
+								<input type="checkbox" id="quickAddOptIn" name="quickAddOptIn"><label id="receivePromosText" style="margin-top: -16px;margin-left: 20px;" for="quickAddOptIn">Receive Promos</span>
+							</td>
+							<td class="quickadd-cell">
+								<a class="btn btn-inverse btn-small" id="addButton" onclick="quickAdd()" style="margin-top:15px">
+									<i class="icon-plus"></i>&nbsp;&nbsp;Add to Waitlist
+								</a>
+							</td>
+						</tr>
+						<tr>
+							<td id="submitAlertsCell" colspan="5"><!--colspan must be adjusted to requiredColSpan of alert being shown-->
+								<div id="contactError" class="alert alert-error" style="display:none;" requiredColSpan="8">
+									<strong>Unable to Add Guest</strong>&nbsp; SMS or Email is selected, but no SMS or Email is provided. If the guest does not wish to receive a notification, please deselect a contact type by clicking the "Contact (Optional)" label.
+								</div>
+								<div id="validationError" class="alert alert-error" style="display:none;" requiredColSpan="4">
+									<strong>Unable to Add Guest</strong>&nbsp; Please fix the errors and try again.
+								</div>
+								<div id="submitError" class="alert alert-error" style="display:none;" requiredColSpan="5">
+									<strong>Unable to Add Guest</strong>&nbsp; Something went wrong. Please refresh the page and try again.
+								</div>
+								<div id="submitSuccess" class="alert alert-success" style="display:none;" requiredColSpan="4">
+									Guest has been successfully added to the waitlist.
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</fieldset>
+		</form>
 	</div>
     
 </div>

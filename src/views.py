@@ -1,6 +1,6 @@
 # Views
 from google.appengine.api import users
-from flask import Response, jsonify, render_template, request, url_for, redirect, flash
+from flask import Response, jsonify, render_template, request, url_for, redirect, flash, json
 from flaskext.login import login_required, login_user, logout_user
 from flaskext import login as flasklogin
 from googlevoice.voice import Voice
@@ -110,52 +110,12 @@ def guest_signin():
 			except:
 				optIn = False
 			# Add guest to database
-			# First, check if guest is already in databases
-			if cur_user.demo_mode():
-				session_id = str(flasklogin.get_session_id())
-			else:
-				session_id = None
-			if preferredContact == 'sms':
-				if cur_user.demo_mode:
-					guest = Guest.query(Guest.sms_number==smsNumber,Guest.restaurant_key==cur_user.key,Guest.session_id==session_id).get()
-				else:
-					guest = Guest.query(Guest.sms_number==smsNumber,Guest.restaurant_key==cur_user.key).get()
-			elif preferredContact == 'email':
-				if cur_user.demo_mode:
-					guest = Guest.query(Guest.email==email,Guest.restaurant_key==cur_user.key,Guest.session_id==session_id).get()
-				else:
-					guest = Guest.query(Guest.email==email,Guest.restaurant_key==cur_user.key).get()
-			if guest:
-				# Update Guest in case info has changed
-				guest.first_name = firstName
-				guest.last_name = lastName
-				guest.preferred_contact = preferredContact
-				if not optIn:
-					# If they've opted in previously and they didn't check now, leave opted in
-					guest.opt_in = optIn
-				guest.put()
-				# See if guest is already in queue, if so overwrite
-				checkin = CheckIn.query(CheckIn.guest_key==guest.key, CheckIn.restaurant_key==cur_user.key, CheckIn.in_queue==True).get()
-				if checkin:
-					checkin.last_name=lastName
-					checkin.first_name=firstName
-					checkin.signin_time=datetime.datetime.now()
-					checkin.wait_estimate=cur_user.default_wait
-				else:
-					# Sign in Guest
-					checkin = CheckIn(guest_key=guest.key, restaurant_key=cur_user.key, first_name=firstName, last_name=lastName, in_queue=True, party_size=2, signin_time=datetime.datetime.now(), wait_estimate=cur_user.default_wait)
-			else:
-				# Create New Guest
-				if cur_user.demo_mode:
-					guest = Guest(first_name=firstName, last_name=lastName, sms_number = smsNumber, email=email, preferred_contact=preferredContact, opt_in=optIn, restaurant_key=cur_user.key, session_id=session_id)
-				else:
-					guest = Guest(first_name=firstName, last_name=lastName, sms_number = smsNumber, email=email, preferred_contact=preferredContact, opt_in=optIn, restaurant_key=cur_user.key)
-				if cur_user.demo_mode():
-					guest.session_id = str(flasklogin.get_session_id())
-				guest.put()
-				# Sign in Guest
-				checkin = CheckIn(guest_key=guest.key, restaurant_key=cur_user.key, first_name=firstName, last_name=lastName, in_queue=True, party_size=2, signin_time =datetime.datetime.now(), wait_estimate=cur_user.default_wait)
-			checkin.put()
+			guest = Guest.add_guest(firstName=firstName,lastName=lastName,preferredContact=preferredContact,smsNumber=smsNumber,email=email,optIn=optIn)
+			if not guest:
+				return "Error"
+			checkin = CheckIn.check_in_guest(guest)
+			if not checkin:
+				return "Error"
 			if demo == "continue":
 				return redirect(url_for("manage") + '?demo=continue')
 			return "Success"
@@ -182,9 +142,9 @@ def manage():
 	guestlist = []
 	if cur_user:
 	# Create a list of guests (as dicts) within the user's library
-		for record in cur_user.get_checkedin_guests():
+		for checkin in cur_user.get_checkedin_guests():
 			# Includes session_id, demo account (include only if session_id matches 
-			guest = Guest.get_by_id(record.guest_key.id())
+			guest = Guest.get_by_id(checkin.guest_key.id())
 			if cur_user.demo_mode():
 				demo_session_id = str(flasklogin.get_session_id())
 			if "session_id" not in guest.to_dict():
@@ -192,17 +152,17 @@ def manage():
 				guest.session_id = None
 			if not guest.session_id or guest.session_id == demo_session_id:
 				checkedinGuest = {}
-				checkedinGuest["id"] = record.guest_key.id()
-				checkedinGuest["checkin_ID"] = record.key.id()
+				checkedinGuest["guest_ID"] = checkin.guest_key.id()
+				checkedinGuest["checkin_ID"] = checkin.key.id()
 				checkedinGuest["firstName"] = guest.first_name
 				checkedinGuest["lastName"] = guest.last_name
 				checkedinGuest["sms"] = guest.sms_number
 				checkedinGuest["email"] = guest.email
-				checkedinGuest["partySize"] = record.party_size
-				arrival_time = record.signin_time - timedelta(hours=6)
+				checkedinGuest["partySize"] = checkin.party_size
+				arrival_time = checkin.signin_time - timedelta(hours=6)
 				checkedinGuest["arrival_time"] = arrival_time
-				checkedinGuest["wait_estimate"] = record.wait_estimate
-				checkedinGuest["target_time"] = arrival_time + timedelta(minutes=record.wait_estimate)
+				checkedinGuest["wait_estimate"] = checkin.wait_estimate
+				checkedinGuest["target_time"] = arrival_time + timedelta(minutes=checkin.wait_estimate)
 				guestlist.append(checkedinGuest)
 	# Sort guestlist by arrival time (oldest on top)
 	guestlist.sort(key=lambda guest: guest["arrival_time"])
@@ -230,6 +190,78 @@ def update_wait_estimate(checkin_ID):
 		target_seating_time = checkin.signin_time - timedelta(hours=6) + timedelta(minutes=checkin.wait_estimate)
 		checkin.put()
 	return jsonify({"target": target_seating_time.strftime('%I:%M %p')})
+
+def quick_add():
+	cur_user = current_user()
+	if not cur_user:
+		logging.info("there is not a user logged in")
+		return "Error"
+	else:
+		# Create/Update Guest and Create New Checkin, adding to queue
+		firstName = request.form["quickAddName"]
+		try:
+			preferredContact = request.form["preferredContact"]
+		except:
+			preferredContact = None
+		partySize = int(request.form["quickAddPartySize"])
+		waitEstimate = int(request.form["quickAddWaitEstimate"])
+		if preferredContact == 'sms':
+			smsNumber = request.form["quickAddContact"]
+			email = None
+		elif preferredContact == 'email':
+			email = request.form["quickAddContact"]
+			smsNumber = None
+		else:
+			email = None
+			smsNumber = None
+		try:
+			if request.form["quickAddOptIn"] == 'on':
+				optIn = True
+			else:
+				optIn = False
+		except:
+			optIn = False
+		guest = Guest.add_guest(firstName=firstName,lastName=None,preferredContact=preferredContact,smsNumber=smsNumber,email=email,optIn=optIn)
+		if not guest:
+			return "Error"
+		checkin = CheckIn.check_in_guest(guest,partySize,waitEstimate)
+		if not checkin:
+			return "Error"
+	return "Success"
+
+def refresh_manage():
+	cur_user = current_user()
+	waitlist = []
+	if cur_user:
+	# Create a list of guests (as dicts) within the user's library
+		for checkin in cur_user.get_checkedin_guests():
+			# Includes session_id, demo account (include only if session_id matches 
+			guest = Guest.get_by_id(checkin.guest_key.id())
+			if cur_user.demo_mode():
+				demo_session_id = str(flasklogin.get_session_id())
+			if "session_id" not in guest.to_dict():
+				# Fix for old data
+				guest.session_id = None
+			if not guest.session_id or guest.session_id == demo_session_id:
+				checkedinGuest = {}
+				checkedinGuest["guest_ID"] = checkin.guest_key.id()
+				checkedinGuest["checkin_ID"] = checkin.key.id()
+				checkedinGuest["firstName"] = guest.first_name
+				checkedinGuest["lastName"] = guest.last_name
+				checkedinGuest["sms"] = guest.sms_number
+				checkedinGuest["email"] = guest.email
+				checkedinGuest["partySize"] = checkin.party_size
+				arrival_time = checkin.signin_time - timedelta(hours=6)
+				checkedinGuest["arrival_time"] = arrival_time.strftime('%I:%M %p')
+				checkedinGuest["wait_estimate"] = checkin.wait_estimate
+				target_time = arrival_time + timedelta(minutes=checkin.wait_estimate)
+				checkedinGuest["target_time"] = target_time.strftime('%I:%M %p')
+				waitlist.append(checkedinGuest)
+		# Sort guestlist by arrival time (oldest on top)
+		waitlist.sort(key=lambda guest: guest["arrival_time"])
+		jsondump = json.dumps(waitlist)
+		return jsondump
+	return "User Not Logged In"
 
 def update_current_wait():
 	cur_user = current_user()

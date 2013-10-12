@@ -83,6 +83,13 @@ app.add_url_rule('/update_wait_estimate/<checkin_ID>',view_func=views.update_wai
 # Updates the current wait time
 app.add_url_rule('/update_current_wait', view_func=views.update_current_wait,methods=['GET','POST'])
 
+# Quick Add (Manage page)
+app.add_url_rule('/quick_add', view_func=views.quick_add,methods=['GET','POST'])
+
+# Refresh Manage
+app.add_url_rule('/refresh_manage', view_func=views.refresh_manage,methods=['GET'])
+
+
 ##################################### Error Handling ####################################
 ## Error Handlers
 @app.errorhandler(404)
