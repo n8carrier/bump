@@ -200,9 +200,14 @@ def quick_add():
 		# Create/Update Guest and Create New Checkin, adding to queue
 		firstName = request.form["quickAddName"]
 		try:
+			# Not used anymore, but if neither SMS or Email is checked, this gives error
 			preferredContact = request.form["preferredContact"]
 		except:
 			preferredContact = None
+		# Check to see if a phone number or email was given
+		quickAddContact = request.form["quickAddContact"]
+		if quickAddContact == '':
+			preferredContact = None # This causes email and smsNumber to be set to None later (even though it's passing an empty string)
 		partySize = int(request.form["quickAddPartySize"])
 		waitEstimate = int(request.form["quickAddWaitEstimate"])
 		if preferredContact == 'sms':
@@ -212,6 +217,7 @@ def quick_add():
 			email = request.form["quickAddContact"]
 			smsNumber = None
 		else:
+			# email or smsNumber could be empty string, but set to none
 			email = None
 			smsNumber = None
 		try:

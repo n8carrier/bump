@@ -41,7 +41,10 @@ class Guest(ndb.Model):
 		else:
 			session_id = None
 		# Check to see if guest is already in datastore
-		if preferredContact == 'sms':
+		if not smsNumber and not email:
+			# If both are blank there's no way to know the name matches any other instance of the name, so create a new guest.
+			guest = None
+		elif preferredContact == 'sms':
 			if cur_user.demo_mode():
 				guest = Guest.query(Guest.sms_number==smsNumber,Guest.restaurant_key==cur_user.key,Guest.session_id==session_id).get()
 			else:

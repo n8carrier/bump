@@ -261,21 +261,25 @@
 	function quickAdd() { // TODO: incorporate validate
 		$("#validationError").hide();
 		$("#addButton").attr("disabled", "disabled");
+		$("#refreshButton").addClass("disabled");
+		$("#refreshIcon").addClass("icon-spin");
 		$.ajax({
 			url:"/quick_add",
 			type: 'POST',
 			data: $("#quickAddForm").serialize(),
 			success: function(data) {
 				$("#submitError").hide();
-				//set timer for success message and reset the form to its default
+				// Refresh Queue, reset form, and show success message for 2 seconds
 				refreshManage();
-				window.setTimeout(function() { formDefault() }, 1000);
-				$("#submitSuccess").show().delay(1000).fadeOut();
+				formDefault();
+				$("#submitSuccess").show().delay(2000).fadeOut();
 			},
 			error: function() {
 				$("#submitError").show();
 				$("#submitSuccess").hide();
 				$("#addButton").removeAttr("disabled");
+				$("#refreshButton").removeClass("disabled");
+				$("#refreshIcon").removeClass("icon-spin");
 			}
 		});
 	}
@@ -284,8 +288,11 @@
 		$("#quickAddName").val('');
 		$("#quickAddPartySize").val('2');
 		$("#quickAddWaitEstimate").val($("#currentWait").val());
-		$("#quickAddContactSMS").prop('checked', false);
 		$("#quickAddContactEmail").prop('checked', false);
+		$("#quickAddContactSMS").prop('checked', true);
+		$("#quickAddContactLabel").text("Phone Number");
+		$("#quickAddContact").attr("type","tel");
+		$("#quickAddContact").attr("placeholder","e.g., 801-555-5555");
 		$("#quickAddContact").val('');
 		$("#addButton").removeAttr("disabled");
 		$("#optIn").prop('checked', false);
@@ -307,8 +314,8 @@
 	
 	function refreshManage() {
 		// TODO: Should we get rid of all hidden rows?
-		$("#refreshButton").css("disabled"); // TODO: Not sure why this or the next doesn't work (the class is never added)
-		$("#refreshIcon").css("icon-spin");
+		$("#refreshButton").addClass("disabled");
+		$("#refreshIcon").addClass("icon-spin");
 		$.ajax({
 			url: "/refresh_manage",
 			type: 'GET',
@@ -338,11 +345,25 @@
 					if($("#row-" + guest.guest_ID).length != 0) {
 						// Row exists, check if it's hidden, then update (if it's hidden but in the refresh data, it's been re-checked in... this is a terrible edge case, shouldn't have wasted my time.)
 						if($("#row-" + guest.guest_ID).is(":hidden")) {
-							$("#row-" + guest.guest_ID).html('<td class="waitlist-cell">' + firstName + ' ' + lastName + '<br>&nbsp;&nbsp;&nbsp;<em>' + sms + email + '</em></td><td class="waitlist-cell"><input type="number" class="partySize" id="partySize-' + guest.checkin_ID + '" min="1" value="' + guest.partySize + '" style="margin-bottom:0px;width:40px"></td></td><td class="waitlist-cell">' + guest.arrival_time + '</td><td class="waitlist-cell"><p style="margin-bottom:0px"><input type="number" name="waitEstimate" id="waitEstimate-' + guest.checkin_ID + '" min="1" value="' + guest.wait_estimate + '" style="margin-bottom:0px;width:40px">&nbsp;&nbsp;min</p></td><td class="waitlist-cell" id="target-' + guest.checkin_ID + '">' + guest.target_time + '</td><td class="waitlist-cell" style="text-align:center"><a class="btn btn-primary btn-small" onclick="sendDefaultMsg(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-envelope-alt"></i>&nbsp;&nbsp;Default</a><a class="btn btn-primary btn-inverse btn-small" style="margin-left:4px;margin-right:4px" onclick="customMsgModal(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-edit"></i>&nbsp;&nbsp;Custom</a><a class="btn btn-success btn-small" onclick="checkIn(\'' + guest.checkin_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-ok"></i>&nbsp;&nbsp;Check In</a></td>');
+							$("#row-" + guest.guest_ID).html('<td class="waitlist-cell">' + firstName + ' ' + lastName + '<br>&nbsp;&nbsp;&nbsp;<em>' + sms + email + '</em></td><td class="waitlist-cell"><input type="number" class="partySize" id="partySize-' + guest.checkin_ID + '" min="1" value="' + guest.partySize + '" style="margin-bottom:0px;width:40px"></td></td><td class="waitlist-cell">' + guest.arrival_time + '</td><td class="waitlist-cell"><p style="margin-bottom:0px"><input type="number" name="waitEstimate" id="waitEstimate-' + guest.checkin_ID + '" min="1" value="' + guest.wait_estimate + '" style="margin-bottom:0px;width:40px">&nbsp;&nbsp;min</p></td><td class="waitlist-cell" id="target-' + guest.checkin_ID + '">' + guest.target_time + '</td><td class="waitlist-cell" style="text-align:center"><a class="btn btn-primary btn-small" id="default-' + guest.guest_ID + '" onclick="sendDefaultMsg(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-envelope-alt"></i>&nbsp;&nbsp;Default</a><a class="btn btn-primary btn-inverse btn-small" style="margin-left:4px;margin-right:4px" id="custom-' + guest.guest_ID + '" onclick="customMsgModal(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-edit"></i>&nbsp;&nbsp;Custom</a><a class="btn btn-success btn-small" id="checkin-' + guest.guest_ID + '" onclick="checkIn(\'' + guest.checkin_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-ok"></i>&nbsp;&nbsp;Check In</a></td>');
 							$("#row-" + guest.guest_ID).show();
+							if(!sms && !email) {
+								// No contact info, disable buttons
+								$("#default-" + guest.guest_ID).addClass("Disabled");
+								$("#default-" + guest.guest_ID).prop("unclick",null);
+								$("#custom-" + guest.guest_ID).addClass("Disabled");
+								$("#custom-" + guest.guest_ID).prop("unclick",null);
+							}
 						}
 					} else {
-						$('#guestQueue tr:last').after('<tr id="row-' + guest.guest_ID + '"><td class="waitlist-cell">' + firstName + ' ' + lastName + '<br>&nbsp;&nbsp;&nbsp;<em>' + sms + email + '</em></td><td class="waitlist-cell"><input type="number" class="partySize" id="partySize-' + guest.checkin_ID + '" min="1" value="' + guest.partySize + '" style="margin-bottom:0px;width:40px"></td></td><td class="waitlist-cell">' + guest.arrival_time + '</td><td class="waitlist-cell"><p style="margin-bottom:0px"><input type="number" name="waitEstimate" id="waitEstimate-' + guest.checkin_ID + '" min="1" value="' + guest.wait_estimate + '" style="margin-bottom:0px;width:40px">&nbsp;&nbsp;min</p></td><td class="waitlist-cell" id="target-' + guest.checkin_ID + '">' + guest.target_time + '</td><td class="waitlist-cell" style="text-align:center"><a class="btn btn-primary btn-small" onclick="sendDefaultMsg(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-envelope-alt"></i>&nbsp;&nbsp;Default</a><a class="btn btn-primary btn-inverse btn-small" style="margin-left:4px;margin-right:4px" onclick="customMsgModal(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-edit"></i>&nbsp;&nbsp;Custom</a><a class="btn btn-success btn-small" onclick="checkIn(\'' + guest.checkin_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-ok"></i>&nbsp;&nbsp;Check In</a></td></tr>');
+						$('#guestQueue tr:last').after('<tr id="row-' + guest.guest_ID + '"><td class="waitlist-cell">' + firstName + ' ' + lastName + '<br>&nbsp;&nbsp;&nbsp;<em>' + sms + email + '</em></td><td class="waitlist-cell"><input type="number" class="partySize" id="partySize-' + guest.checkin_ID + '" min="1" value="' + guest.partySize + '" style="margin-bottom:0px;width:40px"></td></td><td class="waitlist-cell">' + guest.arrival_time + '</td><td class="waitlist-cell"><p style="margin-bottom:0px"><input type="number" name="waitEstimate" id="waitEstimate-' + guest.checkin_ID + '" min="1" value="' + guest.wait_estimate + '" style="margin-bottom:0px;width:40px">&nbsp;&nbsp;min</p></td><td class="waitlist-cell" id="target-' + guest.checkin_ID + '">' + guest.target_time + '</td><td class="waitlist-cell" style="text-align:center"><a class="btn btn-primary btn-small" id="default-' + guest.guest_ID + '" onclick="sendDefaultMsg(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-envelope-alt"></i>&nbsp;&nbsp;Default</a><a class="btn btn-primary btn-inverse btn-small" id="custom-' + guest.guest_ID + '" style="margin-left:4px;margin-right:4px" onclick="customMsgModal(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-edit"></i>&nbsp;&nbsp;Custom</a><a class="btn btn-success btn-small" id="checkin-' + guest.guest_ID + '" onclick="checkIn(\'' + guest.checkin_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-ok"></i>&nbsp;&nbsp;Check In</a></td></tr>');
+						if(!sms && !email) {
+							// No contact info, disable buttons
+							$("#default-" + guest.guest_ID).addClass("disabled");
+							$("#default-" + guest.guest_ID).prop("onclick",null);
+							$("#custom-" + guest.guest_ID).addClass("disabled");
+							$("#custom-" + guest.guest_ID).prop("onclick",null);
+						}
 					}
 				});
 			}
@@ -464,13 +485,13 @@
 						</td>
 						<td class="waitlist-cell" id="target-{{guest.checkin_ID}}">{{guest.target_time.strftime('%I:%M %p')}}</td>
 						<td class="waitlist-cell" style="text-align:center">
-							<a class="btn btn-primary btn-small" onclick="sendDefaultMsg('{{guest.guest_ID}}','{{guest.firstName}}','{{guest.lastName}}',this)">
+							<a class="btn btn-primary btn-small{% if not guest.sms and not guest.email %} disabled{% endif %}" id="default-{{guest.guest_ID}}" onclick="{% if guest.sms or guest.email %}sendDefaultMsg('{{guest.guest_ID}}','{{guest.firstName}}','{{guest.lastName}}',this){% endif %}">
 								<i class="icon-envelope-alt"></i>&nbsp;&nbsp;Default
 							</a>
-							<a class="btn btn-primary btn-inverse btn-small" onclick="customMsgModal('{{guest.guest_ID}}','{{guest.firstName}}','{{guest.lastName}}',this)">
+							<a class="btn btn-primary btn-inverse btn-small{% if not guest.sms and not guest.email %} disabled{% endif %}" id="custom-{{guest.guest_ID}}" onclick="{% if guest.sms or guest.email %}customMsgModal('{{guest.guest_ID}}','{{guest.firstName}}','{{guest.lastName}}',this){% endif %}">
 								<i class="icon-edit"></i>&nbsp;&nbsp;Custom
 							</a>
-							<a class="btn btn-success btn-small" onclick="checkIn('{{guest.checkin_ID}}','{{guest.firstName}}','{{guest.lastName}}',this)">
+							<a class="btn btn-success btn-small" id="checkin-{{guest.guest_ID}}" onclick="checkIn('{{guest.checkin_ID}}','{{guest.firstName}}','{{guest.lastName}}',this)">
 								<i class="icon-ok"></i>&nbsp;&nbsp;Check In
 							</a>
 						</td>
@@ -538,15 +559,15 @@
 								</p>
 							</td>
 							<td style="padding-right:4px">
-								<label style="margin-top:-10px" onclick="$('#quickAddContactSMS').prop('checked', false);$('#quickAddContactEmail').prop('checked', false);">Contact</label>
+								<label style="margin-top:-10px">Contact</label>
 								<div class="radio">
 									<label style="margin-top:10px">
-										<input type="radio" name="preferredContact" id="quickAddContactSMS" value="sms" onClick="togglePreferred()">SMS
+										<input type="radio" name="preferredContact" id="quickAddContactSMS" value="sms" onClick="togglePreferred()" checked>SMS
 									</label>
 								</div>
 							</td>
 							<td class="quickadd-cell">
-								<label style="margin-top:-10px" onclick="$('#quickAddContactSMS').prop('checked', false);$('#quickAddContactEmail').prop('checked', false);">(Optional)</label>
+								<label style="margin-top:-10px">(Optional)</label>
 								<div class="radio" style="margin-left:4px">
 									<label style="margin-top:10px">
 										<input type="radio" name="preferredContact" id="quickAddContactEmail" value="email" onClick="togglePreferred()">Email
@@ -554,7 +575,7 @@
 								</div>
 							</td>
 							<td class="quickadd-cell">
-								<label id="quickAddContactLabel" for="quickAddContact">Phone or Email</label>
+								<label id="quickAddContactLabel" for="quickAddContact">Phone Number</label>
 								<input type="text" class="input-large" name="quickAddContact" id="quickAddContact" placeholder="e.g., 801-555-5555">
 							</td>
 							<td class="quickadd-cell">
@@ -568,17 +589,14 @@
 							</td>
 						</tr>
 						<tr>
-							<td id="submitAlertsCell" colspan="5"><!--colspan must be adjusted to requiredColSpan of alert being shown-->
-								<div id="contactError" class="alert alert-error" style="display:none;" requiredColSpan="8">
-									<strong>Unable to Add Guest</strong>&nbsp; SMS or Email is selected, but no SMS or Email is provided. If the guest does not wish to receive a notification, please deselect a contact type by clicking the "Contact (Optional)" label.
-								</div>
-								<div id="validationError" class="alert alert-error" style="display:none;" requiredColSpan="4">
+							<td id="submitAlertsCell" colspan="6">
+								<div id="validationError" class="alert alert-error" style="display:none;">
 									<strong>Unable to Add Guest</strong>&nbsp; Please fix the errors and try again.
 								</div>
-								<div id="submitError" class="alert alert-error" style="display:none;" requiredColSpan="5">
+								<div id="submitError" class="alert alert-error" style="display:none;">
 									<strong>Unable to Add Guest</strong>&nbsp; Something went wrong. Please refresh the page and try again.
 								</div>
-								<div id="submitSuccess" class="alert alert-success" style="display:none;" requiredColSpan="4">
+								<div id="submitSuccess" class="alert alert-success" style="display:none;">
 									Guest has been successfully added to the waitlist.
 								</div>
 							</td>
