@@ -95,7 +95,10 @@ def guest_signin():
 	if cur_user:
 		if request.method == 'POST':
 			firstName = request.form["firstName"]
-			lastName = request.form["lastName"]
+			try:
+				lastName = request.form["lastName"]
+			except:
+				lastName = None
 			preferredContact = request.form["preferredContact"]
 			if preferredContact == 'sms':
 				smsNumber = functions.digitizePhoneNumber(request.form["smsNumber"])

@@ -296,38 +296,78 @@
 			$("#quickAddContactLabel").text("Phone Number");
 			$("#quickAddContact").attr("type","tel");
 			$("#quickAddContact").attr("placeholder","e.g., (801) 555-5555");
+			$("#quickAddContact").mask("(999) 999-9999");
 		} else if($('input[name=preferredContact]:radio:checked').val()=="email") {
 			$("#quickAddContactLabel").text("Email Address");
 			$("#quickAddContact").attr("type","email");
 			$("#quickAddContact").attr("placeholder","e.g., john@example.com");
+			$("#quickAddContact").unmask();
 		}
 		$("#quickAddContact").select();
 	}
 	
-	function quickAdd() { // TODO: incorporate validate
-		$("#validationError").hide();
-		$("#addButton").attr("disabled", "disabled");
-		$("#refreshButton").addClass("disabled");
-		$("#refreshIcon").addClass("icon-spin");
-		$.ajax({
-			url:"/quick_add",
-			type: 'POST',
-			data: $("#quickAddForm").serialize(),
-			success: function(data) {
-				$("#submitError").hide();
-				// Refresh Queue, reset form, and show success message for 2 seconds
-				refreshManage();
-				formDefault();
-				$("#submitSuccess").show().delay(2000).fadeOut();
-			},
-			error: function() {
-				$("#submitError").show();
-				$("#submitSuccess").hide();
-				$("#addButton").removeAttr("disabled");
-				$("#refreshButton").removeClass("disabled");
-				$("#refreshIcon").removeClass("icon-spin");
+	function quickAdd() {
+		$("#nameValidationError").hide();
+		$("#emailValidationError").hide();
+		$("#smsValidationError").hide();
+		if (validateQuickAddContact() && validateQuickAddName()) {
+			$("#addButton").attr("disabled", "disabled");
+			$("#refreshButton").addClass("disabled");
+			$("#refreshIcon").addClass("icon-spin");
+			$.ajax({
+				url:"/quick_add",
+				type: 'POST',
+				data: $("#quickAddForm").serialize(),
+				success: function(data) {
+					$("#submitError").hide();
+					// Refresh Queue, reset form, and show success message for 2 seconds
+					refreshManage();
+					formDefault();
+					$("#submitSuccess").show().delay(2000).fadeOut();
+				},
+				error: function() {
+					$("#submitError").show();
+					$("#submitSuccess").hide();
+					$("#addButton").removeAttr("disabled");
+					$("#refreshButton").removeClass("disabled");
+					$("#refreshIcon").removeClass("icon-spin");
+				}
+			});
+		}
+	}
+	
+	function validateQuickAddContact() {
+		var validates = false;
+		var contactInfo = $("#quickAddContact").val();
+		
+		// If it's blank then it's fine
+		if($("#quickAddContact").val()=="") {
+			validates = true;
+		} else {
+			if($('input[name=preferredContact]:radio:checked').val()=="sms") {
+				if(/\(\d{3}\) \d{3}-\d{4}|\d{10}/.test(contactInfo)) {
+					validates = true;
+				} else {
+					$("#smsValidationError").show();
+				}
+			} else if($('input[name=preferredContact]:radio:checked').val()=="email") { 
+				if(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/.test(contactInfo)) {
+					validates = true;
+				} else {
+					$("#emailValidationError").show();
+				}
 			}
-		});
+		}
+		return validates;
+	}
+	
+	function validateQuickAddName() {
+		if ($("#quickAddName").val()=="") {
+			$("#nameValidationError").show();
+			return false;
+		} else {
+			return true;
+		}
 	}
 	
 	function formDefault() {
@@ -664,8 +704,14 @@
 						</tr>
 						<tr>
 							<td id="submitAlertsCell" colspan="6">
-								<div id="validationError" class="alert alert-error" style="display:none;">
-									<strong>Unable to Add Guest</strong>&nbsp; Please fix the errors and try again.
+								<div id="smsValidationError" class="alert alert-error" style="display:none;">
+									<strong>Unable to Add Guest</strong>&nbsp; Please enter a valid phone number (e.g., (801) 555-5555).
+								</div>
+								<div id="emailValidationError" class="alert alert-error" style="display:none;">
+									<strong>Unable to Add Guest</strong>&nbsp; Please enter a valid email address (e.g., john.doe@example.com).
+								</div>
+								<div id="nameValidationError" class="alert alert-error" style="display:none;">
+									<strong>Unable to Add Guest</strong>&nbsp; Please include a guest name.
 								</div>
 								<div id="submitError" class="alert alert-error" style="display:none;">
 									<strong>Unable to Add Guest</strong>&nbsp; Something went wrong. Please refresh the page and try again.

@@ -59,13 +59,10 @@
 	}
 	
 	function submit() {
-	
-		//validate input fields
-		var valid = validateContactInfo();
-		
-		if(valid) { // TODO: incorporate validate
+		if(validateContactInfo() && validateName()) {
 			$("#smsValidationError").hide();
 			$("#emailValidationError").hide();
+			$("#nameValidationError").hide();
 			$("#submitButton").attr("disabled", "disabled");
 			$.ajax({
 				url:"/guest-signin{% if tour=='continue' %}?tour=continue{% endif %}",
@@ -129,35 +126,17 @@
 			} else {
 				$("#emailValidationError").show();
 			}
-		}
-		//code from old app
-		/*
-		var validateNames = ["submitterName","submitterEmail","issueName","issueType","issueDescription"]
-		
-		// Test that each field to see if it has at least one letter or number
-		for (var i = 0; i < validateNames.length; i++) {	
-			var validates = true;
-			var reName = /\w/;
-			if(!reName.test($("#" + validateNames[i]).val())) {
-				validates = false;
-				$("#" + validateNames[i]).parent().removeClass("success").addClass("error");
-				$("#" + validateNames[i] + "Help").show();
-			}
-			else {
-				$("#" + validateNames[i]).parent().removeClass("error").addClass("success");
-				$("#" + validateNames[i] + "Help").hide();
-				// Test that the issue description does not exceed 2000 characters
-				if(validateNames[i]=="issueDescription") {
-					if($("#issueDescription").val().length > 2000) {
-						validates = false;
-						$("#issueDescription").parent().removeClass("success").addClass("error");
-						$("#issueDescriptionHelp").show();
-					}
-				}
-			}
-		}*/
-		
+		}		
 		return validates;
+	}
+	
+	function validateName() {
+		if ($("#firstName").val()=="") {
+			$("#nameValidationError").show();
+			return false;
+		} else {
+			return true;
+		}
 	}
 	
 </script>
@@ -172,20 +151,19 @@
 				<legend><h3>Guest Sign-in</h3></legend>
 				
 				<div class="control-group">
-					<label for="firstName" class="control-label">First Name</label>
+					<label for="firstName" class="control-label">Name</label>
 					<div class="controls">
-						<input type="text" id="firstName" name="firstName" placeholder="e.g., John" inputmode="autocapitalized" autocapitalize="on" autocorrect="off">
+						<input type="text" id="firstName" name="firstName" placeholder="e.g., John Doe" inputmode="autocapitalized" autocapitalize="on" autocorrect="off">
 					</div>
-					<span id="firstNameHelp" class="help-inline" style="display: none;">Please enter your first name.</span> 
 				</div>
-
+				<!--
 				<div class="control-group"> 
 					<label for="lastName" class="control-label">Last Name</label>
 					<div class="controls">
 						<input type="text" id="lastName" name="lastName" placeholder="e.g., Doe" inputmode="autocapitalized" autocapitalize="on" autocorrect="off">
 					</div>
 				</div>
-
+				-->
 				<div class="control-group">
 					<label class="control-label">Notify me by</label>
 					<div class="controls">
@@ -230,6 +208,10 @@
 		<div class="row">
 			<div class="span4">
 				
+				<div id="nameValidationError" class="alert alert-error" style="display:none;">
+					<strong>Unable to submit info</strong>&nbsp; Please enter your name.
+				</div>
+				
 				<div id="smsValidationError" class="alert alert-error" style="display:none;">
 					<strong>Unable to submit info</strong>&nbsp; Please enter a valid phone number (e.g., (801) 555-5555).
 				</div>
@@ -243,7 +225,7 @@
 				</div>
 				
 				<div id="submitSuccess" class="alert alert-success" style="display:none;">
-					Your name has successfully been added to the waitlist</strong>
+					Your name has successfully been added to the waitlist.
 				</div>
 				
 			</div>
