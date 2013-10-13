@@ -90,7 +90,7 @@ def settings():
 		
 def guest_signin():
 	cur_user = current_user()
-	demo = request.args.get('demo')
+	tour = request.args.get('tour')
 	if cur_user:
 		if request.method == 'POST':
 			firstName = request.form["firstName"]
@@ -116,10 +116,10 @@ def guest_signin():
 			checkin = CheckIn.check_in_guest(guest)
 			if not checkin:
 				return "Error"
-			if demo == "continue":
-				return redirect(url_for("manage") + '?demo=continue')
+			if tour == "continue":
+				return redirect(url_for("manage") + '?tour=continue')
 			return "Success"
-	return render_response("guest-signin.html", demo=demo)
+	return render_response("guest-signin.html", tour=tour)
 
 def whitelist():
 	cur_user = current_user()
@@ -137,7 +137,7 @@ def whitelist():
 			return redirect(url_for("index"))
 
 def manage():
-	demo = request.args.get('demo')
+	tour = request.args.get('tour')
 	cur_user = current_user()
 	guestlist = []
 	if cur_user:
@@ -166,7 +166,7 @@ def manage():
 				guestlist.append(checkedinGuest)
 	# Sort guestlist by arrival time (oldest on top)
 	guestlist.sort(key=lambda guest: guest["arrival_time"])
-	return render_response("manage.html", guestlist=guestlist, cur_user=cur_user, demo=demo)	
+	return render_response("manage.html", guestlist=guestlist, cur_user=cur_user, tour=tour)	
 
 def update_party_size(checkin_ID):
 	cur_user = current_user()
@@ -442,7 +442,7 @@ def demo_login():
 		user = UserAccount(name="Bump Demo", email="demo@bumpapp.co")
 		user.put()
 	if user and flasklogin.login_user(user,False):
-		return redirect(url_for("manage") + '?demo=start')
+		return redirect(url_for("manage") + '?tour=start')
 	return redirect(url_for("index") + '?whitelist=false')
 			
 def logout():

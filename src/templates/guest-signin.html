@@ -20,7 +20,7 @@
 
 <script type="text/javascript">
 
-	if("{{demo}}"=="continue") {
+	if("{{tour}}"=="continue") {
 		var o = $("#privacy-well").offset();
 		$("#tour3").css("left", o.left);
 		$("#tour3").show();
@@ -31,7 +31,7 @@
 			$("#validationError").hide();
 			$("#submitButton").attr("disabled", "disabled");
 			$.ajax({
-				url:"/guest-signin{% if demo=='continue' %}?demo=continue{% endif %}",
+				url:"/guest-signin{% if tour=='continue' %}?tour=continue{% endif %}",
 				type: 'POST',
 				data: $("#submissionForm").serialize(),
 				success: function(data) {
@@ -39,8 +39,8 @@
 					//set timer for success message and reset the form to its default
 					window.setTimeout(function() { formDefault() }, 3000);
 					$("#submitSuccess").show().delay(3000).fadeOut();
-					if("{{demo}}"=="continue") {
-						window.location = "{{ url_for('manage') }}" + "?demo=continue";
+					if("{{tour}}"=="continue") {
+						window.location = "{{ url_for('manage') }}" + "?tour=continue";
 					}
 					
 				},
@@ -233,7 +233,7 @@
 	</div>
 	<div class="tooltip-inner" style="background-color:#d41e24">
 		<div style="font-size: 12pt; text-align: left;">
-		Guests enter their information here. Try it out by adding your information. Don't worry, all guests signed in during a demo session will be cleared when you sign out.<br><br>Once you enter the information and click "Submit", this tour will continue.
+		Guests enter their information here. Try it out by adding your information. Don't worry, all guests signed in during a demo session will be cleared when you sign out.<br><br>Once you enter the information and click "Submit", the tour will continue.
 		</div>
 	</div>
 </div>

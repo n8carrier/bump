@@ -24,6 +24,14 @@
 	.quickadd-cell {
 		padding-right:20px
 	}
+	
+	.btn-tour {
+		margin-top:10px;
+	}
+	
+	.btn-tour-next {
+		margin-left:4px;
+	}
 </style>
 
 {% endblock %}
@@ -35,7 +43,7 @@
 
 <script type="text/javascript">
 	
-	if("{{demo}}"=="start") {
+	if("{{tour}}"=="start") {
 		$("#tour1").show();
 	}
 	
@@ -46,23 +54,29 @@
 	
 	function tour2() {
 		$("#tour1").hide();
-		$("#guest-signin-link").attr("href", "{{ url_for('guest_signin') }}" + "?demo=continue");
+		$("#guest-signin-link").attr("href", "{{ url_for('guest_signin') }}" + "?tour=continue");
 		$("#guest-signin-link").removeAttr("target");
-		var o = $("#guest-signin-link").offset();
-		$("#tour2").css("left", o.left - 39);
+		var guestSigninLocation = $("#guest-signin-link").offset();
+		$("#tour2").css("left", guestSigninLocation.left - 96);
 		$("#tour2").show();
 	}
 	
 	function tour3() {
-		window.location = "{{ url_for('guest_signin') }}" + "?demo=continue";
+		window.location = "{{ url_for('guest_signin') }}" + "?tour=continue";
 	}
 	
-	if("{{demo}}"=="continue") {
-		$("#tour4").show();
+	if("{{tour}}"=="continue") {
+		$("#tour3b").show();
+	}
+	
+	function tour3b() {
+		$("#tour4").hide();
+		$("#tour3b").show();
 	}
 	
 	function tour4() {
 		$("#tour5").hide();
+		$("#tour3b").hide();
 		$("#tour4").show();
 	}
 	
@@ -74,15 +88,33 @@
 	
 	function tour6() {
 		$("#tour5").hide();
+		$("#tour6b").hide();
 		$("#tour6").show();
-		// TODO: Update CheckIn button to check in, dismiss tour tooltip, delay a second, then launch ending modal
-		// TODO: update CheckIn button of first row to checkin_end(checkinID, firstName, lastName, button)
-		// TODO: We'll need to use a jquery to grab that first button, and then to update it, is there a replace in jquery
+		$(".btn-checkin:first").attr('onclick',$(".btn-checkin:first").attr('onclick') + ';$("#tour6").hide();$("#tour6b").hide().delay(1000).show().css("top",$("#quickAddName").offset() - 20)')
+		// TODO: This isn't very pretty. It would better to wait until the row is hidden before showing tour6b
+	}
+	
+	function tour6b() {
+		$("#tour6").hide();
+		var quickAddNameLoc = $("#quickAddName").offset();
+		$("#tour6b").css("top", quickAddNameLoc.top - 20);
+		$("#tour6b").show();
 	}
 	
 	function tour7() {
 		$("#tour6").hide();
+		$("#tour6b").hide();
 		$("#tour7").modal('show');
+	}
+	
+	function endtour() {
+		$("#tour1").hide();
+		$("#tour2").hide();
+		$("#tour3b").hide();
+		$("#tour4").hide();
+		$("#tour5").hide();
+		$("#tour6").hide();
+		$("#tour6b").hide();
 	}
 	
 	function checkin_end(checkinID, firstName, lastName, button) {
@@ -112,6 +144,12 @@
 				$("#notificationSent").hide();
 				$("#undoMessage").show();
 				autoClose("#undoMessage",5);
+					if(!firstName || firstName == 'None') {
+						firstName = ''
+					}
+					if(!lastName || lastName == 'None') {
+						lastName = ''
+					}
 				$("#undoMessageName").text(firstName + ' ' + lastName);
 				if($("#guestQueue tr:visible").length == 1) {
 					// swap header for no-guests row
@@ -345,7 +383,7 @@
 					if($("#row-" + guest.guest_ID).length != 0) {
 						// Row exists, check if it's hidden, then update (if it's hidden but in the refresh data, it's been re-checked in... this is a terrible edge case, shouldn't have wasted my time.)
 						if($("#row-" + guest.guest_ID).is(":hidden")) {
-							$("#row-" + guest.guest_ID).html('<td class="waitlist-cell">' + firstName + ' ' + lastName + '<br>&nbsp;&nbsp;&nbsp;<em>' + sms + email + '</em></td><td class="waitlist-cell"><input type="number" class="partySize" id="partySize-' + guest.checkin_ID + '" min="1" value="' + guest.partySize + '" style="margin-bottom:0px;width:40px"></td></td><td class="waitlist-cell">' + guest.arrival_time + '</td><td class="waitlist-cell"><p style="margin-bottom:0px"><input type="number" name="waitEstimate" id="waitEstimate-' + guest.checkin_ID + '" min="1" value="' + guest.wait_estimate + '" style="margin-bottom:0px;width:40px">&nbsp;&nbsp;min</p></td><td class="waitlist-cell" id="target-' + guest.checkin_ID + '">' + guest.target_time + '</td><td class="waitlist-cell" style="text-align:center"><a class="btn btn-primary btn-small" id="default-' + guest.guest_ID + '" onclick="sendDefaultMsg(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-envelope-alt"></i>&nbsp;&nbsp;Default</a><a class="btn btn-primary btn-inverse btn-small" style="margin-left:4px;margin-right:4px" id="custom-' + guest.guest_ID + '" onclick="customMsgModal(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-edit"></i>&nbsp;&nbsp;Custom</a><a class="btn btn-success btn-small" id="checkin-' + guest.guest_ID + '" onclick="checkIn(\'' + guest.checkin_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-ok"></i>&nbsp;&nbsp;Check In</a></td>');
+							$("#row-" + guest.guest_ID).html('<td class="waitlist-cell">' + firstName + ' ' + lastName + '<br>&nbsp;&nbsp;&nbsp;<em>' + sms + email + '</em></td><td class="waitlist-cell"><input type="number" class="partySize" id="partySize-' + guest.checkin_ID + '" min="1" value="' + guest.partySize + '" style="margin-bottom:0px;width:40px"></td></td><td class="waitlist-cell">' + guest.arrival_time + '</td><td class="waitlist-cell"><p style="margin-bottom:0px"><input type="number" name="waitEstimate" id="waitEstimate-' + guest.checkin_ID + '" min="1" value="' + guest.wait_estimate + '" style="margin-bottom:0px;width:40px">&nbsp;&nbsp;min</p></td><td class="waitlist-cell" id="target-' + guest.checkin_ID + '">' + guest.target_time + '</td><td class="waitlist-cell" style="text-align:center"><a class="btn btn-primary btn-small" id="default-' + guest.guest_ID + '" onclick="sendDefaultMsg(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-envelope-alt"></i>&nbsp;&nbsp;Default</a><a class="btn btn-primary btn-inverse btn-small" style="margin-left:4px;margin-right:4px" id="custom-' + guest.guest_ID + '" onclick="customMsgModal(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-edit"></i>&nbsp;&nbsp;Custom</a><a class="btn btn-success btn-small btn-checkin" id="checkin-' + guest.guest_ID + '" onclick="checkIn(\'' + guest.checkin_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-ok"></i>&nbsp;&nbsp;Check In</a></td>');
 							$("#row-" + guest.guest_ID).show();
 							if(!sms && !email) {
 								// No contact info, disable buttons
@@ -356,7 +394,7 @@
 							}
 						}
 					} else {
-						$('#guestQueue tr:last').after('<tr id="row-' + guest.guest_ID + '"><td class="waitlist-cell">' + firstName + ' ' + lastName + '<br>&nbsp;&nbsp;&nbsp;<em>' + sms + email + '</em></td><td class="waitlist-cell"><input type="number" class="partySize" id="partySize-' + guest.checkin_ID + '" min="1" value="' + guest.partySize + '" style="margin-bottom:0px;width:40px"></td></td><td class="waitlist-cell">' + guest.arrival_time + '</td><td class="waitlist-cell"><p style="margin-bottom:0px"><input type="number" name="waitEstimate" id="waitEstimate-' + guest.checkin_ID + '" min="1" value="' + guest.wait_estimate + '" style="margin-bottom:0px;width:40px">&nbsp;&nbsp;min</p></td><td class="waitlist-cell" id="target-' + guest.checkin_ID + '">' + guest.target_time + '</td><td class="waitlist-cell" style="text-align:center"><a class="btn btn-primary btn-small" id="default-' + guest.guest_ID + '" onclick="sendDefaultMsg(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-envelope-alt"></i>&nbsp;&nbsp;Default</a><a class="btn btn-primary btn-inverse btn-small" id="custom-' + guest.guest_ID + '" style="margin-left:4px;margin-right:4px" onclick="customMsgModal(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-edit"></i>&nbsp;&nbsp;Custom</a><a class="btn btn-success btn-small" id="checkin-' + guest.guest_ID + '" onclick="checkIn(\'' + guest.checkin_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-ok"></i>&nbsp;&nbsp;Check In</a></td></tr>');
+						$('#guestQueue tr:last').after('<tr id="row-' + guest.guest_ID + '"><td class="waitlist-cell">' + firstName + ' ' + lastName + '<br>&nbsp;&nbsp;&nbsp;<em>' + sms + email + '</em></td><td class="waitlist-cell"><input type="number" class="partySize" id="partySize-' + guest.checkin_ID + '" min="1" value="' + guest.partySize + '" style="margin-bottom:0px;width:40px"></td></td><td class="waitlist-cell">' + guest.arrival_time + '</td><td class="waitlist-cell"><p style="margin-bottom:0px"><input type="number" name="waitEstimate" id="waitEstimate-' + guest.checkin_ID + '" min="1" value="' + guest.wait_estimate + '" style="margin-bottom:0px;width:40px">&nbsp;&nbsp;min</p></td><td class="waitlist-cell" id="target-' + guest.checkin_ID + '">' + guest.target_time + '</td><td class="waitlist-cell" style="text-align:center"><a class="btn btn-primary btn-small" id="default-' + guest.guest_ID + '" onclick="sendDefaultMsg(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-envelope-alt"></i>&nbsp;&nbsp;Default</a><a class="btn btn-primary btn-inverse btn-small" id="custom-' + guest.guest_ID + '" style="margin-left:4px;margin-right:4px" onclick="customMsgModal(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-edit"></i>&nbsp;&nbsp;Custom</a><a class="btn btn-success btn-small btn-checkin" id="checkin-' + guest.guest_ID + '" onclick="checkIn(\'' + guest.checkin_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-ok"></i>&nbsp;&nbsp;Check In</a></td></tr>');
 						if(!sms && !email) {
 							// No contact info, disable buttons
 							$("#default-" + guest.guest_ID).addClass("disabled");
@@ -385,14 +423,14 @@
 
 {% block content %}
 
-<div id="tour2" class="tooltip fade bottom in" style="top: 50px; left: 230px; display: none;width: 200px; opacity:0.9">
+<div id="tour2" class="tooltip fade bottom in" style="top: 50px; left: 450px; display: none;width: 300px; opacity:0.9">
 	<div class="tooltip-arrow" style="border-bottom-color:#d41e24">
 	</div>
 	<div class="tooltip-inner" style="background-color:#d41e24">
 		<div style="font-size: 12pt; text-align: left;">
-		Click "Guest Sign-in" to access the page where guests sign in.
+		To start out, we'll have you sign yourself in, in the same way a guest would. This feature is great when you have a tablet you can hand to your guest. Later, we'll go over how the host can directly add a guest from this page.
 		</div>
-		<a id="tour2prev" class="btn btn-small" style="margin-top:4px" onclick="tour1()">&#x25c0;</a><a id="tour2next" class="btn btn-small" style="margin-right: -112px;margin-left: 4px; margin-top:4px" onclick="tour3()">&#x25b6;</a>
+		<a id="tour2end" class="btn btn-small btn-tour" style="margin-right:140px" onclick="endtour()">End Tour</a><a id="tour2prev" class="btn btn-small btn-tour" onclick="tour1()">&#x25c0;</a><a id="tour2next" class="btn btn-small btn-tour btn-tour-next" onclick="tour3()">&#x25b6;</a>
 	</div>
 </div>
 
@@ -453,7 +491,7 @@
 				<a id="refreshButton" class="btn btn-large" onclick="refreshManage()" style="margin-left:-50px;margin-top:6px;"><i id="refreshIcon" class="icon-refresh icon-medium"></i></a>
 			</div>
 			<div class="span8">
-				<p class="text-right" style="margin-top:15px">Current Wait Time (in minutes):&nbsp;&nbsp;<input type="number" name="currentWait" id="currentWait" value="{{ cur_user.default_wait }}" style="width:40px"></p>
+				<p class="text-right" style="margin-top:15px">Current Wait Time (in minutes):&nbsp;&nbsp;<input type="number" name="currentWait" id="currentWait" value="{{ cur_user.default_wait }}" style="width:40px"{% if cur_user.demo_mode() %} disabled{% endif %}></p>
 			</div>
 		</div>
 			<table class="table table-striped table-bordered" id="guestQueue">
@@ -491,7 +529,7 @@
 							<a class="btn btn-primary btn-inverse btn-small{% if not guest.sms and not guest.email %} disabled{% endif %}" id="custom-{{guest.guest_ID}}" onclick="{% if guest.sms or guest.email %}customMsgModal('{{guest.guest_ID}}','{{guest.firstName}}','{{guest.lastName}}',this){% endif %}">
 								<i class="icon-edit"></i>&nbsp;&nbsp;Custom
 							</a>
-							<a class="btn btn-success btn-small" id="checkin-{{guest.guest_ID}}" onclick="checkIn('{{guest.checkin_ID}}','{{guest.firstName}}','{{guest.lastName}}',this)">
+							<a class="btn btn-success btn-small btn-checkin" id="checkin-{{guest.guest_ID}}" onclick="checkIn('{{guest.checkin_ID}}','{{guest.firstName}}','{{guest.lastName}}',this)">
 								<i class="icon-ok"></i>&nbsp;&nbsp;Check In
 							</a>
 						</td>
@@ -503,9 +541,23 @@
 				</div>
 				<div class="tooltip-inner" style="background-color:#d41e24">
 					<div style="font-size: 12pt; text-align: left;">
-					Bump allows you to manage your waitlist from any device connected to the web. Once guests have signed in, you can send text and email notifications and check in guests. To try it out, we'll first need to check a guest in.
+					Bump allows you to manage your waitlist from any device connected to the web. Once guests have signed in or you have added them manually, you can send text and email notifications and check them in (remove them from the waitlist). To try it out, we'll first need to check a guest in.
 					</div>
-					<a id="tour1next" class="btn btn-small" style="margin-left:466px" onclick="tour2()">&#x25b6;</a>
+					<a id="tour1end" class="btn btn-small btn-tour" onclick="endtour()">End Tour</a><a id="tour5next" class="btn btn-small btn-tour" style="margin-left:396px" onclick="tour2()">&#x25b6;</a>
+				</div>
+			</div>
+			<div id="tour3b" class="tooltip fade bottom in" style="top: 156px; left: 350px; display: none;width: 450px; opacity:0.9;">
+				<div class="tooltip-arrow" style="border-bottom-color:#d41e24">
+				</div>
+				<div class="tooltip-inner" style="background-color:#d41e24">
+					<div style="font-size: 12pt; text-align: left;">
+						When guests sign in, they appear here (auto-refreshes every 30s). The party size defaults to 2, just click the +/- to update.
+						<br><br>
+						Arrival time is set based on when the guest signed in, and the wait estimate defaults to the current wait defined in the top right (unchangeable in demo).
+						<br><br>
+						The target seating time lets you know when you've estimated to seat the guest. If you update the wait estimate, the target time will update automatically.
+					</div>
+					<a id="tour3bend" class="btn btn-small btn-tour" style="margin-right:328px" onclick="endtour()">End Tour</a><a id="tour3bnext" class="btn btn-small btn-tour" onclick="tour4();">&#x25b6;</a>
 				</div>
 			</div>
 			<div id="tour4" class="tooltip fade bottom in" style="top: 142px; left: 850px; display: none;width: 250px; opacity:0.9;">
@@ -513,9 +565,9 @@
 				</div>
 				<div class="tooltip-inner" style="background-color:#d41e24">
 					<div style="font-size: 12pt; text-align: left;">
-					Click "Default" to send your default notification message, defined in your settings (cannot update settings in demo mode). The message will be sent to the contact's preferred contact method (SMS or Email).
+					Click "Default" to send your default message, defined in your settings (not accessible in demo mode). The message will be sent to the guest's preferred contact method (SMS or Email).<br><br>Go ahead, give it a try!
 					</div>
-					<a id="tour4next" class="btn btn-small" style="margin-right: -200px;" onclick="tour5();">&#x25b6;</a>
+					<a id="tour4end" class="btn btn-small btn-tour" style="margin-right:90px" onclick="endtour()">End Tour</a><a id="tour4prev" class="btn btn-small btn-tour" onclick="tour3b()">&#x25c0;</a><a id="tour4next" class="btn btn-small btn-tour btn-tour-next" onclick="tour5();">&#x25b6;</a>
 				</div>
 			</div>
 			<div id="tour5" class="tooltip fade bottom in" style="top: 142px; left: 930px; display: none;width: 250px; opacity:0.9;">
@@ -525,16 +577,28 @@
 					<div style="font-size: 12pt; text-align: left;">
 					Click "Custom" to create and send a custom message.
 					</div>
-					<a id="tour5prev" class="btn btn-small" style="margin-top:4px" onclick="tour4()">&#x25c0;</a><a id="tour5next" class="btn btn-small" style="margin-right: -160px;margin-left: 4px; margin-top:4px" onclick="tour6()">&#x25b6;</a>
+					<a id="tour5end" class="btn btn-small btn-tour" style="margin-right:94px" onclick="endtour()">End Tour</a><a id="tour5prev" class="btn btn-small btn-tour" onclick="tour4()">&#x25c0;</a><a id="tour5next" class="btn btn-small btn-tour btn-tour-next" onclick="tour6()">&#x25b6;</a>
 				</div>
 			</div><div id="tour6" class="tooltip fade bottom in" style="top: 142px; left: 1020px; display: none;width: 250px; opacity:0.9;">
 				<div class="tooltip-arrow" style="border-bottom-color:#d41e24">
 				</div>
 				<div class="tooltip-inner" style="background-color:#d41e24">
 					<div style="font-size: 12pt; text-align: left;">
-					Click "Check In" to check in your guest and remove the guest from the queue. If your guest opted-in to receiving coupons or promos, you'll still have access to his or her contact info.
+					Click "Check In" to check in your guest and remove the guest from the queue. If your guest opted-in to receiving promos, you'll be able to send coupons & promos later.
 					</div>
-					<a id="tour6prev" class="btn btn-small" style="margin-top:4px" onclick="tour5()">&#x25c0;</a><a id="tour6next" class="btn btn-small" style="margin-right: -160px;margin-left: 4px; margin-top:4px" onclick="tour7()">&#x25b6;</a>
+					<a id="tour6end" class="btn btn-small btn-tour" style="margin-right:94px" onclick="endtour()">End Tour</a><a id="tour6prev" class="btn btn-small btn-tour" onclick="tour5()">&#x25c0;</a><a id="tour6next" class="btn btn-small btn-tour btn-tour-next" onclick="tour6b()">&#x25b6;</a>
+				</div>
+			</div>
+			<div id="tour6b" class="tooltip fade bottom in" style="top: 240px; left: 350px; display: none;width: 460px; opacity:0.9;">
+				<div class="tooltip-arrow" style="border-bottom-color:#d41e24">
+				</div>
+				<div class="tooltip-inner" style="background-color:#d41e24">
+					<div style="font-size: 12pt; text-align: left;">
+						The host can add guests directly to the waitlist here. Quick Add makes it possible to include all guests in the waitlist, even if they aren't interested in a text or email when their table is ready.
+						<br><br>
+						Just input the guest's name, party size, and any other information you want to include (contact info is optional, but necessary to opt in to promos). Go ahead, give it a try!
+					</div>
+					<a id="tour6bend" class="btn btn-small btn-tour" style="margin-right:300px" onclick="endtour()">End Tour</a><a id="tour6bprev" class="btn btn-small btn-tour" onclick="tour6()">&#x25c0;</a><a id="tour6bnext" class="btn btn-small btn-tour btn-tour-next" onclick="tour7();">&#x25b6;</a>
 				</div>
 			</div>
 		</table>
