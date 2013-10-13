@@ -99,6 +99,12 @@
 		var quickAddNameLoc = $("#quickAddName").offset();
 		$("#tour6b").css("top", quickAddNameLoc.top - 20);
 		$("#tour6b").show();
+		// Nasty hack to prevent tour6b from appearing when the user checks it in (if they didn't check it in in the tour)
+		// Basically, it's reversing the last step of tour6();
+		var oldOnClick = $(".btn-checkin:first").attr('onclick');
+		var replaceStr = ';$("#tour6").hide();$("#tour6b").hide().delay(1000).show().css("top",$("#quickAddName").offset() - 20)';
+		var newOnClick = oldOnClick.replace(replaceStr,'');
+		$(".btn-checkin:first").attr('onclick',newOnClick);
 	}
 	
 	function tour7() {

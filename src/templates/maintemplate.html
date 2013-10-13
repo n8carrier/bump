@@ -83,6 +83,7 @@
 									<li><a name="userEmail">{{ user.email }}</a></li>
 									<li class="divider"></li>
 									<li><a href="#" id="launchFullScreen" onclick="toggleFullScreen()">Launch Full Screen</a></li>
+									<li><a href="{{ url_for('manage') + '?tour=start' }}" id="startTour">Start Product Tour</a></li>
 									<li class="divider"></li>
 									<li{% if user.email == 'demo@bumpapp.co' %} class="disabled"{% endif %}><a href="{% if user.email == 'demo@bumpapp.co' %}#{% else %}/settings{% endif %}">Settings</a></li>
 									<li><a href="/logout">Sign Out</a></li>
