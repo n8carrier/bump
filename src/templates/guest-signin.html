@@ -17,8 +17,27 @@
 {% block script %}
 
 <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-ui-1.10.2.custom.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/maskedinput.js') }}"></script>
 
 <script type="text/javascript">
+
+	//run on page load
+	$(function() {
+		//submit the form when enter is pressed
+		$('form').each(function() {
+			$(this).find('input').keypress(function(e) {
+				// Enter pressed?
+				if(e.which == 10 || e.which == 13) {
+					this.form.submit();
+				}
+			});
+
+			$(this).find('input[type=submit]').hide();
+		});
+		
+		//mask the contact info input field as phone number by default
+		$("#contactInfo").mask("(999) 999-9999");
+	});
 
 	if("{{tour}}"=="continue") {
 		var o = $("#privacy-well").offset();
@@ -26,9 +45,27 @@
 		$("#tour3").show();
 	}
 
+	function formDefault() {
+		$("#firstName").val('');
+		$("#lastName").val('');
+		$("#contactInfo").val('');
+		$("#preferredContactSMS").prop('checked', true);
+		$("#submitButton").removeAttr("disabled");
+		if ("{{user.default_checkbox_promos }}"=="True") {
+			$("#optIn").prop('checked', true);
+		}else {
+			$("#optIn").prop('checked', false);
+		}
+	}
+	
 	function submit() {
-		if(true) { // TODO: incorporate validate
-			$("#validationError").hide();
+	
+		//validate input fields
+		var valid = validateContactInfo();
+		
+		if(valid) { // TODO: incorporate validate
+			$("#smsValidationError").hide();
+			$("#emailValidationError").hide();
 			$("#submitButton").attr("disabled", "disabled");
 			$.ajax({
 				url:"/guest-signin{% if tour=='continue' %}?tour=continue{% endif %}",
@@ -52,27 +89,49 @@
 			});
 		}
 		else {
-			$("#validationError").show();
 			$("#submitSuccess").hide();
 			$("#submitError").hide();
 		}
 		return false;
 	}
 	
-	function formDefault() {
-		$("#firstName").val('');
-		$("#lastName").val('');
-		$("#contactInfo").val('');
-		$("#preferredContactSMS").prop('checked', true);
-		$("#submitButton").removeAttr("disabled");
-		if ("{{user.default_checkbox_promos }}"=="True") {
-			$("#optIn").prop('checked', true);
-		}else {
-			$("#optIn").prop('checked', false);
+	function togglePreferred() {
+		if($('input[name=preferredContact]:radio:checked').val()=="sms") {
+			$("#contactInfoLabel").text("Phone Number");
+			$("#contactInfo").attr("name","smsNumber");
+			$("#contactInfo").attr("type","tel");
+			$("#contactInfo").val('');
+			$("#contactInfo").attr("placeholder","e.g., (801) 555-5555");
+			$("#contactInfo").mask("(999) 999-9999");
+		} else if($('input[name=preferredContact]:radio:checked').val()=="email") {
+			$("#contactInfoLabel").text("Email Address");
+			$("#contactInfo").attr("name","email");
+			$("#contactInfo").attr("type","email");
+			$("#contactInfo").val('');
+			$("#contactInfo").attr("placeholder","e.g., john.doe@example.com");
+			$("#contactInfo").unmask();
 		}
 	}
 	
-	function validate() {
+	function validateContactInfo() {
+		var validates = false;
+		var contactInfo = $("#contactInfo").val();
+		
+		if($('input[name=preferredContact]:radio:checked').val()=="sms") {
+			if(/\(\d{3}\) \d{3}-\d{4}|\d{10}/.test(contactInfo)) {
+				validates = true;
+			} else {
+				$("#smsValidationError").show();
+			}
+		} else if($('input[name=preferredContact]:radio:checked').val()=="email") { 
+			if(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/.test(contactInfo)) {
+				validates = true;
+			} else {
+				$("#emailValidationError").show();
+			}
+		}
+		//code from old app
+		/*
 		var validateNames = ["submitterName","submitterEmail","issueName","issueType","issueDescription"]
 		
 		// Test that each field to see if it has at least one letter or number
@@ -96,38 +155,11 @@
 					}
 				}
 			}
-		}
+		}*/
 		
 		return validates;
 	}
 	
-	function togglePreferred() {
-		if($('input[name=preferredContact]:radio:checked').val()=="sms") {
-			$("#contactInfoLabel").text("Phone Number");
-			$("#contactInfo").attr("name","smsNumber");
-			$("#contactInfo").attr("type","tel");
-			$("#contactInfo").attr("placeholder","e.g., 801-555-5555");
-		} else if($('input[name=preferredContact]:radio:checked').val()=="email") {
-			$("#contactInfoLabel").text("Email Address");
-			$("#contactInfo").attr("name","email");
-			$("#contactInfo").attr("type","email");
-			$("#contactInfo").attr("placeholder","e.g., john.doe@example.com");
-		}
-	}
-	
-	//submit the form when enter is pressed
-	$(function() {
-		$('form').each(function() {
-			$(this).find('input').keypress(function(e) {
-				// Enter pressed?
-				if(e.which == 10 || e.which == 13) {
-					this.form.submit();
-				}
-			});
-
-			$(this).find('input[type=submit]').hide();
-		});
-	});
 </script>
 
 {% endblock %}
@@ -173,7 +205,7 @@
 				<div class="control-group">
 					<label for="contactInfo" id="contactInfoLabel" class="control-label">Phone Number</label>
 					<div class="controls">
-						<input type="tel" id="contactInfo" name="smsNumber" placeholder="e.g., 801-555-5555" autocapitalize="off" autocorrect="off">
+						<input type="tel" id="contactInfo" name="smsNumber" placeholder="e.g., (801) 555-5555" autocapitalize="off" autocorrect="off">
 					</div>
 				</div>
 				
@@ -198,8 +230,12 @@
 		<div class="row">
 			<div class="span4">
 				
-				<div id="validationError" class="alert alert-error" style="display:none;">
-					<strong>Unable to submit info</strong>&nbsp; Please fix the errors and try again.
+				<div id="smsValidationError" class="alert alert-error" style="display:none;">
+					<strong>Unable to submit info</strong>&nbsp; Please enter a valid phone number (e.g., (801) 555-5555).
+				</div>
+				
+				<div id="emailValidationError" class="alert alert-error" style="display:none;">
+					<strong>Unable to submit info</strong>&nbsp; Please enter a valid email address (e.g., john.doe@example.com).
 				</div>
 				
 				<div id="submitError" class="alert alert-error" style="display:none;">

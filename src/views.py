@@ -8,6 +8,7 @@ from googlevoice.util import input
 from src.guests.models import Guest
 from src.checkins.models import CheckIn
 from src.whitelist.models import Whitelist
+from src import functions
 import logging
 from decorators import crossdomain
 from src import app
@@ -97,7 +98,7 @@ def guest_signin():
 			lastName = request.form["lastName"]
 			preferredContact = request.form["preferredContact"]
 			if preferredContact == 'sms':
-				smsNumber = request.form["smsNumber"]
+				smsNumber = functions.digitizePhoneNumber(request.form["smsNumber"])
 				email = None
 			elif preferredContact == 'email':
 				email = request.form["email"]
@@ -156,7 +157,8 @@ def manage():
 				checkedinGuest["checkin_ID"] = checkin.key.id()
 				checkedinGuest["firstName"] = guest.first_name
 				checkedinGuest["lastName"] = guest.last_name
-				checkedinGuest["sms"] = guest.sms_number
+				if guest.sms_number:
+					checkedinGuest["sms"] = functions.stylizePhoneNumber(guest.sms_number)
 				checkedinGuest["email"] = guest.email
 				checkedinGuest["partySize"] = checkin.party_size
 				arrival_time = checkin.signin_time - timedelta(hours=6)
@@ -211,7 +213,7 @@ def quick_add():
 		partySize = int(request.form["quickAddPartySize"])
 		waitEstimate = int(request.form["quickAddWaitEstimate"])
 		if preferredContact == 'sms':
-			smsNumber = request.form["quickAddContact"]
+			smsNumber = functions.digitizePhoneNumber(request.form["quickAddContact"])
 			email = None
 		elif preferredContact == 'email':
 			email = request.form["quickAddContact"]
@@ -254,7 +256,8 @@ def refresh_manage():
 				checkedinGuest["checkin_ID"] = checkin.key.id()
 				checkedinGuest["firstName"] = guest.first_name
 				checkedinGuest["lastName"] = guest.last_name
-				checkedinGuest["sms"] = guest.sms_number
+				if guest.sms_number:
+					checkedinGuest["sms"] = functions.stylizePhoneNumber(guest.sms_number)
 				checkedinGuest["email"] = guest.email
 				checkedinGuest["partySize"] = checkin.party_size
 				arrival_time = checkin.signin_time - timedelta(hours=6)

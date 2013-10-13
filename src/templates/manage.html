@@ -39,9 +39,11 @@
 {% block script %}
 
 <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-ui-1.10.2.custom.min.js') }}"></script>
-<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.tablesorter.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/maskedinput.js') }}"></script>
 
 <script type="text/javascript">
+
+	$("#quickAddContact").mask("(999) 999-9999");
 	
 	if("{{tour}}"=="start") {
 		$("#tour1").show();
@@ -243,7 +245,7 @@
 		window.setTimeout(function() { $(selector).hide() }, delay * 1000);
 	}
 	
-	$(':input').bind('click keyup', function(){
+	$(document).on('keyup change click', function(){
 		if(event.target.id=="currentWait") {
 			updateCurrentWait();
 		} else {
@@ -293,7 +295,7 @@
 		if($('input[name=preferredContact]:radio:checked').val()=="sms") {
 			$("#quickAddContactLabel").text("Phone Number");
 			$("#quickAddContact").attr("type","tel");
-			$("#quickAddContact").attr("placeholder","e.g., 801-555-5555");
+			$("#quickAddContact").attr("placeholder","e.g., (801) 555-5555");
 		} else if($('input[name=preferredContact]:radio:checked').val()=="email") {
 			$("#quickAddContactLabel").text("Email Address");
 			$("#quickAddContact").attr("type","email");
@@ -336,7 +338,7 @@
 		$("#quickAddContactSMS").prop('checked', true);
 		$("#quickAddContactLabel").text("Phone Number");
 		$("#quickAddContact").attr("type","tel");
-		$("#quickAddContact").attr("placeholder","e.g., 801-555-5555");
+		$("#quickAddContact").attr("placeholder","e.g., (801) 555-5555");
 		$("#quickAddContact").val('');
 		$("#addButton").removeAttr("disabled");
 		$("#optIn").prop('checked', false);
@@ -648,7 +650,7 @@
 							</td>
 							<td class="quickadd-cell">
 								<label id="quickAddContactLabel" for="quickAddContact">Phone Number</label>
-								<input type="text" class="input-large" name="quickAddContact" id="quickAddContact" placeholder="e.g., 801-555-5555">
+								<input type="text" class="input-large" name="quickAddContact" id="quickAddContact" placeholder="e.g., (801) 555-5555">
 							</td>
 							<td class="quickadd-cell">
 								<label id="quickAddOptInLabel" for="quickAddOptIn" style="margin-top:-10px">Opt In</label>
