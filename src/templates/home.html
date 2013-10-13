@@ -30,51 +30,51 @@
 	<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
   </div>
 </div>
-
+<br>
 <h1 style="text-align:center;color:#222222;">Drive Your Restaurant Forward with Bump</h1>
 <hr><br><br>
 <div class="row">
 	<div class="span6">
-		<img src="{{ url_for('static', filename='img/signin.png') }}">
+		<img src="{{ url_for('static', filename='img/queue.png') }}">
 	</div>
 	<div class="span1">
 	</div>
 	<div class="span5">
-		<h3>Text/Email Notifications for Guests</h3>
+		<h3>Manage your Waitlist,<br>Completely Free</h3>
 		<p>
-			Do you enjoy a half hour wait in the lobby for your table? Neither do your guests. 
-			They also don't like being constrained to 100 feet by your pager system. With 
-			Bump you can allow your guests to sign up for text or email notifications 
-			when their table is ready. That way they can do what <em>they</em> want while they wait.
+			Digitize your waitlist at no cost. Bump allows you to keep track of all parties 
+			on your waitlist, including the name, party size, arrival time, wait estimate, and 
+			target seating time. Don't risk mistakes, start using Bump for free today.
 		</p>
 		<ul>
-			<li>Provide your guests with the flexibility they desire</li>
-			<li>Allow guests to sign up for SMS or Email notifications</li>
-			<li>Run Bump on any web-enabled device</li>
-			<li>Eliminate the need to invest in expensive pager systems</li>
+			<li>Let your guests know when their table is ready, by SMS or email</li>
+			<li>Add guests directly from the Bump waitlist manager, or allow guests to sign-in with a tablet (see below)</li>
+			<li>Allow guests to reply when they need more time, enabling you to know when your tables will be filled</li>
+			<li>Preserve valuable data that can help you run your business, such as average wait times, accuracy in predicting seating time, and trends in party size.</li>
 		</ul>
 	</div>
 </div>
 <br><br><hr><br><br>
 <div class="row">
 	<div class="span5">
-		<h3>Close the Loop</h3>
+		<h3>Give your Guests Freedom</h3>
 		<p>
-			Looking for insight into when your guests will actually be ready to be seated? Guess no longer. 
-			Bump gives you the power to send notifications to your guests and let's them 
-			respond if they're running late. That gives you the power to keep your tables full and your 
-			guests happy.
+			Do you enjoy a half hour wait in the lobby for your table? Neither do your guests. 
+			They also don't like being constrained to 100 feet by restaurant pager systems. With 
+			Bump, you can allow your guests to sign up for text or email notifications 
+			when their table is ready. That way they can do what <em>they</em> want while they wait.
 		</p>
 		<ul>
-			<li>Send standard or custom notifications to your guests</li>
-			<li>Gain tighter control of your tables by knowing when reservations will be late</li>
-			<li>Maintain full control of your waitlist</li>
+			<li>Provide your guests with the flexibility they desire</li>
+			<li>Allow guests to sign up for SMS or Email notifications through a tablet interface</li>
+			<li>Offer your guests the opportunity to sign up for coupons and promos</li>
+			<li>Eliminate the need to invest in expensive pager systems</li>
 		</ul>
 	</div>
 	<div class="span1">
 	</div>
 	<div class="span6">
-		<img src="{{ url_for('static', filename='img/queue.png') }}">
+		<img src="{{ url_for('static', filename='img/signin.png') }}">
 	</div>
 </div>
 <br><br><hr><br><br>
@@ -104,23 +104,26 @@
 </div>
 <br><br><hr><br><br>
 <div class="row">
+	<div class="span1">
+	</div>
 	<div class="span5">
-		<h3>Find Out More</h3>
+		<h3>Give Bump a Test Drive</h3>
 		<p>
-			Bump is currently in private beta, by invitation only. If you own or manage a restaurant in 
-			Utah or Salt Lake counties and you could benefit from Bump, please provide your contact information. 
-			Our team will set up a time to meet with you and discuss your needs. Bump is looking for restaurants 
-			that meet the following criteria:
+			The screen shots aren't doing it for ya? We don't blame you. 
+			That's why we built a demo, so you can try it <em>before you send your info</em>. 
+			Just click the Demo button in the header and be prepared to be awed and amazed. 
+			Or you can just click the button below, whichever is more fun:
 		</p>
-		<ul>
-			<li>Wait times of 30 minutes or more at least twice weekly</li>
-			<li>At least one dedicated host during wait times</li>
-			<li>Location near or within a mall, shopping area, or other high traffic area</li>
-			<li>Desire to gain a competitive advantage through early adoption of technology</li>
-		</ul>
+		<a class="btn btn-inverse" href="{{ url_for('demo_login') }}" style="margin-top:10px">Launch Demo</a>
 	</div>
 	<div class="span1">
 	</div>
+	<div class="span5">
+		<img src="{{ url_for('static', filename='img/car.png') }}">
+	</div>
+</div>
+<br><br><hr><br><br>
+<div class="row">
 	<div class="span6">
 		<div class="well">
 		<form id="submissionForm" method="post" action="/" style="margin-bottom:0px">
@@ -177,6 +180,23 @@
 			</div>
 		</div>
 	</div>
+	<div class="span1">
+	</div>
+	<div class="span5">
+		<h3>Find Out More</h3>
+		<p>
+			Bump is currently in private beta, by invitation only. If you own or manage a restaurant in 
+			Utah or Salt Lake counties and you could benefit from Bump, please provide your contact information. 
+			Our team will set up a time to meet with you and discuss your needs. Bump is looking for restaurants 
+			that meet the following criteria:
+		</p>
+		<ul>
+			<li>Wait times of 30 minutes or more at least twice weekly</li>
+			<li>At least one dedicated host during wait times</li>
+			<li>Location near or within a mall, shopping area, or other high traffic area</li>
+			<li>Desire to gain a competitive advantage through early adoption of technology</li>
+		</ul>
+	</div>
 </div>
-<br>
+<br><br><hr><br><br>
 {% endblock %}
