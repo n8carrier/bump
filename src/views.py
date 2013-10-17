@@ -173,6 +173,46 @@ def manage():
 	guestlist.sort(key=lambda guest: guest["arrival_time"])
 	return render_response("manage.html", guestlist=guestlist, cur_user=cur_user, tour=tour)	
 
+def advertise():
+	cur_user = current_user()
+	optInList = []
+	if cur_user:
+	# Create a list of guests (as dicts) within the user's library
+		for guest in cur_user.get_optins():
+			optin = {}
+			optin["guest_ID"] = guest.key.id()
+			if guest.first_name and guest.last_name:
+				optin["name"] = guest.first_name + guest.last_name
+			elif guest.first_name:
+				optin["name"] = guest.first_name
+			else:
+				if guest.preferred_contact == 'sms':
+					optin["name"] = guest.sms_number
+				elif guest.preferred_contact == 'email':
+					optin["name"] = guest.email
+				else:
+					# This should never be the case
+					optin["name"] = "Unknown"
+			if guest.subscribe_date:
+				optin["subscribe_date"] = guest.subscribe_date.strftime('%m/%d/%y')
+			else:
+				optin["subscribe_date"] = "Unknown"
+			if guest.signup_method:
+				if guest.signup_method == 1:
+					optin["signup_method"] = 'Waitlist'
+				elif guest.signup_method == 2:
+					optin["signup_method"] = 'SMS'
+				elif guest.signup_method == 3:
+					optin["signup_method"] = "Website"
+			else:
+				optin["signup_method"] = 'Waitlist'
+			optin["promos_sent"] = "Unknown"
+			optInList.append(optin)
+		optInList.sort(key=lambda optin: optin["subscribe_date"])
+	else:
+		return redirect(url_for("index"))
+	return render_response("advertise.html", optInList=optInList)
+
 def update_party_size(checkin_ID):
 	cur_user = current_user()
 	if not cur_user:

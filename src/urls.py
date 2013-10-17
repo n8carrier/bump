@@ -51,6 +51,9 @@ app.add_url_rule('/whitelist', view_func=views.whitelist,methods=["GET","POST"])
 # Manage Guests
 app.add_url_rule('/manage', view_func=views.manage,methods=["GET","POST"])
 
+# Advertise
+app.add_url_rule('/advertise', view_func=views.advertise,methods=["GET","POST"])
+
 # Licenses
 app.add_url_rule('/licenses', view_func=views.open_source_licenses)
 

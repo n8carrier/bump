@@ -478,7 +478,7 @@
 		<div style="font-size: 12pt; text-align: left;">
 		To start out, we'll have you sign yourself in, in the same way a guest would. This feature is great when you have a tablet you can hand to your guest. Later, we'll go over how the host can directly add a guest from this page.
 		</div>
-		<a id="tour2end" class="btn btn-small btn-tour" style="margin-right:140px" onclick="endtour()">End Tour</a><a id="tour2prev" class="btn btn-small btn-tour" onclick="tour1()">&#x25c0;</a><a id="tour2next" class="btn btn-small btn-tour btn-tour-next" onclick="tour3()">&#x25b6;</a>
+		<a id="tour2end" class="btn btn-small btn-tour" style="margin-right:130px" onclick="endtour()">End Tour</a><a id="tour2prev" class="btn btn-small btn-tour" onclick="tour1()">&#x25c0;</a><a id="tour2next" class="btn btn-small btn-tour btn-tour-next" onclick="tour3()">&#x25b6;</a>
 	</div>
 </div>
 
@@ -512,7 +512,7 @@
 		<div id="notificationSent" class="alert alert-success" style="display: none;">
 			<a class="close" onclick="hide_sent_message()">&times;</a>
 			<span id="sending"><i class="icon-spinner icon-spin"></i> Sending message to <span class="sentTo"></span>...</span>
-			<span id="sentConfirmation">You have sent a message to <span class="sentTo"></span>. To remove a guest from the queue, click the "Check In" button.</span>
+			<span id="sentConfirmation">You have sent a message to <span class="sentTo"></span>. To remove a guest from the waitlist, click the "Check In" button.</span>
 		</div>
 	</div>
 	
@@ -555,7 +555,7 @@
 				</thead>
 				<tbody>
 					<tr id="no-guests" {% if guestlist|length >= 1 %}style="display:none"{% endif %}>
-						<td colspan="4">There are no guests in the queue. Once guests have signed in, they'll show up here.</td>
+						<td colspan="4">There are no guests in the waitlist. Once guests have signed in, they'll show up here.</td>
 					</tr>
 				{% for guest in guestlist %}
 					<tr id="row-{{guest.guest_ID}}">
@@ -591,7 +591,7 @@
 					<div style="font-size: 12pt; text-align: left;">
 					Bump allows you to manage your waitlist from any device connected to the web. Once guests have signed in or you have added them manually, you can send text and email notifications and check them in (remove them from the waitlist). To try it out, we'll first need to check a guest in.
 					</div>
-					<a id="tour1end" class="btn btn-small btn-tour" onclick="endtour()">End Tour</a><a id="tour5next" class="btn btn-small btn-tour" style="margin-left:396px" onclick="tour2()">&#x25b6;</a>
+					<a id="tour1end" class="btn btn-small btn-tour" onclick="endtour()">End Tour</a><a id="tour5next" class="btn btn-small btn-tour" style="margin-left:390px" onclick="tour2()">&#x25b6;</a>
 				</div>
 			</div>
 			<div id="tour3b" class="tooltip fade bottom in" style="top: 156px; left: 350px; display: none;width: 450px; opacity:0.9;">
@@ -605,7 +605,7 @@
 						<br><br>
 						The target seating time lets you know when you've estimated to seat the guest. If you update the wait estimate, the target time will update automatically.
 					</div>
-					<a id="tour3bend" class="btn btn-small btn-tour" style="margin-right:328px" onclick="endtour()">End Tour</a><a id="tour3bnext" class="btn btn-small btn-tour" onclick="tour4();">&#x25b6;</a>
+					<a id="tour3bend" class="btn btn-small btn-tour" style="margin-right:322px" onclick="endtour()">End Tour</a><a id="tour3bnext" class="btn btn-small btn-tour" onclick="tour4();">&#x25b6;</a>
 				</div>
 			</div>
 			<div id="tour4" class="tooltip fade bottom in" style="top: 142px; left: 850px; display: none;width: 250px; opacity:0.9;">
@@ -615,7 +615,7 @@
 					<div style="font-size: 12pt; text-align: left;">
 					Click "Default" to send your default message, defined in your settings (not accessible in demo mode). The message will be sent to the guest's preferred contact method (SMS or Email).<br><br>Go ahead, give it a try!
 					</div>
-					<a id="tour4end" class="btn btn-small btn-tour" style="margin-right:90px" onclick="endtour()">End Tour</a><a id="tour4prev" class="btn btn-small btn-tour" onclick="tour3b()">&#x25c0;</a><a id="tour4next" class="btn btn-small btn-tour btn-tour-next" onclick="tour5();">&#x25b6;</a>
+					<a id="tour4end" class="btn btn-small btn-tour" style="margin-right:84px" onclick="endtour()">End Tour</a><a id="tour4prev" class="btn btn-small btn-tour" onclick="tour3b()">&#x25c0;</a><a id="tour4next" class="btn btn-small btn-tour btn-tour-next" onclick="tour5();">&#x25b6;</a>
 				</div>
 			</div>
 			<div id="tour5" class="tooltip fade bottom in" style="top: 142px; left: 930px; display: none;width: 250px; opacity:0.9;">
@@ -625,16 +625,16 @@
 					<div style="font-size: 12pt; text-align: left;">
 					Click "Custom" to create and send a custom message.
 					</div>
-					<a id="tour5end" class="btn btn-small btn-tour" style="margin-right:94px" onclick="endtour()">End Tour</a><a id="tour5prev" class="btn btn-small btn-tour" onclick="tour4()">&#x25c0;</a><a id="tour5next" class="btn btn-small btn-tour btn-tour-next" onclick="tour6()">&#x25b6;</a>
+					<a id="tour5end" class="btn btn-small btn-tour" style="margin-right:84px" onclick="endtour()">End Tour</a><a id="tour5prev" class="btn btn-small btn-tour" onclick="tour4()">&#x25c0;</a><a id="tour5next" class="btn btn-small btn-tour btn-tour-next" onclick="tour6()">&#x25b6;</a>
 				</div>
 			</div><div id="tour6" class="tooltip fade bottom in" style="top: 142px; left: 1020px; display: none;width: 250px; opacity:0.9;">
 				<div class="tooltip-arrow" style="border-bottom-color:#d41e24">
 				</div>
 				<div class="tooltip-inner" style="background-color:#d41e24">
 					<div style="font-size: 12pt; text-align: left;">
-					Click "Check In" to check in your guest and remove the guest from the queue. If your guest opted-in to receiving promos, you'll be able to send coupons & promos later.
+					Click "Check In" to check in your guest and remove the guest from the waitlist. If your guest opted-in to receiving promos, you'll be able to send coupons & promos later.
 					</div>
-					<a id="tour6end" class="btn btn-small btn-tour" style="margin-right:94px" onclick="endtour()">End Tour</a><a id="tour6prev" class="btn btn-small btn-tour" onclick="tour5()">&#x25c0;</a><a id="tour6next" class="btn btn-small btn-tour btn-tour-next" onclick="tour6b()">&#x25b6;</a>
+					<a id="tour6end" class="btn btn-small btn-tour" style="margin-right:84px" onclick="endtour()">End Tour</a><a id="tour6prev" class="btn btn-small btn-tour" onclick="tour5()">&#x25c0;</a><a id="tour6next" class="btn btn-small btn-tour btn-tour-next" onclick="tour6b()">&#x25b6;</a>
 				</div>
 			</div>
 			<div id="tour6b" class="tooltip fade bottom in" style="top: 240px; left: 350px; display: none;width: 460px; opacity:0.9;">
@@ -648,7 +648,7 @@
 						<br><br>
 						Go ahead, give it a try!
 					</div>
-					<a id="tour6bend" class="btn btn-small btn-tour" style="margin-right:300px" onclick="endtour()">End Tour</a><a id="tour6bprev" class="btn btn-small btn-tour" onclick="tour6()">&#x25c0;</a><a id="tour6bnext" class="btn btn-small btn-tour btn-tour-next" onclick="tour7();">&#x25b6;</a>
+					<a id="tour6bend" class="btn btn-small btn-tour" style="margin-right:292px" onclick="endtour()">End Tour</a><a id="tour6bprev" class="btn btn-small btn-tour" onclick="tour6()">&#x25c0;</a><a id="tour6bnext" class="btn btn-small btn-tour btn-tour-next" onclick="tour7();">&#x25b6;</a>
 				</div>
 			</div>
 		</table>
@@ -664,7 +664,7 @@
 							</td>
 							<td class="quickadd-cell">
 								<label for="quickAddPartySize">Party Size</label>
-								<input type="number" class="partySize" id="quickAddPartySize" name="quickAddPartySize" min="1" value="2" style="width:40px"></td>
+								<input type="number" class="partySize" id="quickAddPartySize" name="quickAddPartySize" min="1" value="2" style="width:40px">
 							</td>
 							<td class="quickadd-cell">
 								<label for="quickAddWaitEstimate">Estimated Wait</label>
@@ -694,7 +694,7 @@
 							</td>
 							<td class="quickadd-cell">
 								<label id="quickAddOptInLabel" for="quickAddOptIn" style="margin-top:-10px">Opt In</label>
-								<input type="checkbox" id="quickAddOptIn" name="quickAddOptIn"><label id="receivePromosText" style="margin-top: -16px;margin-left: 20px;" for="quickAddOptIn">Receive Promos</span>
+								<input type="checkbox" id="quickAddOptIn" name="quickAddOptIn"><label id="receivePromosText" style="margin-top: -16px;margin-left: 20px;" for="quickAddOptIn">Receive Promos</label>
 							</td>
 							<td class="quickadd-cell">
 								<a class="btn btn-inverse btn-small" id="addButton" onclick="quickAdd()" style="margin-top:15px">

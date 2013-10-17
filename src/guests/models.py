@@ -12,6 +12,8 @@ class Guest(ndb.Model):
 	preferred_contact = ndb.StringProperty(required=False)
 	opt_in = ndb.BooleanProperty(required=True)
 	restaurant_key = ndb.KeyProperty(kind=UserAccount)
+	subscribe_date = ndb.DateTimeProperty(auto_now_add=True) # Date guest object was created, technically should be date opted in, but not critical
+	signup_method = ndb.IntegerProperty(required=False) # 1 = Waitlist Opt-In; 2 = SMS (text to number); 3 = Website
 	session_id = ndb.StringProperty(required=False) #For demo login only (so we can clear them)
 		
 	@classmethod

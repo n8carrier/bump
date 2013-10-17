@@ -118,9 +118,12 @@ class UserAccount(ndb.Model):
 		return Guest.query(Guest.restaurant_key==self.key).fetch()
 	
 	def get_checkedin_guests(self):
-		from src.guests.models import Guest
 		from src.checkins.models import CheckIn
 		return CheckIn.query(CheckIn.restaurant_key==self.key,CheckIn.in_queue==True).fetch()
+	
+	def get_optins(self):
+		from src.guests.models import Guest
+		return Guest.query(Guest.restaurant_key==self.key,Guest.opt_in==True).fetch()
 	
 class Anonymous(AnonymousUser):
 	name = u"Anonymous"
