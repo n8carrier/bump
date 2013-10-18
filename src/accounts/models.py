@@ -1,4 +1,5 @@
 from google.appengine.ext import ndb
+#from src.messages.models import MessageTemplate
 from flaskext.login import AnonymousUser
 
 class UserAccount(ndb.Model):
@@ -6,7 +7,7 @@ class UserAccount(ndb.Model):
 	
 	name = ndb.StringProperty(required=True)
 	email = ndb.StringProperty(required=True)
-	default_msg_ready = ndb.StringProperty(default="{firstName}, your table is almost ready. Need more time? Reply ""bump"" and the # of minutes you'd like.")
+	#default_msg_ready = ndb.StringProperty(default="") # Deprecated 10/18/13, replaced by MessageTemplate
 	default_checkbox_promos = ndb.BooleanProperty(default=False)
 	is_admin = ndb.BooleanProperty(default=False)
 	gv_email  = ndb.StringProperty(required=False)
@@ -20,10 +21,10 @@ class UserAccount(ndb.Model):
 		else:
 			return False
 	
-	def update(self,defaultMessage, promoDefault, gv_email, gv_password, reply_to_email):
+	def update(self, promoDefault, gv_email, gv_password, reply_to_email):
 		
 		# validate name
-		self.default_msg_ready = defaultMessage
+		#self.default_msg_ready = defaultMessage # Deprecated 10/18/13
 		self.default_checkbox_promos = promoDefault
 		if gv_password:
 			self.gv_email = gv_email

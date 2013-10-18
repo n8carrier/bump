@@ -29,11 +29,30 @@
 
 <script type="text/javascript">
 	
-	function sendNow() {
+	var sendList = [];
 	
+	function sendNow() {
+		sendList.push({schedule: "now"});
+		submit();
+	}
+	
+	function schedule() {
+		var scheduleTime;
+		sendList.push({schedule: scheduleTime});
+		submit();
 	}
 	
 	function submit() {
+		// Loop through selected rows and add guest_ID to sendList
+		$('input[type=checkbox]').each(function () {
+			if($(this).attr('id')!="masterCheckbox") {
+				// Get guest ID
+				sendList.push({guest: $(this).attr('id').substring($(this).attr('id').indexOf("-")+1)});
+			}
+		});
+		
+		alert(sendList);
+	
 		if(true) {
 			//$("#smsValidationError").hide();
 			//$("#emailValidationError").hide();
@@ -42,7 +61,7 @@
 			$.ajax({
 				url:"/advertise",
 				type: 'POST',
-				//data: $("#submissionForm").serialize(),
+				data: sendList,
 				success: function(data) {
 					$("#submitError").hide();
 				},
@@ -59,11 +78,85 @@
 		return false;
 	}
 	
+	function showNewMessageModal() {
+		$("#newMessageModal").modal('show');
+	}
+	
+	function createNewMessageTemplate() {
+		var templateText = $("#newMessageText").val();
+		var templateName = $("#newMessageName").val();
+		$.ajax({
+			type: "POST",
+			url: "/new_promo",
+			data: {'templateName': templateName, 'templateText': templateText},
+			cache: false
+		})
+		.done(function() {
+			// Update options
+			location.reload();
+			//$("#submitSuccess").show();
+			//$("#submitError").hide();
+		}).fail(function() {
+			//$("#submitError").show();
+			//$("#submitSuccess").hide();
+		});
+		$("#newMessageModal").modal('hide');
+	}
+	
+	$("#masterCheckbox").click( function(){
+		checkBoxes();
+	});
+	
+	// TODO: Catch event of any checkbox, check if all checkboxes are checked and if so check master checkbox (also do inverse when none are checked)
+	// TODO: For every change in checking, update "Recipients" with the correct number of checked rows
+	
+	function checkBoxes() {
+		// Swap checkbox checked property (making the button able to check or uncheck)
+		$("#masterCheckbox").prop('checked',!$("#masterCheckbox").is(':checked'));
+		if($("#masterCheckbox").is(':checked')) {
+			checkAllBoxes();
+		} else {
+			uncheckAllBoxes();
+		}
+	}
+	
+	function checkAllBoxes() {
+		$('input[type=checkbox]').each(function () {
+			if($(this).attr('id')!="masterCheckbox") {
+				$(this).prop('checked', true);
+			}
+		});
+	}
+	
+	function uncheckAllBoxes() {
+		$('input[type=checkbox]').each(function () {
+			if($(this).attr('id')!="masterCheckbox") {
+				$(this).prop('checked', false);
+			}
+		});
+	}
+	
 </script>
 
 {% endblock %}
 
 {% block content %}
+
+<div id="newMessageModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="newMessageModalLabel" aria-hidden="true">
+  <div class="modal-header">
+	<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	<h3 id="newMessageModalLabel">Create New Message Template</h3>
+  </div>
+  <div class="modal-body">
+	<input type="text" id="newMessageName" style="width:510px" placeholder="Enter name of coupon or promo message (for reference)...">
+	<textarea id="newMessageText" style="width:510px" rows="4" placeholder="Enter text of coupon or promo message..."></textarea>
+  </div>
+  <div class="modal-footer">
+	<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
+	<button class="btn btn-inverse" onclick="createNewMessageTemplate()">Create</button>
+  </div>
+</div>
+
 <div class="row">
 	<div class="span12">
 		<h3>Send Coupons and Promos</h3>
@@ -72,29 +165,29 @@
 				<div class="control-group">
 					<label for="message" class="control-label">Message</label>
 					<div class="controls">
-						<select>
+						<select id="selectMessage">
 							<option>Select Message...</option>
-							<option>Create New...</option>
+							{% for msg in msgTemplates %}
+								<option value="{{msg.msgID}}">{{ msg.msgName }}</option>
+							{% endfor %}
 						</select>
+						<a class="btn btn-primary" id="createNewTemplateButton" onclick="showNewMessageModal()">Create New</a>
 					</div>
 				</div>
 				
 				<div class="control-group">
-					<label class="control-label">Recipients<br>(Selected Below)</label>
+					<label class="control-label">Recipients</label>
 					<div class="controls">
-						No recipients selected
+						<p>No recipients selected (select below)</p>
 					</div>
 				</div>
 				
-				<div class="control-group">
-					<label class="control-label"></label>
-					<a id="sendNowButton" class="btn btn-primary" onclick="sendNow();">
-						Send Now
-					</a>
-					<a id="scheduleButton" class="btn btn-inverse" disabled style="margin-left:6px">
-						Schedule
-					</a>
-				</div>
+				<a id="sendNowButton" class="btn btn-primary" onclick="sendNow();" style="margin-left:180px">
+					Send Now
+				</a>
+				<a id="scheduleButton" class="btn btn-inverse" disabled style="margin-left:6px">
+					Schedule
+				</a>
 			</fieldset>
 		</form>
 		<div class="row">
@@ -119,7 +212,7 @@
 			<thead>
 				<tr>
 					<th style="width:30px">
-						<a class="btn" style="width:15px"><input type="checkbox" id="masterCheckbox" style="margin-top:-4px"></a>
+						<a class="btn" id="masterCheckboxButton" onclick="checkBoxes()" style="width:15px"><input type="checkbox" id="masterCheckbox" style="margin-top:-4px"></a>
 					</th>
 					<th>
 						Name

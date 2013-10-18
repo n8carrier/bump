@@ -152,13 +152,13 @@
 				$("#notificationSent").hide();
 				$("#undoMessage").show();
 				autoClose("#undoMessage",5);
-					if(!firstName || firstName == 'None') {
-						firstName = ''
-					}
-					if(!lastName || lastName == 'None') {
-						lastName = ''
-					}
-				$("#undoMessageName").text(firstName + ' ' + lastName);
+					//if(!firstName || firstName == 'None') {
+					//	firstName = ''
+					//}
+					//if(!lastName || lastName == 'None') {
+					//	lastName = ''
+					//}
+				$("#undoMessageName").text(firstName);
 				if($("#guestQueue tr:visible").length == 1) {
 					// swap header for no-guests row
 					$("#queue-header").hide();
@@ -193,7 +193,7 @@
 	function sendDefaultMsg(guestID, firstName, lastName, button) {
 		$("#undoMessage").hide();
 		$("#sentConfirmation").hide();
-		$(".sentTo").text(firstName + ' ' + lastName);
+		$(".sentTo").text(firstName);
 		$("#sending").show();
 		$("#notificationSent").show();
 		$.get("/send_default/" + guestID, function(data) {
@@ -204,7 +204,7 @@
 	}
 	
 	function customMsgModal(guestID, firstName, lastName, button) {
-		var msg = decodeEntities("{{ cur_user.default_msg_ready }}");
+		var msg = decodeEntities("{{ default_message }}");
 		var msg = msg.replace("{firstName}",firstName);
 		var msg = msg.replace("{lastName}",lastName);
 		$("#customMsgModalText").text(msg);
@@ -216,7 +216,7 @@
 		var msg = $("#customMsgModalText").val();
 		$("#undoMessage").hide();
 		$("#sentConfirmation").hide();
-		$(".sentTo").text(firstName + ' ' + lastName);
+		$(".sentTo").text(firstName);
 		$("#sending").show();
 		$("#notificationSent").show();
 		$("#customMsgModal").modal('hide');
@@ -431,7 +431,7 @@
 					if($("#row-" + guest.guest_ID).length != 0) {
 						// Row exists, check if it's hidden, then update (if it's hidden but in the refresh data, it's been re-checked in... this is a terrible edge case, shouldn't have wasted my time.)
 						if($("#row-" + guest.guest_ID).is(":hidden")) {
-							$("#row-" + guest.guest_ID).html('<td class="waitlist-cell">' + firstName + ' ' + lastName + '<br>&nbsp;&nbsp;&nbsp;<em>' + sms + email + '</em></td><td class="waitlist-cell"><input type="number" class="partySize" id="partySize-' + guest.checkin_ID + '" min="1" value="' + guest.partySize + '" style="margin-bottom:0px;width:40px"></td></td><td class="waitlist-cell">' + guest.arrival_time + '</td><td class="waitlist-cell"><p style="margin-bottom:0px"><input type="number" name="waitEstimate" id="waitEstimate-' + guest.checkin_ID + '" min="1" value="' + guest.wait_estimate + '" style="margin-bottom:0px;width:40px">&nbsp;&nbsp;min</p></td><td class="waitlist-cell" id="target-' + guest.checkin_ID + '">' + guest.target_time + '</td><td class="waitlist-cell" style="text-align:center"><a class="btn btn-primary btn-small" id="default-' + guest.guest_ID + '" onclick="sendDefaultMsg(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-envelope-alt"></i>&nbsp;&nbsp;Default</a><a class="btn btn-primary btn-inverse btn-small" style="margin-left:4px;margin-right:4px" id="custom-' + guest.guest_ID + '" onclick="customMsgModal(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-edit"></i>&nbsp;&nbsp;Custom</a><a class="btn btn-success btn-small btn-checkin" id="checkin-' + guest.guest_ID + '" onclick="checkIn(\'' + guest.checkin_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-ok"></i>&nbsp;&nbsp;Check In</a></td>');
+							$("#row-" + guest.guest_ID).html('<td class="waitlist-cell">' + firstName + '<br>&nbsp;&nbsp;&nbsp;<em>' + sms + email + '</em></td><td class="waitlist-cell"><input type="number" class="partySize" id="partySize-' + guest.checkin_ID + '" min="1" value="' + guest.partySize + '" style="margin-bottom:0px;width:40px"></td></td><td class="waitlist-cell">' + guest.arrival_time + '</td><td class="waitlist-cell"><p style="margin-bottom:0px"><input type="number" name="waitEstimate" id="waitEstimate-' + guest.checkin_ID + '" min="1" value="' + guest.wait_estimate + '" style="margin-bottom:0px;width:40px">&nbsp;&nbsp;min</p></td><td class="waitlist-cell" id="target-' + guest.checkin_ID + '">' + guest.target_time + '</td><td class="waitlist-cell" style="text-align:center"><a class="btn btn-primary btn-small" id="default-' + guest.guest_ID + '" onclick="sendDefaultMsg(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-envelope-alt"></i>&nbsp;&nbsp;Default</a><a class="btn btn-primary btn-inverse btn-small" style="margin-left:4px;margin-right:4px" id="custom-' + guest.guest_ID + '" onclick="customMsgModal(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-edit"></i>&nbsp;&nbsp;Custom</a><a class="btn btn-success btn-small btn-checkin" id="checkin-' + guest.guest_ID + '" onclick="checkIn(\'' + guest.checkin_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-ok"></i>&nbsp;&nbsp;Check In</a></td>');
 							$("#row-" + guest.guest_ID).show();
 							if(!sms && !email) {
 								// No contact info, disable buttons
@@ -442,7 +442,7 @@
 							}
 						}
 					} else {
-						$('#guestQueue tr:last').after('<tr id="row-' + guest.guest_ID + '"><td class="waitlist-cell">' + firstName + ' ' + lastName + '<br>&nbsp;&nbsp;&nbsp;<em>' + sms + email + '</em></td><td class="waitlist-cell"><input type="number" class="partySize" id="partySize-' + guest.checkin_ID + '" min="1" value="' + guest.partySize + '" style="margin-bottom:0px;width:40px"></td></td><td class="waitlist-cell">' + guest.arrival_time + '</td><td class="waitlist-cell"><p style="margin-bottom:0px"><input type="number" name="waitEstimate" id="waitEstimate-' + guest.checkin_ID + '" min="1" value="' + guest.wait_estimate + '" style="margin-bottom:0px;width:40px">&nbsp;&nbsp;min</p></td><td class="waitlist-cell" id="target-' + guest.checkin_ID + '">' + guest.target_time + '</td><td class="waitlist-cell" style="text-align:center"><a class="btn btn-primary btn-small" id="default-' + guest.guest_ID + '" onclick="sendDefaultMsg(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-envelope-alt"></i>&nbsp;&nbsp;Default</a><a class="btn btn-primary btn-inverse btn-small" id="custom-' + guest.guest_ID + '" style="margin-left:4px;margin-right:4px" onclick="customMsgModal(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-edit"></i>&nbsp;&nbsp;Custom</a><a class="btn btn-success btn-small btn-checkin" id="checkin-' + guest.guest_ID + '" onclick="checkIn(\'' + guest.checkin_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-ok"></i>&nbsp;&nbsp;Check In</a></td></tr>');
+						$('#guestQueue tr:last').after('<tr id="row-' + guest.guest_ID + '"><td class="waitlist-cell">' + firstName + '<br>&nbsp;&nbsp;&nbsp;<em>' + sms + email + '</em></td><td class="waitlist-cell"><input type="number" class="partySize" id="partySize-' + guest.checkin_ID + '" min="1" value="' + guest.partySize + '" style="margin-bottom:0px;width:40px"></td></td><td class="waitlist-cell">' + guest.arrival_time + '</td><td class="waitlist-cell"><p style="margin-bottom:0px"><input type="number" name="waitEstimate" id="waitEstimate-' + guest.checkin_ID + '" min="1" value="' + guest.wait_estimate + '" style="margin-bottom:0px;width:40px">&nbsp;&nbsp;min</p></td><td class="waitlist-cell" id="target-' + guest.checkin_ID + '">' + guest.target_time + '</td><td class="waitlist-cell" style="text-align:center"><a class="btn btn-primary btn-small" id="default-' + guest.guest_ID + '" onclick="sendDefaultMsg(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-envelope-alt"></i>&nbsp;&nbsp;Default</a><a class="btn btn-primary btn-inverse btn-small" id="custom-' + guest.guest_ID + '" style="margin-left:4px;margin-right:4px" onclick="customMsgModal(\'' + guest.guest_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-edit"></i>&nbsp;&nbsp;Custom</a><a class="btn btn-success btn-small btn-checkin" id="checkin-' + guest.guest_ID + '" onclick="checkIn(\'' + guest.checkin_ID + '\',\'' + firstName + '\',\'' + lastName + '\',this)"><i class="icon-ok"></i>&nbsp;&nbsp;Check In</a></td></tr>');
 						if(!sms && !email) {
 							// No contact info, disable buttons
 							$("#default-" + guest.guest_ID).addClass("disabled");

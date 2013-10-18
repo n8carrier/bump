@@ -8,6 +8,7 @@ from googlevoice.util import input
 from src.guests.models import Guest
 from src.checkins.models import CheckIn
 from src.whitelist.models import Whitelist
+from src.messages.models import MessageTemplate, Message
 from src import functions
 import logging
 from decorators import crossdomain
@@ -64,9 +65,15 @@ def index():
 	return render_response('home.html',whitelist=whitelist)
 		
 def settings():
+	cur_user = current_user()
 	
-	user = current_user()
-	if user.demo_mode():
+	# Get message template
+	msgTemplate = MessageTemplate.query(MessageTemplate.restaurant_key==cur_user.key,MessageTemplate.message_type==1,MessageTemplate.is_active==True).get()
+	if not msgTemplate:
+		# No template exists, create one
+		msgTemplate = MessageTemplate(restaurant_key=cur_user.key,message_type=1,is_active=True,message_text="{firstName}, your table is almost ready. Need more time? Reply ""bump"" and the # of minutes you'd like.")
+		msgTemplate.put()
+	if cur_user.demo_mode():
 		# Don't let demo into settings
 		return redirect(url_for("index"))
 	else:
@@ -83,11 +90,13 @@ def settings():
 				gv_email = None
 				gv_password = None
 			reply_to_email = request.form["replyEmail"]
-			if user.update(defaultMessage, promoDefault, gv_email, gv_password, reply_to_email):
+			
+			# Udpate Message Template
+			if msgTemplate.update(defaultMessage) and cur_user.update(promoDefault, gv_email, gv_password, reply_to_email):
 				return "Success"
 			else:
 				return False
-		return render_response('settings.html')
+		return render_response('settings.html',default_message=msgTemplate.message_text)
 		
 def guest_signin():
 	cur_user = current_user()
@@ -145,6 +154,14 @@ def manage():
 	cur_user = current_user()
 	guestlist = []
 	if cur_user:
+		
+		# Get message template
+		msgTemplate = MessageTemplate.query(MessageTemplate.restaurant_key==cur_user.key,MessageTemplate.message_type==1,MessageTemplate.is_active==True).get()
+		if not msgTemplate:
+			# No template exists, create one
+			msgTemplate = MessageTemplate(restaurant_key=cur_user.key,message_type=1,is_active=True,message_text="{firstName}, your table is almost ready. Need more time? Reply ""bump"" and the # of minutes you'd like.")
+			msgTemplate.put()
+		
 	# Create a list of guests (as dicts) within the user's library
 		for checkin in cur_user.get_checkedin_guests():
 			# Includes session_id, demo account (include only if session_id matches 
@@ -171,13 +188,13 @@ def manage():
 				guestlist.append(checkedinGuest)
 	# Sort guestlist by arrival time (oldest on top)
 	guestlist.sort(key=lambda guest: guest["arrival_time"])
-	return render_response("manage.html", guestlist=guestlist, cur_user=cur_user, tour=tour)	
+	return render_response("manage.html", guestlist=guestlist, cur_user=cur_user, tour=tour, default_message=msgTemplate.message_text)
 
 def advertise():
 	cur_user = current_user()
-	optInList = []
 	if cur_user:
-	# Create a list of guests (as dicts) within the user's library
+		# Create a list of guests (as dicts) within the user's library
+		optInList = []
 		for guest in cur_user.get_optins():
 			optin = {}
 			optin["guest_ID"] = guest.key.id()
@@ -209,9 +226,28 @@ def advertise():
 			optin["promos_sent"] = "Unknown"
 			optInList.append(optin)
 		optInList.sort(key=lambda optin: optin["subscribe_date"])
+		
+		# Create list of MessageTemplates
+		msgTemplates = []
+		for msgTemplate in MessageTemplate.query(MessageTemplate.restaurant_key==cur_user.key,MessageTemplate.message_type==2,MessageTemplate.is_active==True).fetch():
+			if msgTemplate.message_name: # If it doesn't have a name, we can't show it
+				msg = {}
+				msg["msgID"] = msgTemplate.key.id()
+				msg["msgName"] = msgTemplate.message_name
+				msg["msgText"] = msgTemplate.message_text
+				msgTemplates.append(msg)
+		msgTemplates.sort(key=lambda msg: msg["msgName"])
 	else:
 		return redirect(url_for("index"))
-	return render_response("advertise.html", optInList=optInList)
+	return render_response("advertise.html", optInList=optInList, msgTemplates=msgTemplates)
+
+def new_promo():
+	cur_user = current_user()
+	templateName = request.form["templateName"]
+	templateText = request.form["templateText"]
+	msgTemplate = MessageTemplate(restaurant_key=cur_user.key,message_type=2,is_active=True,message_name=templateName,message_text=templateText)
+	msgTemplate.put()
+	return "Success"
 
 def update_party_size(checkin_ID):
 	cur_user = current_user()
@@ -354,87 +390,16 @@ def undo_checkin_guest(checkin_ID):
 	return "Success"
 	
 def send_default_msg(guest_ID):
-	cur_user = current_user()
-	guest = Guest.get_by_id(int(guest_ID))
-	msg = cur_user.default_msg_ready
-	msg = msg.replace('{firstName}',guest.first_name).replace('{lastName}',guest.last_name)
-	if cur_user.demo_mode():
-		msg = msg + " -- SENT BY BUMP DEMO: http://bumpapp.co"
-	if guest.preferred_contact == 'email':
-		if cur_user.reply_to_email:
-			# User provided a reply-to email different from their account email. Emails must be sent out by the account, so a reply-to email is used.
-			reply_to = cur_user.reply_to_email
-			sender_email = cur_user.email
-		else:
-			if cur_user.demo_mode():
-				# Demo mode is not a real account, so it must be sent from admin@bumpapp.co
-				reply_to = "demo@bumpapp.co"
-				sender_email = "admin@bumpapp.co"
-			else:
-				sender_email = cur_user.email
-				reply_to = cur_user.email
-		mail.send_mail(
-					sender=cur_user.name + " <" + sender_email + ">",
-					reply_to=reply_to,
-					to=guest.email,
-					subject="Table Notification",
-					body=msg)
-	elif guest.preferred_contact == 'sms':
-		if cur_user.gv_email and cur_user.gv_password:
-			gv_email = cur_user.gv_email
-		else:
-			gv_email = 'nate@consultboost.com'
-		if cur_user.gv_email and cur_user.gv_password:
-			gv_password = cur_user.gv_password
-		else:
-			gv_password = 'BumpGVB0t'
-		voice = Voice()
-		voice.login(gv_email,gv_password)
-		phoneNumber = guest.sms_number
-		text = msg
-		voice.send_sms(phoneNumber, text)
-	return "Success"
+	if Message.send_notification(guest_ID,False):
+		return "Success"
+	else:
+		return "Error"
 
 def send_custom_msg(guest_ID):
-	cur_user = current_user()
-	guest = Guest.get_by_id(int(guest_ID))
-	msg = request.form["msg"]
-	if cur_user.demo_mode():
-		msg = msg + " -- SENT BY BUMP DEMO: http://bumpapp.co"
-	if guest.preferred_contact == 'email':
-		if cur_user.reply_to_email:
-			# User provided a reply-to email different from their account email. Emails must be sent out by the account, so a reply-to email is used.
-			reply_to = cur_user.reply_to_email
-			sender_email = cur_user.email
-		else:
-			if cur_user.demo_mode():
-				# Demo mode is not a real account, so it must be sent from admin@bumpapp.co
-				reply_to = "demo@bumpapp.co"
-				sender_email = "admin@bumpapp.co"
-			else:
-				sender_email = cur_user.email
-				reply_to = cur_user.email
-		mail.send_mail(
-					sender=cur_user.name + " <" + sender_email + ">",
-					reply_to=reply_to,
-					to=guest.email,
-					subject="Table Notification",
-					body=msg)
-	elif guest.preferred_contact == 'sms':
-		if cur_user.gv_email and cur_user.gv_password:
-			gv_email = cur_user.gv_email
-		else:
-			gv_email = 'nate@consultboost.com'
-		if cur_user.gv_email and cur_user.gv_password:
-			gv_password = cur_user.gv_password
-		else:
-			gv_password = 'BumpGVB0t'
-		voice = Voice()
-		voice.login(gv_email,gv_password)
-		phoneNumber = guest.sms_number
-		text = msg
-		voice.send_sms(phoneNumber, text)
-	return "Success"
+	if Message.send_notification(guest_ID,request.form["msg"]):
+		return "Success"
+	else:
+		return "Error"
 	
 def reportbug():
 	if request.method == 'POST' and "submitterName" in request.form and "submitterEmail" in request.form and "issueName" in request.form and "issueDescription" in request.form:
