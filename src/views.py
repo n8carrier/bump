@@ -18,6 +18,7 @@ from accounts import login as login_account, logout as logout_account, join as j
 from accounts.models import UserAccount
 from google.appengine.api import mail
 from datetime import date,timedelta
+import time
 import re
 
 import filters
@@ -192,14 +193,14 @@ def manage():
 
 def advertise():
 	cur_user = current_user()
-	if cur_user:
+	if not cur_user.demo_mode():
 		# Create a list of guests (as dicts) within the user's library
 		optInList = []
 		for guest in cur_user.get_optins():
 			optin = {}
 			optin["guest_ID"] = guest.key.id()
 			if guest.first_name and guest.last_name:
-				optin["name"] = guest.first_name + guest.last_name
+				optin["name"] = guest.first_name + ' ' + guest.last_name
 			elif guest.first_name:
 				optin["name"] = guest.first_name
 			else:
@@ -247,6 +248,25 @@ def new_promo():
 	templateText = request.form["templateText"]
 	msgTemplate = MessageTemplate(restaurant_key=cur_user.key,message_type=2,is_active=True,message_name=templateName,message_text=templateText)
 	msgTemplate.put()
+	return "Success"
+
+def send_promos():
+	
+	sms_counter = 0
+	
+	if request.form["schedule"] == "now":
+		msgTemplate = MessageTemplate.get_by_id(int(request.form["msgTemplate"]))
+		
+		# Nasty hack because I just don't get JSON
+		for key in request.form:
+			if key[:5] == "guest":
+				# Send message
+				Message.send_promo(request.form[key], msgTemplate)
+				if Guest.get_by_id(int(request.form[key])).preferred_contact == 'sms':
+					sms_counter = sms_counter + 1
+					if sms_counter % 5 == 0:
+					# Delay message 1 min with every 5 sms
+						time.sleep(60)
 	return "Success"
 
 def update_party_size(checkin_ID):

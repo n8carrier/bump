@@ -95,6 +95,9 @@ app.add_url_rule('/refresh_manage', view_func=views.refresh_manage,methods=['GET
 # Create New Message Template for Promos
 app.add_url_rule('/new_promo', view_func=views.new_promo,methods=['GET','POST'])
 
+# Send coupons and promos
+app.add_url_rule('/send_promos',view_func=views.send_promos,methods=['GET','POST'])
+
 
 ##################################### Error Handling ####################################
 ## Error Handlers

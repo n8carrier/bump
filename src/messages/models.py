@@ -66,6 +66,33 @@ class Message(ndb.Model):
 		
 		# Return success
 		return msg.send_success
+	
+	@classmethod
+	def send_promo(cls,guest_ID,msgTemplate):
+		cur_user = current_user()
+		guest = Guest.get_by_id(int(guest_ID))
+		
+		# Create Message Object
+		msg = Message(restaurant_key = cur_user.key, recipient_key = guest.key, contact_method = guest.preferred_contact, time_initiated = datetime.now(), message_template_key=msgTemplate.key)
+		
+		# Create msg_text from msgTemplate.message_text
+		msg_text = msgTemplate.message_text
+		if guest.first_name:
+			msg_text = msg_text.replace('{firstName}',guest.first_name)
+		if guest.last_name:
+			msg_text = msg_text.replace('{lastName}',guest.last_name)
+		
+		# Send Message
+		if msg.send_message(guest,msg_text):
+			msg.send_success = True
+		else:
+			msg.send_success = False
+		
+		# Store Message
+		msg.put()
+		
+		# Return success
+		return msg.send_success
 		
 	def send_message(self,guest,msg_text):
 		cur_user = current_user()

@@ -29,29 +29,42 @@
 
 <script type="text/javascript">
 	
-	var sendList = [];
+	$(function() {
+		$(".tooltip-button").tooltip({trigger: "hover"});
+	});
+	
+	var sendList = {};
 	
 	function sendNow() {
-		sendList.push({schedule: "now"});
+		sendList["schedule"] = "now";
 		submit();
 	}
 	
 	function schedule() {
 		var scheduleTime;
-		sendList.push({schedule: scheduleTime});
+		sendList["schedule"] = scheduleTime;
 		submit();
 	}
 	
 	function submit() {
-		// Loop through selected rows and add guest_ID to sendList
+		// Store selected message in JSON
+		sendList["msgTemplate"] = $("#selectMessage :selected").attr("id");
+		
+		// Loop through selected rows and add guest_ID to guestList
+		var guestList = []
+		var counter = 0
 		$('input[type=checkbox]').each(function () {
 			if($(this).attr('id')!="masterCheckbox") {
-				// Get guest ID
-				sendList.push({guest: $(this).attr('id').substring($(this).attr('id').indexOf("-")+1)});
+				// Store as 
+				//guestList.push({guest_ID: $(this).attr('id').substring($(this).attr('id').indexOf("-")+1)});
+				//sendList.guestList[counter].guest = $(this).attr('id').substring($(this).attr('id').indexOf("-")+1);
+				sendList["guest" + counter] = $(this).attr('id').substring($(this).attr('id').indexOf("-")+1);
+				counter=counter+1
 			}
 		});
 		
-		alert(sendList);
+		// Add guestList to sendList
+		//sendList["guestList"] = guestList
 	
 		if(true) {
 			//$("#smsValidationError").hide();
@@ -59,7 +72,7 @@
 			//$("#nameValidationError").hide();
 			$("#submitButton").attr("disabled", "disabled");
 			$.ajax({
-				url:"/advertise",
+				url:"/send_promos",
 				type: 'POST',
 				data: sendList,
 				success: function(data) {
@@ -93,22 +106,82 @@
 		})
 		.done(function() {
 			// Update options
-			location.reload();
-			//$("#submitSuccess").show();
-			//$("#submitError").hide();
+			location.reload(); // Should be done thru ajax, but this a shortcut
 		}).fail(function() {
-			//$("#submitError").show();
-			//$("#submitSuccess").hide();
 		});
 		$("#newMessageModal").modal('hide');
 	}
+	
+	// TODO: Use http://jsfiddle.net/VrkA3/1/ to change mastercheckbox when some are checked (should be a minus sign, like gmail)
 	
 	$("#masterCheckbox").click( function(){
 		checkBoxes();
 	});
 	
-	// TODO: Catch event of any checkbox, check if all checkboxes are checked and if so check master checkbox (also do inverse when none are checked)
-	// TODO: For every change in checking, update "Recipients" with the correct number of checked rows
+	$(".guest-checkbox").click(function() {
+		var checkedBoxes = countCheckboxes();
+		if(checkedBoxes==0) {
+			checkBoxes();
+		} else if (checkedBoxes==$('#optins-table tr:visible').length-1) {
+			checkBoxes();
+		}
+		updateCount(checkedBoxes);
+	});
+	
+	function countCheckboxes() {
+		var counter = 0;
+		$('input[type=checkbox]').each(function () {
+			if($(this).attr('id')!="masterCheckbox" && $(this).prop('checked')==true) {
+				counter=counter+1
+			}
+		});
+		return counter;
+	}
+	
+	function updateCount(checkedBoxes) {
+		if(checkedBoxes==0) {
+			// Update text and disable send button
+			$("#recipientsSelected").text("No recipients selected (select below)");
+			disableSendNow();
+		} else {
+			// Update text and enable send button if a message is selected
+			$("#recipientsSelected").text(checkedBoxes + " recipients selected");
+			if($("#selectMessage :selected").attr("id")=="selectMessagePlaceholder") {
+				disableSendNow();
+			} else {
+				enableSendNow();
+			}
+		}
+	}
+	
+	// Enable/disable button based on selection of message
+	$('#selectMessage').change(function () {
+		if($("#selectMessage :selected").attr("id")=="selectMessagePlaceholder") {
+			// Placeholder is selected, disable button
+			disableSendNow();
+		} else {
+			// Message is selected, enable button if recipients > 0, otherwise disable
+			if(countCheckboxes()!=0) {
+				enableSendNow();
+			} else {
+				disableSendNow();
+			}
+		}
+	});
+	
+	function enableSendNow(){
+		// Remove disabled class, remove tooltip, add onclick
+		$("#sendNowButton").removeClass("disabled");
+		$("#sendNowButton").tooltip("disable");		
+		$("#sendNowButton").attr("onclick","sendNow()");
+	}
+	
+	function disableSendNow() {
+		// Add disabled class, add tooltip, remove onclick
+		$("#sendNowButton").addClass("disabled");
+		$("#sendNowButton").tooltip("enable");
+		$("#sendNowButton").attr("onclick","");
+	}
 	
 	function checkBoxes() {
 		// Swap checkbox checked property (making the button able to check or uncheck)
@@ -126,6 +199,7 @@
 				$(this).prop('checked', true);
 			}
 		});
+		updateCount($('#optins-table tr:visible').length-1);
 	}
 	
 	function uncheckAllBoxes() {
@@ -134,6 +208,7 @@
 				$(this).prop('checked', false);
 			}
 		});
+		updateCount(0);
 	}
 	
 </script>
@@ -166,9 +241,9 @@
 					<label for="message" class="control-label">Message</label>
 					<div class="controls">
 						<select id="selectMessage">
-							<option>Select Message...</option>
+							<option id="selectMessagePlaceholder">Select Message...</option>
 							{% for msg in msgTemplates %}
-								<option value="{{msg.msgID}}">{{ msg.msgName }}</option>
+								<option id="{{msg.msgID}}">{{ msg.msgName }}</option>
 							{% endfor %}
 						</select>
 						<a class="btn btn-primary" id="createNewTemplateButton" onclick="showNewMessageModal()">Create New</a>
@@ -177,15 +252,17 @@
 				
 				<div class="control-group">
 					<label class="control-label">Recipients</label>
-					<div class="controls">
-						<p>No recipients selected (select below)</p>
+					<div class="controls" style="margin-top:5px">
+						<p id="recipientsSelected">No recipients selected (select below)</p>
 					</div>
 				</div>
 				
-				<a id="sendNowButton" class="btn btn-primary" onclick="sendNow();" style="margin-left:180px">
+				<a id="sendNowButton" class="btn btn-primary tooltip-button disabled" style="margin-left:180px" 
+					data-toggle="tooltip" data-placement="bottom" title="Please select a message and include recipients before attempting to send now.">
 					Send Now
 				</a>
-				<a id="scheduleButton" class="btn btn-inverse" disabled style="margin-left:6px">
+				<a id="scheduleButton" class="btn btn-inverse tooltip-button disabled" style="margin-left:6px"
+					data-toggle="tooltip" data-placement="bottom" title="Scheduling messages is currently under development and not yet available.">
 					Schedule
 				</a>
 			</fieldset>
@@ -208,7 +285,7 @@
 <hr>
 <div class="row">
 	<div class="span12">
-		<table class="table table-bordered" style="width:100%">
+		<table id="optins-table" class="table table-bordered" style="width:100%">
 			<thead>
 				<tr>
 					<th style="width:30px">
@@ -235,7 +312,7 @@
 				{% for optin in optInList %}
 					<tr id="guest-{{optin.guest_ID}}">
 						<td>
-							<input type="checkbox" style="margin-left:14px" id="checkbox-{{optin.guest_ID}}">
+							<input type="checkbox" class="guest-checkbox" style="margin-left:14px" id="checkbox-{{optin.guest_ID}}">
 						</td>
 						<td>
 							{{ optin.name }}

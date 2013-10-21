@@ -101,6 +101,9 @@
 							{% if user.is_authenticated() %}
 								{% if request.endpoint != 'guest_signin' %}
 									<li><a href="{{ url_for('manage') }}">Manage</a></li>
+									{% if user.email != 'demo@bumpapp.co' %}
+										<li><a href="{{ url_for('advertise') }}">Advertise</a></li>
+									{% endif %}
 									{% if user.is_admin %}
 										<li><a href="{{ url_for('whitelist') }}">Whitelist</a></li>
 									{% endif %}
