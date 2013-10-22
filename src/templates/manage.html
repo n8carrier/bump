@@ -56,10 +56,11 @@
 	
 	function tour2() {
 		$("#tour1").hide();
+		$("#waitlist-menu").show();
 		$("#guest-signin-link").attr("href", "{{ url_for('guest_signin') }}" + "?tour=continue");
 		$("#guest-signin-link").removeAttr("target");
 		var guestSigninLocation = $("#guest-signin-link").offset();
-		$("#tour2").css("left", guestSigninLocation.left - 96);
+		$("#tour2").css("left", guestSigninLocation.left - 88.5);
 		$("#tour2").show();
 	}
 	
@@ -118,6 +119,7 @@
 	function endtour() {
 		$("#tour1").hide();
 		$("#tour2").hide();
+		$("#waitlist-menu").removeAttr("style");
 		$("#tour3b").hide();
 		$("#tour4").hide();
 		$("#tour5").hide();
@@ -466,7 +468,7 @@
 
 {% block content %}
 
-<div id="tour2" class="tooltip fade bottom in" style="top: 50px; left: 450px; display: none;width: 300px; opacity:0.9">
+<div id="tour2" class="tooltip fade bottom in" style="top: 112px; left: 100px; display: none;width: 300px; opacity:0.9">
 	<div class="tooltip-arrow" style="border-bottom-color:#d41e24">
 	</div>
 	<div class="tooltip-inner" style="background-color:#d41e24">
@@ -586,7 +588,7 @@
 					<div style="font-size: 12pt; text-align: left;">
 					Bump allows you to manage your waitlist from any device connected to the web. Once guests have signed in or you have added them manually, you can send text and email notifications and check them in (remove them from the waitlist). To try it out, we'll first need to check a guest in.
 					</div>
-					<a id="tour1end" class="btn btn-small btn-tour" onclick="endtour()">End Tour</a><a id="tour5next" class="btn btn-small btn-tour" style="margin-left:390px" onclick="tour2()">&#x25b6;</a>
+					<a id="tour1end" class="btn btn-small btn-tour" onclick="endtour()">End Tour</a><a id="tour1next" class="btn btn-small btn-tour" style="margin-left:390px" onclick="tour2()">&#x25b6;</a>
 				</div>
 			</div>
 			<div id="tour3b" class="tooltip fade bottom in" style="top: 156px; left: 350px; display: none;width: 450px; opacity:0.9;">

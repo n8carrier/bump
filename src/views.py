@@ -224,7 +224,7 @@ def advertise():
 					optin["signup_method"] = "Website"
 			else:
 				optin["signup_method"] = 'Waitlist'
-			optin["promos_sent"] = "Unknown"
+			optin["promos_sent"] = "Unknown" # Message.query(Message.restaurant_key==cur_user,Message.recipient_key==guest.key).count() # Hasn't been tested, also it counts table notifications (it's going to be nasty to fix that!)
 			optInList.append(optin)
 		optInList.sort(key=lambda optin: optin["subscribe_date"])
 		

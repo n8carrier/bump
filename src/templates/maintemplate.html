@@ -100,9 +100,9 @@
 						<ul class="nav">
 							{% if user.is_authenticated() %}
 								{% if request.endpoint != 'guest_signin' %}
-									<li class="dropdown">
-										<a class="dropdown-toggle" data-toggle="dropdown">Waitlist <span class="caret"></span></a>
-										<ul class="dropdown-menu">
+									<li id="waitlist-dropdown" class="dropdown">
+										<a id="waitlist-button" class="dropdown-toggle" data-toggle="dropdown">Waitlist <span class="caret"></span></a>
+										<ul id="waitlist-menu" class="dropdown-menu">
 											<li><a href="{{ url_for('manage') }}">Manage Waitlist</a></li>
 											<li><a href="{{ url_for('guest_signin') }}" target="_blank" id="guest-signin-link">Guest Sign-in</a></li>
 										</ul>
