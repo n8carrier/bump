@@ -63,11 +63,7 @@
 					//set timer for success message and reset the form to its default
 					window.setTimeout(function() { formDefault() }, 3000);
 					$("#submitSuccessName").text($("#firstName").val())
-					$("#submitSuccess").show().delay(3000).fadeOut();
-					if("{{tour}}"=="continue") {
-						window.location = "{{ url_for('manage') }}" + "?tour=continue";
-					}
-					
+					$("#submitSuccess").show().delay(3000).fadeOut();		
 				},
 				error: function() {
 					$("#submitError").show();
@@ -206,16 +202,6 @@
 				</div>
 				
 			</div>
-		</div>
-	</div>
-</div>
-
-<div id="tour3" class="tooltip fade right in" style="top: 300px; left: 620px; display: none;width: 400px;" opacity:0.9>
-	<div class="tooltip-arrow" style="border-right-color:#d41e24">
-	</div>
-	<div class="tooltip-inner" style="background-color:#d41e24">
-		<div style="font-size: 12pt; text-align: left;">
-		Guests enter their information here. Try it out by adding your information. Don't worry, all guests signed in during a demo session will be cleared when you sign out.<br><br>Once you enter the information and click "Submit", the tour will continue.
 		</div>
 	</div>
 </div>

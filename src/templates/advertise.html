@@ -91,6 +91,23 @@
 		return false;
 	}
 	
+	function optOut(guest_ID, firstName) {
+		$.get("/optout_guest/" + guest_ID, function(data) {
+			$("#undoLink").attr("onclick","undo_optout('" + guest_ID + "')");
+			$("#guest-" + guest_ID).hide();
+			$("#undoMessage").show();
+			autoClose("#undoMessage",5);
+			$("#undoMessageName").text(firstName);
+		});
+	}
+	
+	function undo_optout(guest_ID) {
+		$.get("/undo_optout_guest/" + guest_ID, function(data) {
+			$("#guest-" + guest_ID).show();
+			$("#undoMessage").hide();
+		});
+	}
+	
 	function showNewMessageModal() {
 		$("#newMessageModal").modal('show');
 	}
@@ -211,6 +228,15 @@
 		updateCount(0);
 	}
 	
+	function hide_undo_message() {
+		$("#undoMessage").hide();
+		// TODO: Once the undo message is hidden, the row should be removed
+		return false;
+	}
+	
+	function autoClose(selector, delay) {
+		window.setTimeout(function() { $(selector).hide() }, delay * 1000);
+	}
 </script>
 
 {% endblock %}
@@ -230,6 +256,14 @@
 	<button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
 	<button class="btn btn-inverse" onclick="createNewMessageTemplate()">Create</button>
   </div>
+</div>
+
+<div class="span6 offset3" style="position: absolute;">
+	<div id="undoMessage" class="alert alert-success" style="display: none;">
+		<a class="close" onclick="hide_undo_message()">&times;</a>
+		<span id="undoMessageName"></span> has been checked in.&nbsp;&nbsp;
+		<strong><a id="undoLink" onclick class="alert-link">Undo</a></strong>
+	</div>
 </div>
 
 <div class="row">
@@ -327,7 +361,7 @@
 							{{ optin.promos_sent }}
 						</td>
 						<td>
-							<a class="btn btn-danger btn-small" onclick="optOut('{{ optin.guest_ID }}'"><i class="icon-remove"></i>&nbsp;&nbsp;Remove</a>
+							<a class="btn btn-danger btn-small" onclick="optOut('{{ optin.guest_ID }}','{{ optin.name }}')"><i class="icon-remove"></i>&nbsp;&nbsp;Remove</a>
 						</td>
 					</tr>
 				{% endfor %}

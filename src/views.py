@@ -264,6 +264,24 @@ def optin_guest(user_ID):
 	else:
 		return "Error"
 
+def optout_guest(guest_ID):
+	guest = Guest.get_by_id(int(guest_ID))
+	if guest:
+		guest.opt_in = False
+		guest.put()
+		return "Success"
+	else:
+		return "Error"
+
+def undo_optout_guest(guest_ID):
+	guest = Guest.get_by_id(int(guest_ID))
+	if guest:
+		guest.opt_in = True
+		guest.put()
+		return "Success"
+	else:
+		return "Error"
+
 def new_promo():
 	cur_user = current_user()
 	templateName = request.form["templateName"]
