@@ -1,0 +1,223 @@
+{% extends "maintemplate.html" %}
+
+{% block title %}Promo Opt-in{% endblock %}
+
+{% block style %}
+
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/jquery-ui-1.10.2.custom.min.css') }}" />
+
+<style type="text/css">
+	label.control-label {
+		font-weight:bold;
+	}
+</style>
+
+{% endblock %}
+
+{% block script %}
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery-ui-1.10.2.custom.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/maskedinput.js') }}"></script>
+
+<script type="text/javascript">
+
+	//run on page load
+	$(function() {
+		//submit the form when enter is pressed
+		$('form').each(function() {
+			$(this).find('input').keypress(function(e) {
+				// Enter pressed?
+				if(e.which == 10 || e.which == 13) {
+					this.form.submit();
+				}
+			});
+
+			$(this).find('input[type=submit]').hide();
+		});
+		
+		//mask the contact info input field as phone number by default
+		$("#contactInfoSMS").mask("(999) 999-9999");
+	});
+
+	function formDefault() {
+		$("#firstName").val('');
+		$("#lastName").val('');
+		$("#contactInfoSMS").val('');
+		$("#contactInfoEmail").val('');
+		$("#preferredContactSMS").prop('checked', true);
+		$("#submitButton").removeAttr("disabled");
+	}
+	
+	function submit() {
+		if(validateContactInfo() && validateName()) {
+			$("#smsValidationError").hide();
+			$("#emailValidationError").hide();
+			$("#nameValidationError").hide();
+			$("#submitButton").attr("disabled", "disabled");
+			$.ajax({
+				url:"/optin_guest/{{restaurant.key.id()}}",
+				type: 'POST',
+				data: $("#submissionForm").serialize(),
+				success: function(data) {
+					$("#submitError").hide();
+					//set timer for success message and reset the form to its default
+					window.setTimeout(function() { formDefault() }, 3000);
+					$("#submitSuccessName").text($("#firstName").val())
+					$("#submitSuccess").show().delay(3000).fadeOut();
+					if("{{tour}}"=="continue") {
+						window.location = "{{ url_for('manage') }}" + "?tour=continue";
+					}
+					
+				},
+				error: function() {
+					$("#submitError").show();
+					$("#submitSuccess").hide();
+					$("#submitButton").removeAttr("disabled");
+				}
+			});
+		}
+		else {
+			$("#submitSuccess").hide();
+			$("#submitError").hide();
+		}
+		return false;
+	}
+	
+	function togglePreferred() {
+		if($('input[name=preferredContact]:radio:checked').val()=="sms") {
+			$("#contactInfoLabel").text("Phone Number");
+			$("#contactInfoSMS").val('');
+			$("#contactInfoEmail").hide();
+			$("#contactInfoSMS").show();
+		} else if($('input[name=preferredContact]:radio:checked').val()=="email") {
+			$("#contactInfoLabel").text("Email Address");
+			$("#contactInfoEmail").val('');
+			$("#contactInfoSMS").hide();
+			$("#contactInfoEmail").show();
+		}
+	}
+	
+	function validateContactInfo() {
+		var validates = false;
+		
+		if($('input[name=preferredContact]:radio:checked').val()=="sms") {
+			if(/\(\d{3}\) \d{3}-\d{4}|\d{10}/.test($("#contactInfoSMS").val())) {
+				validates = true;
+			} else {
+				$("#smsValidationError").show();
+			}
+		} else if($('input[name=preferredContact]:radio:checked').val()=="email") { 
+			if(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/.test($("#contactInfoEmail").val())) {
+				validates = true;
+			} else {
+				$("#emailValidationError").show();
+			}
+		}		
+		return validates;
+	}
+	
+	function validateName() {
+		if ($("#firstName").val()=="") {
+			$("#nameValidationError").show();
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
+</script>
+
+{% endblock %}
+
+{% block content %}
+<div class="row">
+	<div class="span12">
+		<form class="form-horizontal" id="submissionForm" action="javascript:submit()" style="margin-bottom:0px">
+			<fieldset>	
+				<legend><h3>Opt-in to Coupons and Promos for {{restaurant.name}}</h3></legend>
+				
+				<div class="control-group">
+					<label for="firstName" class="control-label">Name</label>
+					<div class="controls">
+						<input type="text" id="firstName" name="firstName" placeholder="e.g., John Doe" inputmode="autocapitalized" autocapitalize="on" autocorrect="off">
+					</div>
+				</div>
+				<!--
+				<div class="control-group"> 
+					<label for="lastName" class="control-label">Last Name</label>
+					<div class="controls">
+						<input type="text" id="lastName" name="lastName" placeholder="e.g., Doe" inputmode="autocapitalized" autocapitalize="on" autocorrect="off">
+					</div>
+				</div>
+				-->
+				<div class="control-group">
+					<label class="control-label">Contact Method</label>
+					<div class="controls">
+						<div class="radio">
+							<label>
+								<input type="radio" name="preferredContact" id="preferredContactSMS" value="sms" onClick="togglePreferred()" checked>Text Message
+							</label>
+						</div>
+						<div class="radio">
+							<label>
+								<input type="radio" name="preferredContact" id="preferredContactEmail" value="email" onClick="togglePreferred()">Email
+							</label>
+						</div>
+					</div>
+				</div>
+				
+				<div class="control-group">
+					<label for="contactInfo" id="contactInfoLabel" class="control-label">Phone Number</label>
+					<div class="controls">
+						<input type="tel" id="contactInfoSMS" name="smsNumber" placeholder="e.g., (801) 555-5555" autocapitalize="off" autocorrect="off">
+						<input style="display:none;" type="email" id="contactInfoEmail" name="email" placeholder="e.g., john.doe@example.com" autocapitalize="off" autocorrect="off">
+					</div>
+				</div>
+				
+				<div class="control-group">
+					<label for="submitButton" class="control-label"></label>
+					<a type="submit" id="submitButton" class="btn btn-inverse" onclick="submit();">
+						Submit
+					</a>
+				</div>
+			</fieldset>
+		</form>
+		<div class="row">
+			<div class="span4">
+				
+				<div id="nameValidationError" class="alert alert-error" style="display:none;">
+					<strong>Unable to submit info</strong>&nbsp; Please enter a name.
+				</div>
+				
+				<div id="smsValidationError" class="alert alert-error" style="display:none;">
+					<strong>Unable to submit info</strong>&nbsp; Please enter a valid phone number (e.g., (801) 555-5555).
+				</div>
+				
+				<div id="emailValidationError" class="alert alert-error" style="display:none;">
+					<strong>Unable to submit info</strong>&nbsp; Please enter a valid email address (e.g., john.doe@example.com).
+				</div>
+				
+				<div id="submitError" class="alert alert-error" style="display:none;">
+					<strong>Unable to submit info</strong>&nbsp; Something went wrong. Please try again later (or report a bug if the problem persists).
+				</div>
+				
+				<div id="submitSuccess" class="alert alert-success" style="display:none;">
+					<span id="submitSuccessName"></span> has successfully been opted in.
+				</div>
+				
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="tour3" class="tooltip fade right in" style="top: 300px; left: 620px; display: none;width: 400px;" opacity:0.9>
+	<div class="tooltip-arrow" style="border-right-color:#d41e24">
+	</div>
+	<div class="tooltip-inner" style="background-color:#d41e24">
+		<div style="font-size: 12pt; text-align: left;">
+		Guests enter their information here. Try it out by adding your information. Don't worry, all guests signed in during a demo session will be cleared when you sign out.<br><br>Once you enter the information and click "Submit", the tour will continue.
+		</div>
+	</div>
+</div>
+
+{% endblock %}

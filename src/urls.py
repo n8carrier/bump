@@ -60,6 +60,12 @@ app.add_url_rule('/licenses', view_func=views.open_source_licenses)
 # demo login
 app.add_url_rule('/demo',view_func=views.demo_login)
 
+# Promo Opt-in (for authenticated restaurant)
+app.add_url_rule('/optin', view_func=views.optin)
+
+# Promo Opt-in (for provided restaurant)
+app.add_url_rule('/optin/<user_ID>', view_func=views.optin)
+
 ######################## Internal calls (to be called by ajax) ##########################
 
 # Check in Guest
@@ -97,6 +103,9 @@ app.add_url_rule('/new_promo', view_func=views.new_promo,methods=['GET','POST'])
 
 # Send coupons and promos
 app.add_url_rule('/send_promos',view_func=views.send_promos,methods=['GET','POST'])
+
+# Optin guest
+app.add_url_rule('/optin_guest/<user_ID>',view_func=views.optin_guest,methods=['GET','POST'])
 
 
 ##################################### Error Handling ####################################

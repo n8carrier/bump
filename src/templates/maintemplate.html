@@ -100,14 +100,25 @@
 						<ul class="nav">
 							{% if user.is_authenticated() %}
 								{% if request.endpoint != 'guest_signin' %}
-									<li><a href="{{ url_for('manage') }}">Manage</a></li>
+									<li class="dropdown">
+										<a class="dropdown-toggle" data-toggle="dropdown">Waitlist <span class="caret"></span></a>
+										<ul class="dropdown-menu">
+											<li><a href="{{ url_for('manage') }}">Manage Waitlist</a></li>
+											<li><a href="{{ url_for('guest_signin') }}" target="_blank" id="guest-signin-link">Guest Sign-in</a></li>
+										</ul>
+									</li>
 									{% if user.email != 'demo@bumpapp.co' %}
-										<li><a href="{{ url_for('advertise') }}">Advertise</a></li>
+										<li class="dropdown">
+											<a class="dropdown-toggle" data-toggle="dropdown">Advertise <span class="caret"></span></a>
+											<ul class="dropdown-menu">
+												<li><a href="{{ url_for('optin') }}">Add Opt-ins</a></li>
+												<li><a href="{{ url_for('advertise') }}">Send Promos</a></li>
+											</ul>
+										</li>
 									{% endif %}
 									{% if user.is_admin %}
 										<li><a href="{{ url_for('whitelist') }}">Whitelist</a></li>
 									{% endif %}
-									<li><a href="{{ url_for('guest_signin') }}" target="_blank" id="guest-signin-link">Guest Sign-in</a></li>
 								{% endif %}
 							{% else %}
 								<li><a href="{{ url_for('login') }}">Login</a></li>

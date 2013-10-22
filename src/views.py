@@ -124,7 +124,7 @@ def guest_signin():
 			except:
 				optIn = False
 			# Add guest to database
-			guest = Guest.add_guest(firstName=firstName,lastName=lastName,preferredContact=preferredContact,smsNumber=smsNumber,email=email,optIn=optIn)
+			guest = Guest.add_guest(firstName=firstName,lastName=lastName,preferredContact=preferredContact,smsNumber=smsNumber,email=email,optIn=optIn,user=cur_user)
 			if not guest:
 				return "Error"
 			checkin = CheckIn.check_in_guest(guest)
@@ -242,6 +242,28 @@ def advertise():
 		return redirect(url_for("index"))
 	return render_response("advertise.html", optInList=optInList, msgTemplates=msgTemplates)
 
+def optin(user_ID=None):
+	cur_user = current_user()
+	if user_ID:
+		# Regardless of who is logged in, send to page for provided user ID
+		restaurant = UserAccount.get_by_id(int(user_ID))
+	else:
+		# No one is logged in, send to provided user or if none redirect to home
+		if cur_user.is_authenticated():
+			restaurant = cur_user
+		else:
+			return redirect(url_for("index")) 
+	return render_response("optin.html",restaurant=restaurant)
+
+def optin_guest(user_ID):
+	user = UserAccount.get_by_id(int(user_ID))
+	# Opt in the guest (this will add them if they don't exist, and update and optin if they already do)
+	guest = Guest.add_guest(firstName=request.form["firstName"], lastName=None, smsNumber=request.form["smsNumber"], email=request.form["email"], preferredContact=request.form["preferredContact"], optIn=True,user=user)
+	if guest:
+		return "Success"
+	else:
+		return "Error"
+
 def new_promo():
 	cur_user = current_user()
 	templateName = request.form["templateName"]
@@ -328,7 +350,7 @@ def quick_add():
 				optIn = False
 		except:
 			optIn = False
-		guest = Guest.add_guest(firstName=firstName,lastName=None,preferredContact=preferredContact,smsNumber=smsNumber,email=email,optIn=optIn)
+		guest = Guest.add_guest(firstName=firstName,lastName=None,preferredContact=preferredContact,smsNumber=smsNumber,email=email,optIn=optIn,user=cur_user)
 		if not guest:
 			return "Error"
 		checkin = CheckIn.check_in_guest(guest,partySize,waitEstimate)
