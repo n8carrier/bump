@@ -249,6 +249,27 @@ def advertise():
 
 def optin(user_ID=None):
 	signup_method = request.args.get('signup_method')
+	include_sms = request.args.get('include_sms')
+	include_email = request.args.get('include_email')
+	include_header = request.args.get('include_header')
+	if not include_sms:
+		include_sms = True
+	elif include_sms.lower() == "false":
+		include_sms = False
+	else:
+		include_sms = True
+	if not include_email:
+		include_email = True
+	elif include_email.lower() == "false":
+		include_email = False
+	else:
+		include_email = True
+	if not include_header:
+		include_header = True
+	elif include_header.lower() == "false":
+		include_header = False
+	else:
+		include_header = True
 	if not signup_method:
 		signup_method = 3 # Default to website
 	cur_user = current_user()
@@ -261,7 +282,7 @@ def optin(user_ID=None):
 			restaurant = cur_user
 		else:
 			return redirect(url_for("index")) 
-	return render_response("optin.html",restaurant=restaurant,signup_method=signup_method)
+	return render_response("optin.html",restaurant=restaurant,signup_method=signup_method,include_sms=include_sms,include_email=include_email,include_header=include_header)
 
 def optin_guest(user_ID,signup_method):
 	user = UserAccount.get_by_id(int(user_ID))
