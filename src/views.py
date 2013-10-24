@@ -124,7 +124,7 @@ def guest_signin():
 			except:
 				optIn = False
 			# Add guest to database
-			guest = Guest.add_guest(firstName=firstName,lastName=lastName,preferredContact=preferredContact,smsNumber=smsNumber,email=email,optIn=optIn,user=cur_user)
+			guest = Guest.add_guest(firstName=firstName,lastName=lastName,preferredContact=preferredContact,smsNumber=smsNumber,email=email,optIn=optIn,signup_method=1,user=cur_user)
 			if not guest:
 				return "Error"
 			checkin = CheckIn.check_in_guest(guest)
@@ -197,39 +197,40 @@ def advertise():
 		# Create a list of guests (as dicts) within the user's library
 		optInList = []
 		for guest in cur_user.get_optins():
-			optin = {}
-			optin["guest_ID"] = guest.key.id()
-			if guest.first_name and guest.last_name:
-				optin["name"] = guest.first_name + ' ' + guest.last_name
-			elif guest.first_name:
-				optin["name"] = guest.first_name
-			#else:
-			#	if guest.preferred_contact == 'sms':
-			#		optin["name"] = guest.sms_number
-			#	elif guest.preferred_contact == 'email':
-			#		optin["name"] = guest.email
-			#	else:
-			#		# This should never be the case
-			#		optin["name"] = "Unknown"
-			if guest.preferred_contact == 'sms':
-				optin["smsNumber"] = guest.sms_number
-			elif guest.preferred_contact == 'email':
-				optin["email"] = guest.email
-			if guest.subscribe_date:
-				optin["subscribe_date"] = guest.subscribe_date.strftime('%m/%d/%y')
-			else:
-				optin["subscribe_date"] = "Unknown"
-			if guest.signup_method:
-				if guest.signup_method == 1:
+			if guest.sms_number or guest.email:
+				optin = {}
+				optin["guest_ID"] = guest.key.id()
+				if guest.first_name and guest.last_name:
+					optin["name"] = guest.first_name + ' ' + guest.last_name
+				elif guest.first_name:
+					optin["name"] = guest.first_name
+				#else:
+				#	if guest.preferred_contact == 'sms':
+				#		optin["name"] = guest.sms_number
+				#	elif guest.preferred_contact == 'email':
+				#		optin["name"] = guest.email
+				#	else:
+				#		# This should never be the case
+				#		optin["name"] = "Unknown"
+				if guest.preferred_contact == 'sms':
+					optin["smsNumber"] = functions.stylizePhoneNumber(guest.sms_number)
+				elif guest.preferred_contact == 'email':
+					optin["email"] = guest.email
+				if guest.subscribe_date:
+					optin["subscribe_date"] = guest.subscribe_date.strftime('%m/%d/%y')
+				else:
+					optin["subscribe_date"] = "Unknown"
+				if guest.signup_method:
+					if guest.signup_method == 1:
+						optin["signup_method"] = 'Waitlist'
+					elif guest.signup_method == 2:
+						optin["signup_method"] = 'SMS'
+					elif guest.signup_method == 3:
+						optin["signup_method"] = "Website"
+				else:
 					optin["signup_method"] = 'Waitlist'
-				elif guest.signup_method == 2:
-					optin["signup_method"] = 'SMS'
-				elif guest.signup_method == 3:
-					optin["signup_method"] = "Website"
-			else:
-				optin["signup_method"] = 'Waitlist'
-			optin["promos_sent"] = "Unknown" # Message.query(Message.restaurant_key==cur_user,Message.recipient_key==guest.key).count() # Hasn't been tested, also it counts table notifications (it's going to be nasty to fix that!)
-			optInList.append(optin)
+				optin["promos_sent"] = Message.query(Message.restaurant_key==cur_user.key,Message.recipient_key==guest.key).count() # TODO: Don't count table notifications (it's going to be nasty to fix that!)
+				optInList.append(optin)
 		optInList.sort(key=lambda optin: optin["subscribe_date"])
 		
 		# Create list of MessageTemplates
@@ -247,6 +248,9 @@ def advertise():
 	return render_response("advertise.html", optInList=optInList, msgTemplates=msgTemplates)
 
 def optin(user_ID=None):
+	signup_method = request.args.get('signup_method')
+	if not signup_method:
+		signup_method = 3 # Default to website
 	cur_user = current_user()
 	if user_ID:
 		# Regardless of who is logged in, send to page for provided user ID
@@ -257,12 +261,12 @@ def optin(user_ID=None):
 			restaurant = cur_user
 		else:
 			return redirect(url_for("index")) 
-	return render_response("optin.html",restaurant=restaurant)
+	return render_response("optin.html",restaurant=restaurant,signup_method=signup_method)
 
-def optin_guest(user_ID):
+def optin_guest(user_ID,signup_method):
 	user = UserAccount.get_by_id(int(user_ID))
 	# Opt in the guest (this will add them if they don't exist, and update and optin if they already do)
-	guest = Guest.add_guest(firstName=request.form["firstName"], lastName=None, smsNumber=request.form["smsNumber"], email=request.form["email"], preferredContact=request.form["preferredContact"], optIn=True,user=user)
+	guest = Guest.add_guest(firstName=request.form["firstName"], lastName=None, smsNumber=functions.digitizePhoneNumber(request.form["smsNumber"]), email=request.form["email"], preferredContact=request.form["preferredContact"], optIn=True, signup_method=int(signup_method), user=user)
 	if guest:
 		return "Success"
 	else:
@@ -372,7 +376,7 @@ def quick_add():
 				optIn = False
 		except:
 			optIn = False
-		guest = Guest.add_guest(firstName=firstName,lastName=None,preferredContact=preferredContact,smsNumber=smsNumber,email=email,optIn=optIn,user=cur_user)
+		guest = Guest.add_guest(firstName=firstName,lastName=None,preferredContact=preferredContact,smsNumber=smsNumber,email=email,optIn=optIn,signup_method=1,user=cur_user)
 		if not guest:
 			return "Error"
 		checkin = CheckIn.check_in_guest(guest,partySize,waitEstimate)

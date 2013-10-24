@@ -56,7 +56,7 @@
 			$("#nameValidationError").hide();
 			$("#submitButton").attr("disabled", "disabled");
 			$.ajax({
-				url:"/optin_guest/{{restaurant.key.id()}}",
+				url:"/optin_guest/{{restaurant.key.id()}}/{{signup_method}}",
 				type: 'POST',
 				data: $("#submissionForm").serialize(),
 				success: function(data) {

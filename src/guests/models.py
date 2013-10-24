@@ -36,7 +36,7 @@ class Guest(ndb.Model):
 		return guest
 	
 	@classmethod
-	def add_guest(self,firstName,lastName,smsNumber,email,preferredContact,optIn,user=None):
+	def add_guest(self,firstName,lastName,smsNumber,email,preferredContact,optIn,signup_method,user=None):
 		if not user:
 			user = current_user()
 		if user.demo_mode():
@@ -70,9 +70,9 @@ class Guest(ndb.Model):
 		else:
 			# Guest is not in datastore, create new Guest
 			if user.demo_mode():
-				guest = Guest(first_name=firstName, last_name=lastName, sms_number = smsNumber, email=email, preferred_contact=preferredContact, opt_in=optIn, restaurant_key=user.key, session_id=session_id)
+				guest = Guest(first_name=firstName, last_name=lastName, sms_number = smsNumber, email=email, preferred_contact=preferredContact, opt_in=optIn, signup_method=signup_method, restaurant_key=user.key, session_id=session_id)
 			else:
-				guest = Guest(first_name=firstName, last_name=lastName, sms_number = smsNumber, email=email, preferred_contact=preferredContact, opt_in=optIn, restaurant_key=user.key)
+				guest = Guest(first_name=firstName, last_name=lastName, sms_number = smsNumber, email=email, preferred_contact=preferredContact, opt_in=optIn, signup_method=signup_method, restaurant_key=user.key)
 			if user.demo_mode():
 				guest.session_id = str(flasklogin.get_session_id())
 		guest.put()

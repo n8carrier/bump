@@ -105,7 +105,7 @@ app.add_url_rule('/new_promo', view_func=views.new_promo,methods=['GET','POST'])
 app.add_url_rule('/send_promos',view_func=views.send_promos,methods=['GET','POST'])
 
 # Opt-in guest (user_ID required because login not required, guest data sent through post)
-app.add_url_rule('/optin_guest/<user_ID>',view_func=views.optin_guest,methods=['GET','POST'])
+app.add_url_rule('/optin_guest/<user_ID>/<signup_method>',view_func=views.optin_guest,methods=['GET','POST'])
 
 # Opt-out guest (must be logged in, done through get)
 app.add_url_rule('/optout_guest/<guest_ID>',view_func=views.optout_guest,methods=['GET'])
