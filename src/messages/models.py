@@ -5,6 +5,7 @@ from src.accounts import  current_user
 from src.guests.models import Guest
 from googlevoice.voice import Voice
 from google.appengine.api import mail
+import logging
 
 class MessageTemplate(ndb.Model):
 	restaurant_key = ndb.KeyProperty(kind=UserAccount)
@@ -56,6 +57,7 @@ class Message(ndb.Model):
 				msg_text = msg_text.replace('{lastName}',guest.last_name)
 		
 		# Send Message
+		logging.info("Attempting to send notification to %s..." % str(guest.first_name) + ' ' + str(guest.last_name))
 		if msg.send_message(guest,msg_text):
 			msg.send_success = True
 		else:
@@ -83,6 +85,7 @@ class Message(ndb.Model):
 			msg_text = msg_text.replace('{lastName}',guest.last_name)
 		
 		# Send Message
+		logging.info("Attempting to send promo to %s..." % str(guest.first_name) + ' ' + str(guest.last_name))
 		if msg.send_message(guest,msg_text):
 			msg.send_success = True
 		else:
@@ -113,6 +116,7 @@ class Message(ndb.Model):
 			voice.login(gv_email,gv_password)
 			phoneNumber = guest.sms_number
 			text = msg
+			logging.info("Sending SMS to %s using %s" % (str(phoneNumber), str(gv_email)))
 			voice.send_sms(phoneNumber, text)
 		elif self.contact_method == 'email':
 			if cur_user.reply_to_email:
@@ -127,13 +131,14 @@ class Message(ndb.Model):
 				else:
 					sender_email = cur_user.email
 					reply_to = cur_user.email
+			logging.info("Sending email to %s from %s" % (str(guest.email), str(sender_email)))
 			mail.send_mail(
 				sender=cur_user.name + " <" + sender_email + ">",
 				reply_to=reply_to,
 				to=guest.email,
-				subject="Table Notification",
+				subject="Message from %s" % cur_user.name,
 				body=msg_text)
-	
+		return True
 		
 	
 	#def check_in_guest(self,guest,partySize=None,waitEstimate=None):

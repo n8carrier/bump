@@ -54,7 +54,7 @@
 		var guestList = []
 		var counter = 0
 		$('input[type=checkbox]').each(function () {
-			if($(this).attr('id')!="masterCheckbox") {
+			if($(this).attr('id')!="masterCheckbox" && $(this).prop('checked')==true) {
 				// Store as 
 				//guestList.push({guest_ID: $(this).attr('id').substring($(this).attr('id').indexOf("-")+1)});
 				//sendList.guestList[counter].guest = $(this).attr('id').substring($(this).attr('id').indexOf("-")+1);
@@ -76,19 +76,31 @@
 				type: 'POST',
 				data: sendList,
 				success: function(data) {
+					$("#submitSuccessInitiated").show();
+					resetForm(5);
 					$("#submitError").hide();
 				},
 				error: function() {
 					$("#submitError").show();
-					$("#submitSuccess").hide();
+					$("#submitSuccessInitiated").hide();
 					$("#submitButton").removeAttr("disabled");
 				}
 			});
 		} else {
-			$("#submitSuccess").hide();
+			$("#submitSuccessInitiated").hide();
 			$("#submitError").hide();
 		}
 		return false;
+	}
+	
+	function resetForm(delay) {
+		delay = (typeof delay === "undefined") ? 0 : delay;
+		window.setTimeout(function() {
+			$("#submitSuccessInitiated").hide();
+			$("#masterCheckbox").prop('checked',false);
+			uncheckAllBoxes();
+			$("#selectMessage").val($("#selectMessagePlaceholder").text());
+		}, delay * 1000);
 	}
 	
 	function optOut(guest_ID, firstName) {
@@ -308,8 +320,12 @@
 					<strong>Unable to send messages</strong>&nbsp; Something went wrong. Please try again later. If the problem persists, please report a bug (link in footer).
 				</div>
 				
-				<div id="submitSuccess" class="alert alert-success" style="display:none;">
-					Messages sent successfully
+				<div id="submitSuccessInitiated" class="alert alert-success" style="display:none;">
+					The server has initiated sending the specified messages.
+				</div>
+				
+				<div id="submitSuccessScheduled" class="alert alert-success" style="display:none;">
+					The specified messages have successfully been scheduled.
 				</div>
 				
 			</div>
@@ -349,7 +365,8 @@
 							<input type="checkbox" class="guest-checkbox" style="margin-left:14px" id="checkbox-{{optin.guest_ID}}">
 						</td>
 						<td>
-							{{ optin.name }}
+							{{optin.name}}
+						{% if optin.name %}<br>&nbsp;&nbsp;&nbsp;{% endif %}<em>{{optin.smsNumber}}{{optin.email}}</em>
 						</td>
 						<td>
 							{{ optin.subscribe_date }}

@@ -203,14 +203,18 @@ def advertise():
 				optin["name"] = guest.first_name + ' ' + guest.last_name
 			elif guest.first_name:
 				optin["name"] = guest.first_name
-			else:
-				if guest.preferred_contact == 'sms':
-					optin["name"] = guest.sms_number
-				elif guest.preferred_contact == 'email':
-					optin["name"] = guest.email
-				else:
-					# This should never be the case
-					optin["name"] = "Unknown"
+			#else:
+			#	if guest.preferred_contact == 'sms':
+			#		optin["name"] = guest.sms_number
+			#	elif guest.preferred_contact == 'email':
+			#		optin["name"] = guest.email
+			#	else:
+			#		# This should never be the case
+			#		optin["name"] = "Unknown"
+			if guest.preferred_contact == 'sms':
+				optin["smsNumber"] = guest.sms_number
+			elif guest.preferred_contact == 'email':
+				optin["email"] = guest.email
 			if guest.subscribe_date:
 				optin["subscribe_date"] = guest.subscribe_date.strftime('%m/%d/%y')
 			else:

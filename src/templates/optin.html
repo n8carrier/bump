@@ -46,10 +46,11 @@
 		$("#contactInfoEmail").val('');
 		$("#preferredContactSMS").prop('checked', true);
 		$("#submitButton").removeAttr("disabled");
+		$("#firstName").select();
 	}
 	
 	function submit() {
-		if(validateContactInfo() && validateName()) {
+		if(validateContactInfo()) { // Validate name was removed because text optins only send "PROMO". They are manually added in this form
 			$("#smsValidationError").hide();
 			$("#emailValidationError").hide();
 			$("#nameValidationError").hide();
@@ -61,9 +62,9 @@
 				success: function(data) {
 					$("#submitError").hide();
 					//set timer for success message and reset the form to its default
-					window.setTimeout(function() { formDefault() }, 3000);
 					$("#submitSuccessName").text($("#firstName").val())
-					$("#submitSuccess").show().delay(3000).fadeOut();		
+					$("#submitSuccess").show().delay(3000).fadeOut();
+					formDefault();					
 				},
 				error: function() {
 					$("#submitError").show();
