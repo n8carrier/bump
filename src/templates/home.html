@@ -1,202 +1,210 @@
 {% extends "maintemplate.html" %}
-
+ 
 {% block title %}Bump: Restaurant Waitlist Management{% endblock %}
-
+ 
 {% block script %}
-
+ 
 <script type="text/javascript">
-	if("{{whitelist}}"=="false") {
-		$("#failedJoinModal").modal('show');
-	}
+    if("{{whitelist}}"=="false") {
+        $("#failedJoinModal").modal('show');
+    }
 </script>
-
+ 
 {% endblock %}
-
+ 
 {% block content %}
-
+ 
 <div id="failedJoinModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="failedJoinModalLabel" aria-hidden="true">
   <div class="modal-header">
-	<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-	<h3 id="failedJoinModalLabel">Unable to Login</h3>
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3 id="failedJoinModalLabel">Unable to Login</h3>
   </div>
   <div class="modal-body">
-	<p>
-		Your domain has not been whitelisted for account creation. 
-		Please provide your contact information through the form 
-		at the bottom of this page if you are interested in Bump. Thanks!
-	</p>
+    <p>
+        Your domain has not been whitelisted for account creation. 
+        Please provide your contact information through the form 
+        at the bottom of this page if you are interested in Bump. Thanks!
+    </p>
   </div>
   <div class="modal-footer">
-	<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
   </div>
 </div>
 <br>
-<h1 style="text-align:center;color:#222222;">Drive Your Restaurant Forward with Bump</h1>
+<h1 style="text-align:center;color:#222222;">Bump SMS Marketing Platform</h1>
 <hr><br><br>
 <div class="row">
-	<div class="span6">
-		<img src="{{ url_for('static', filename='img/queue.png') }}">
-	</div>
 	<div class="span1">
 	</div>
-	<div class="span5">
-		<h3>Manage your Waitlist, Completely&nbsp;Free</h3>
-		<p>
-			Digitize your waitlist at no cost. Bump allows you to keep track of all parties 
-			on your waitlist, including the name, party size, arrival time, wait estimate, and 
-			target seating time. Don't risk mistakes, start using Bump for free today.
-		</p>
-		<ul>
-			<li>Let your guests know when their table is ready, by SMS or email</li>
-			<li>Add guests directly from the Bump waitlist manager, or allow guests to sign-in with a tablet (see below)</li>
-			<li>Allow guests to reply when they need more time, enabling you to know when your tables will be filled</li>
-			<li>Preserve valuable data that can help you run your business, such as average wait times, accuracy in predicting seating time, and trends in party size.</li>
-		</ul>
-	</div>
-</div>
-<br><br><hr><br><br>
-<div class="row">
-	<div class="span5">
-		<h3>Give your Guests Freedom</h3>
-		<p>
-			Do you enjoy a half hour wait in the lobby for your table? Neither do your guests. 
-			They also don't like being constrained to 100 feet by restaurant pager systems. With 
-			Bump, you can allow your guests to sign up for text or email notifications 
-			when their table is ready. That way they can do what <em>they</em> want while they wait.
-		</p>
-		<ul>
-			<li>Provide your guests with the flexibility they desire</li>
-			<li>Allow guests to sign up for SMS or Email notifications through a tablet interface</li>
-			<li>Offer your guests the opportunity to sign up for coupons and promos</li>
-			<li>Eliminate the need to invest in expensive pager systems</li>
-		</ul>
-	</div>
+    <div class="span4">
+        <img src="{{ url_for('static', filename='img/ios-sms.png') }}">
+    </div>
+    <div class="span1">
+    </div>
+    <div class="span5">
+        <h3>Re-engage Your Customers</h3>
+        <p>
+            Make today's customers tomorrow's customers. With Bump, you can re-engage with your 
+            existing customers through SMS advertising—coupons, deals, announcements, and more.
+        </p>
+        <ul>
+            <li>Connect with your customers using their preferred platform</li>
+            <li>Capture a higher rate of redemption than your email coupons, guaranteed</li>
+            <li>Keep yourself at the top of your customer's mind</li>
+            <li>Target your customers who are coming less often</li>
+        </ul>
+    </div>
 	<div class="span1">
-	</div>
-	<div class="span6">
-		<img src="{{ url_for('static', filename='img/signin.png') }}">
 	</div>
 </div>
 <br><br><hr><br><br>
 <div class="row">
 	<div class="span1">
 	</div>
-	<div class="span4">
-		<img src="{{ url_for('static', filename='img/edit-find.png') }}">
-	</div>
+    <div class="span5">
+        <h3>Collect Phone Numbers Effortlessly</h3>
+        <p>
+            Bump offers more methods to capture customer phone numbers than any competitor, all 
+            at no cost to you.
+        </p>
+        <ul>
+            <li>Customer signup by text message</li>
+            <li>Auto-generated QR codes</li>
+            <li>Easy website integration with signup form</li>
+            <li>Facebook integration</li>
+            <li>Free digital waitlist management, with SMS notifications</li>
+        </ul>
+    </div>
+    <div class="span1">
+    </div>
+    <div class="span4">
+        <img src="{{ url_for('static', filename='img/signup-methods.png') }}">
+    </div>
 	<div class="span1">
-	</div>
-	<div class="span5">
-		<h3>Gain Marketing Insights</h3>
-		<p>
-			Bump allows you to gain insight into the frequency of visits of your loyal 
-			customers. Have you noticed some of your main customers have been coming less frequently? 
-			Send them coupons and promos to keep them coming. As long as your guests have checked the 
-			box to allow you to send coupons and promos, you have the power to leverage targeted advertising 
-			and keep your business running well.
-		</p>
-		<ul>
-			<li>Understand how often your guests come and when they drop off</li>
-			<li>Leverage targeted messaging on the preferred channel of your customer</li>
-			<li>Analyze trends to better manage your restaurant</li>
-		</ul>
 	</div>
 </div>
 <br><br><hr><br><br>
 <div class="row">
+    <div class="span1">
+    </div>
+    <div class="span4">
+        <img src="{{ url_for('static', filename='img/edit-find.png') }}">
+    </div>
+    <div class="span1">
+    </div>
+    <div class="span5">
+        <h3>Understand Your Customers and Business</h3>
+        <p>
+            Bump allows you to gain insight into the frequency of visits of your loyal 
+            customers. Have you noticed some of your main customers have been coming less frequently? 
+            Send them coupons and promos to keep them coming.
+        </p>
+        <ul>
+            <li>Understand how often your guests come and when they drop off</li>
+            <li>Leverage targeted messaging on the preferred channel of your customer</li>
+            <li>Analyze trends to better manage your business</li>
+            <li>Track your seating performance (with Bump Waitlist Manager)</li>
+        </ul>
+    </div>
 	<div class="span1">
-	</div>
-	<div class="span5">
-		<h3>Give Bump a Test Drive</h3>
-		<p>
-			The screen shots aren't doing it for ya? We don't blame you. 
-			That's why we built a demo, so you can try it <em>before you send your info</em>. 
-			Just click the Demo button in the header and be prepared to be awed and amazed. 
-			Or you can just click the button below, whichever is more fun:
-		</p>
-		<a class="btn btn-inverse" href="{{ url_for('demo_login') }}" style="margin-top:10px">Launch Demo</a>
-	</div>
-	<div class="span1">
-	</div>
-	<div class="span5">
-		<img src="{{ url_for('static', filename='img/car.png') }}">
 	</div>
 </div>
 <br><br><hr><br><br>
 <div class="row">
-	<div class="span6">
-		<div class="well">
-		<form id="submissionForm" method="post" action="/" style="margin-bottom:0px">
-			<fieldset>
-				<legend>Submit Contact Info</legend>
-				<div class="row">
-					<div class="span2">
-						<label>Restaurant</label>
-						<input type="text" id="restaurantName" name="restaurantName" placeholder="e.g., Tony's Gourmet Italian">
-						<span id="restaurantNameHelp" class="help-block" style="display: none;">Please enter the name of your restaurant.</span> 
-					</div>
-					<div class="span2" style="margin-left:80px">
-						<label>Name</label>
-						<input type="text" id="fullName" name="fullName" placeholder="e.g., Tony Rigatoni">
-						<span id="firstNameHelp" class="help-block" style="display: none;">Please enter your name.</span>
-					</div>
-				</div>
-				<div class="row">
-					<div class="span2">
-						<label>Phone Number</label>
-						<input type="text" id="phoneNumber" name="phoneNumber" placeholder="e.g., 801-555-5555">
-					</div>
-					<div class="span2" style="margin-left:80px">
-						<label>Email Address</label>
-						<input type="text" id="emailAddress" name="emailAddress" placeholder="e.g., tony.rigatoni@example.com">
-					</div>
-				</div>
-				<div class="row">
-					<div class="span1">
-						<a id="submitButton" class="btn btn-inverse" onclick="submit();" style="margin-top:10px">
-							Submit
-						</a>
-					</div>
-				</div>
-				
-			</fieldset>
-		</form>
-		</div>
-		<div class="row">
-			<div class="span4">
-				
-				<div id="validationError" class="alert alert-error" style="display:none;">
-					<strong>Unable to send information</strong>&nbsp; Please fix the errors and try again.
-				</div>
-				
-				<div id="submitError" class="alert alert-error" style="display:none;">
-					<strong>Unable to send information</strong>&nbsp; Something went wrong. Please send an email to info<strong></strong>@<strong></strong>bump</strong>app.co.
-				</div>
-				
-				<div id="submitSuccess" class="alert alert-success" style="display:none;">
-					Your information has been sent. Please expect to hear back within 24-48 hours.</strong>
-				</div>
-				
-			</div>
-		</div>
-	</div>
+    <div class="span1">
+    </div>
+    <div class="span5">
+        <h3>Give Bump a Test Drive</h3>
+        <p>
+            The screen shots aren't doing it for ya? We don't blame you. 
+            That's why we built a demo, so you can try it <em>before you send your info</em>.
+        </p>
+        <a class="btn btn-inverse" href="{{ url_for('demo_login') }}" style="margin-top:10px">Launch Demo</a>
+    </div>
+    <div class="span1">
+    </div>
+    <div class="span4">
+        <img src="{{ url_for('static', filename='img/car.png') }}">
+    </div>
 	<div class="span1">
-	</div>
-	<div class="span5">
-		<h3>Find Out More</h3>
-		<p>
-			Bump is currently in private beta, by invitation only. If you own or manage a restaurant in 
-			Utah or Salt Lake counties and you could benefit from Bump, please provide your contact information. 
-			Our team will set up a time to meet with you and discuss your needs. Bump is looking for restaurants 
-			that meet the following criteria:
-		</p>
-		<ul>
-			<li>Wait times of 30 minutes or more at least twice weekly</li>
-			<li>At least one dedicated host during wait times</li>
-			<li>Location near or within a mall, shopping area, or other high traffic area</li>
-			<li>Desire to gain a competitive advantage through early adoption of technology</li>
-		</ul>
-	</div>
+	</div>	
+</div>
+<br><br><hr><br><br>
+<div class="row">
+    <div class="span6">
+        <div class="well">
+        <form id="submissionForm" method="post" action="/" style="margin-bottom:0px">
+            <fieldset>
+                <legend>Submit Contact Info</legend>
+                <div class="row">
+                    <div class="span2">
+                        <label>Business</label>
+                        <input type="text" id="restaurantName" name="restaurantName" placeholder="e.g., Tony's Gourmet Italian">
+                        <span id="restaurantNameHelp" class="help-block" style="display: none;">Please enter the name of your restaurant.</span> 
+                    </div>
+                    <div class="span2" style="margin-left:80px">
+                        <label>Name</label>
+                        <input type="text" id="fullName" name="fullName" placeholder="e.g., Tony Rigatoni">
+                        <span id="firstNameHelp" class="help-block" style="display: none;">Please enter your name.</span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="span2">
+                        <label>Phone Number</label>
+                        <input type="text" id="phoneNumber" name="phoneNumber" placeholder="e.g., 801-555-5555">
+                    </div>
+                    <div class="span2" style="margin-left:80px">
+                        <label>Email Address</label>
+                        <input type="text" id="emailAddress" name="emailAddress" placeholder="e.g., tony.rigatoni@example.com">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="span1">
+                        <a id="submitButton" class="btn btn-inverse" onclick="submit();" style="margin-top:10px">
+                            Submit
+                        </a>
+                    </div>
+                </div>
+                
+            </fieldset>
+        </form>
+        </div>
+        <div class="row">
+            <div class="span4">
+                
+                <div id="validationError" class="alert alert-error" style="display:none;">
+                    <strong>Unable to send information</strong>&nbsp; Please fix the errors and try again.
+                </div>
+                
+                <div id="submitError" class="alert alert-error" style="display:none;">
+                    <strong>Unable to send information</strong>&nbsp; Something went wrong. Please send an email to info<strong></strong>@<strong></strong>bump</strong>app.co.
+                </div>
+                
+                <div id="submitSuccess" class="alert alert-success" style="display:none;">
+                    Your information has been sent. Please expect to hear back within 24-48 hours.</strong>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    <div class="span1">
+    </div>
+    <div class="span5">
+        <h3>Find Out More</h3>
+        <p>
+            Bump is currently in private beta, by invitation only. If you own or manage a restaurant in 
+            Utah or Salt Lake counties and you could benefit from Bump, please provide your contact information. 
+            Our team will set up a time to meet with you and discuss your needs. Bump is looking for restaurants 
+            that meet the following criteria:
+        </p>
+        <ul>
+            <li>Wait times of 30 minutes or more at least twice weekly</li>
+            <li>At least one dedicated host during wait times</li>
+            <li>Location near or within a mall, shopping area, or other high traffic area</li>
+            <li>Desire to gain a competitive advantage through early adoption of technology</li>
+        </ul>
+    </div>
 </div>
 <br><br><hr><br><br>
 {% endblock %}
+ 

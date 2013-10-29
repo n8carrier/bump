@@ -39,24 +39,14 @@ class Guest(ndb.Model):
 	def add_guest(self,firstName,lastName,smsNumber,email,preferredContact,optIn,signup_method,user=None):
 		if not user:
 			user = current_user()
-		if user.demo_mode():
-			session_id = str(flasklogin.get_session_id())
-		else:
-			session_id = None
 		# Check to see if guest is already in datastore
 		if not smsNumber and not email:
 			# If both are blank there's no way to know the name matches any other instance of the name, so create a new guest.
 			guest = None
 		elif preferredContact == 'sms':
-			if user.demo_mode():
-				guest = Guest.query(Guest.sms_number==smsNumber,Guest.restaurant_key==user.key,Guest.session_id==session_id).get()
-			else:
-				guest = Guest.query(Guest.sms_number==smsNumber,Guest.restaurant_key==user.key).get()
+			guest = Guest.query(Guest.sms_number==smsNumber,Guest.restaurant_key==user.key).get()
 		elif preferredContact == 'email':
-			if user.demo_mode():
-				guest = Guest.query(Guest.email==email,Guest.restaurant_key==user.key,Guest.session_id==session_id).get()
-			else:
-				guest = Guest.query(Guest.email==email,Guest.restaurant_key==user.key).get()
+			guest = Guest.query(Guest.email==email,Guest.restaurant_key==user.key).get()
 		else:
 			guest = None
 		if guest:
@@ -69,11 +59,6 @@ class Guest(ndb.Model):
 				guest.opt_in = optIn
 		else:
 			# Guest is not in datastore, create new Guest
-			if user.demo_mode():
-				guest = Guest(first_name=firstName, last_name=lastName, sms_number = smsNumber, email=email, preferred_contact=preferredContact, opt_in=optIn, signup_method=signup_method, restaurant_key=user.key, session_id=session_id)
-			else:
-				guest = Guest(first_name=firstName, last_name=lastName, sms_number = smsNumber, email=email, preferred_contact=preferredContact, opt_in=optIn, signup_method=signup_method, restaurant_key=user.key)
-			if user.demo_mode():
-				guest.session_id = str(flasklogin.get_session_id())
+			guest = Guest(first_name=firstName, last_name=lastName, sms_number = smsNumber, email=email, preferred_contact=preferredContact, opt_in=optIn, signup_method=signup_method, restaurant_key=user.key)
 		guest.put()
 		return guest

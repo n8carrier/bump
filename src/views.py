@@ -17,6 +17,7 @@ from utilities.JsonIterable import *
 from accounts import login as login_account, logout as logout_account, join as join_account, delete as delete_account, current_user, login_required
 from accounts.models import UserAccount
 from google.appengine.api import mail
+from google.appengine.ext import db
 from datetime import date,timedelta
 import time
 import re
@@ -64,6 +65,22 @@ def index():
 			body=msg)
 	
 	return render_response('home.html',whitelist=whitelist)
+
+def waitlist_manager():
+	whitelist = request.args.get('whitelist')
+	
+	if request.method == 'POST':
+		restaurantName = request.form["restaurantName"]
+		fullName = request.form["fullName"]
+		phoneNumber = request.form["phoneNumber"]
+		emailAddress =  request.form["emailAddress"]
+		msg = "The following individual has expressed interest in Bump:\r\n\r\nRestaurant: " + restaurantName + "\r\nName: " + fullName + "\r\nPhone Number: " + phoneNumber + "\r\nEmail Adress: " + emailAddress
+		mail.send_mail(sender="nate@bumpapp.co",
+			to="nate@bumpapp.co",
+			subject="Interest in Bump",
+			body=msg)
+	
+	return render_response('waitlist-manager.html',whitelist=whitelist)
 		
 def settings():
 	cur_user = current_user()
@@ -74,7 +91,7 @@ def settings():
 		# No template exists, create one
 		msgTemplate = MessageTemplate(restaurant_key=cur_user.key,message_type=1,is_active=True,message_text="{firstName}, your table is almost ready. Need more time? Reply ""bump"" and the # of minutes you'd like.")
 		msgTemplate.put()
-	if cur_user.demo_mode():
+	if cur_user.is_demo:
 		# Don't let demo into settings
 		return redirect(url_for("index"))
 	else:
@@ -163,37 +180,30 @@ def manage():
 			msgTemplate = MessageTemplate(restaurant_key=cur_user.key,message_type=1,is_active=True,message_text="{firstName}, your table is almost ready. Need more time? Reply ""bump"" and the # of minutes you'd like.")
 			msgTemplate.put()
 		
-	# Create a list of guests (as dicts) within the user's library
-		for checkin in cur_user.get_checkedin_guests():
-			# Includes session_id, demo account (include only if session_id matches 
+		# Create a list of guests (as dicts) within the user's library
+		for checkin in cur_user.get_checkedin_guests(): 
 			guest = Guest.get_by_id(checkin.guest_key.id())
-			if cur_user.demo_mode():
-				demo_session_id = str(flasklogin.get_session_id())
-			if "session_id" not in guest.to_dict():
-				# Fix for old data
-				guest.session_id = None
-			if not guest.session_id or guest.session_id == demo_session_id:
-				checkedinGuest = {}
-				checkedinGuest["guest_ID"] = checkin.guest_key.id()
-				checkedinGuest["checkin_ID"] = checkin.key.id()
-				checkedinGuest["firstName"] = guest.first_name
-				checkedinGuest["lastName"] = guest.last_name
-				if guest.sms_number:
-					checkedinGuest["sms"] = functions.stylizePhoneNumber(guest.sms_number)
-				checkedinGuest["email"] = guest.email
-				checkedinGuest["partySize"] = checkin.party_size
-				arrival_time = checkin.signin_time - timedelta(hours=6)
-				checkedinGuest["arrival_time"] = arrival_time
-				checkedinGuest["wait_estimate"] = checkin.wait_estimate
-				checkedinGuest["target_time"] = arrival_time + timedelta(minutes=checkin.wait_estimate)
-				guestlist.append(checkedinGuest)
+			checkedinGuest = {}
+			checkedinGuest["guest_ID"] = checkin.guest_key.id()
+			checkedinGuest["checkin_ID"] = checkin.key.id()
+			checkedinGuest["firstName"] = guest.first_name
+			checkedinGuest["lastName"] = guest.last_name
+			if guest.sms_number:
+				checkedinGuest["sms"] = functions.stylizePhoneNumber(guest.sms_number)
+			checkedinGuest["email"] = guest.email
+			checkedinGuest["partySize"] = checkin.party_size
+			arrival_time = checkin.signin_time - timedelta(hours=6)
+			checkedinGuest["arrival_time"] = arrival_time
+			checkedinGuest["wait_estimate"] = checkin.wait_estimate
+			checkedinGuest["target_time"] = arrival_time + timedelta(minutes=checkin.wait_estimate)
+			guestlist.append(checkedinGuest)
 	# Sort guestlist by arrival time (oldest on top)
 	guestlist.sort(key=lambda guest: guest["arrival_time"])
 	return render_response("manage.html", guestlist=guestlist, cur_user=cur_user, tour=tour, default_message=msgTemplate.message_text)
 
 def advertise():
 	cur_user = current_user()
-	if not cur_user.demo_mode():
+	if not cur_user.is_demo:
 		# Create a list of guests (as dicts) within the user's library
 		optInList = []
 		for guest in cur_user.get_optins():
@@ -249,27 +259,20 @@ def advertise():
 
 def optin(user_ID=None):
 	signup_method = request.args.get('signup_method')
-	include_sms = request.args.get('include_sms')
 	include_email = request.args.get('include_email')
-	include_header = request.args.get('include_header')
-	if not include_sms:
-		include_sms = True
-	elif include_sms.lower() == "false":
-		include_sms = False
-	else:
-		include_sms = True
+	iframe = request.args.get('iframe')
 	if not include_email:
-		include_email = True
-	elif include_email.lower() == "false":
 		include_email = False
-	else:
+	elif include_email.lower() == "true":
 		include_email = True
-	if not include_header:
-		include_header = True
-	elif include_header.lower() == "false":
-		include_header = False
 	else:
-		include_header = True
+		include_email = False
+	if not iframe:
+		iframe = True
+	elif iframe.lower() == "false":
+		iframe = False
+	else:
+		iframe = True
 	if not signup_method:
 		signup_method = 3 # Default to website
 	cur_user = current_user()
@@ -282,7 +285,7 @@ def optin(user_ID=None):
 			restaurant = cur_user
 		else:
 			return redirect(url_for("index")) 
-	return render_response("optin.html",restaurant=restaurant,signup_method=signup_method,include_sms=include_sms,include_email=include_email,include_header=include_header)
+	return render_response("optin.html",restaurant=restaurant,signup_method=signup_method,include_email=include_email,iframe=iframe)
 
 def optin_guest(user_ID,signup_method):
 	user = UserAccount.get_by_id(int(user_ID))
@@ -410,30 +413,23 @@ def refresh_manage():
 	waitlist = []
 	if cur_user:
 	# Create a list of guests (as dicts) within the user's library
-		for checkin in cur_user.get_checkedin_guests():
-			# Includes session_id, demo account (include only if session_id matches 
+		for checkin in cur_user.get_checkedin_guests(): 
 			guest = Guest.get_by_id(checkin.guest_key.id())
-			if cur_user.demo_mode():
-				demo_session_id = str(flasklogin.get_session_id())
-			if "session_id" not in guest.to_dict():
-				# Fix for old data
-				guest.session_id = None
-			if not guest.session_id or guest.session_id == demo_session_id:
-				checkedinGuest = {}
-				checkedinGuest["guest_ID"] = checkin.guest_key.id()
-				checkedinGuest["checkin_ID"] = checkin.key.id()
-				checkedinGuest["firstName"] = guest.first_name
-				checkedinGuest["lastName"] = guest.last_name
-				if guest.sms_number:
-					checkedinGuest["sms"] = functions.stylizePhoneNumber(guest.sms_number)
-				checkedinGuest["email"] = guest.email
-				checkedinGuest["partySize"] = checkin.party_size
-				arrival_time = checkin.signin_time - timedelta(hours=6)
-				checkedinGuest["arrival_time"] = arrival_time.strftime('%I:%M %p')
-				checkedinGuest["wait_estimate"] = checkin.wait_estimate
-				target_time = arrival_time + timedelta(minutes=checkin.wait_estimate)
-				checkedinGuest["target_time"] = target_time.strftime('%I:%M %p')
-				waitlist.append(checkedinGuest)
+			checkedinGuest = {}
+			checkedinGuest["guest_ID"] = checkin.guest_key.id()
+			checkedinGuest["checkin_ID"] = checkin.key.id()
+			checkedinGuest["firstName"] = guest.first_name
+			checkedinGuest["lastName"] = guest.last_name
+			if guest.sms_number:
+				checkedinGuest["sms"] = functions.stylizePhoneNumber(guest.sms_number)
+			checkedinGuest["email"] = guest.email
+			checkedinGuest["partySize"] = checkin.party_size
+			arrival_time = checkin.signin_time - timedelta(hours=6)
+			checkedinGuest["arrival_time"] = arrival_time.strftime('%I:%M %p')
+			checkedinGuest["wait_estimate"] = checkin.wait_estimate
+			target_time = arrival_time + timedelta(minutes=checkin.wait_estimate)
+			checkedinGuest["target_time"] = target_time.strftime('%I:%M %p')
+			waitlist.append(checkedinGuest)
 		# Sort guestlist by arrival time (oldest on top)
 		waitlist.sort(key=lambda guest: guest["arrival_time"])
 		jsondump = json.dumps(waitlist)
@@ -536,11 +532,9 @@ def login():
 		return redirect(users.create_login_url(request.url))
 
 def demo_login():
-	user = UserAccount.query(UserAccount.email=="demo@bumpapp.co").get()
-	if not user:
-		# If the demo account doesn't exist, create it.
-		user = UserAccount(name="Bump Demo", email="demo@bumpapp.co")
-		user.put()
+	# Create demo account
+	user = UserAccount(name="Bump Demo", email="demo@bumpapp.co", reply_to_email="demo@bumpapp.co", is_demo=True)
+	user.put()
 	if user and flasklogin.login_user(user,False):
 		return redirect(url_for("manage") + '?tour=start')
 	return redirect(url_for("index") + '?whitelist=false')
@@ -548,13 +542,19 @@ def demo_login():
 def logout():
 	# Clear out guests and checkins if demo account
 	cur_user = current_user()
-	if cur_user.demo_mode():
-		guests = Guest.query(Guest.session_id==str(flasklogin.get_session_id())).fetch()
+	if cur_user.is_demo:
+		# Delete guest objects, checkin objects, and user object
+		guests = Guest.query(Guest.restaurant_key==cur_user.key).fetch()
 		for guest in guests:
 			checkins = CheckIn.query(CheckIn.guest_key==guest.key).fetch()
 			for checkin in checkins:
 				checkin.key.delete()
 			guest.key.delete()
+		for msg in Message.query(Message.restaurant_key==cur_user.key).fetch():
+			msg.key.delete()
+		for msgTemplate in MessageTemplate.query(MessageTemplate.restaurant_key==cur_user.key).fetch():
+			msgTemplate.key.delete()
+		cur_user.key.delete()
 	# Logs out User
 	logout_account()
 	return redirect(users.create_logout_url("/"))

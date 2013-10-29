@@ -1,4 +1,4 @@
-{% if include_header %}
+{% if not iframe %}
 {% extends "maintemplate.html" %}
 
 {% block title %}Coupon Signup - {{restaurant.name}}{% endblock %}
@@ -20,7 +20,7 @@
 
 <script type="text/javascript" src="{{ url_for('static', filename='js/jquery-ui-1.10.2.custom.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/maskedinput.js') }}"></script>
-{% if not include_header %}
+{% if iframe %}
 	<title>Coupon Signup - {{restaurant.name}} | Bump</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}" />
@@ -143,9 +143,9 @@
 	<div class="span4">
 		<form class="form-horizontal" id="submissionForm" action="javascript:submit()" style="margin-bottom:0px">
 			<fieldset>	
-				<legend{% if not include_header %} style="margin-left:10px"{% endif %}><h3>Signup for Coupons</h3></legend>
+				<legend{% if iframe %} style="margin-left:10px"{% endif %}><h3>Signup for Coupons</h3></legend>
 				
-				<div class="control-group"{% if not include_header %} style="margin-left:-40px"{% endif %}>
+				<div class="control-group"{% if iframe %} style="margin-left:-40px"{% endif %}>
 					<label for="firstName" class="control-label">Name</label>
 					<div class="controls">
 						<input type="text" id="firstName" name="firstName" placeholder="e.g., John Doe" inputmode="autocapitalized" autocapitalize="on" autocorrect="off">
@@ -159,7 +159,7 @@
 					</div>
 				</div>
 				-->
-				<div class="control-group"{% if not include_email %} style="display:none"{% endif %}{% if not include_header %} style="margin-left:-40px"{% endif %}>
+				<div class="control-group"{% if not include_email %} style="display:none"{% endif %}{% if iframe %} style="margin-left:-40px"{% endif %}>
 					<label class="control-label">Contact Method</label>
 					<div class="controls">
 						<div class="radio">
@@ -175,7 +175,7 @@
 					</div>
 				</div>
 				
-				<div class="control-group"{% if not include_header %} style="margin-left:-40px"{% endif %}>
+				<div class="control-group"{% if iframe %} style="margin-left:-40px"{% endif %}>
 					<label for="contactInfo" id="contactInfoLabel" class="control-label">Phone Number</label>
 					<div class="controls">
 						<input type="tel" id="contactInfoSMS" name="smsNumber" placeholder="e.g., (801) 555-5555" autocapitalize="off" autocorrect="off">
@@ -183,7 +183,7 @@
 					</div>
 				</div>
 				
-				<div class="control-group" style="margin-left:{% if not include_header %}-{% endif %}20px">
+				<div class="control-group" style="margin-left:{% if iframe %}-{% endif %}20px">
 					<label for="submitButton" class="control-label"></label>
 					<a type="submit" id="submitButton" class="btn btn-inverse" onclick="submit();">
 						Submit

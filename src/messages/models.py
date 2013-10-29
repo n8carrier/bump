@@ -99,7 +99,7 @@ class Message(ndb.Model):
 		
 	def send_message(self,guest,msg_text):
 		cur_user = current_user()
-		if cur_user.demo_mode():
+		if cur_user.is_demo:
 			msg = msg_text + " -- SENT BY BUMP DEMO: http://bumpapp.co"
 		else:
 			msg = msg_text
@@ -124,9 +124,9 @@ class Message(ndb.Model):
 				reply_to = cur_user.reply_to_email
 				sender_email = cur_user.email
 			else:
-				if cur_user.demo_mode():
+				if cur_user.is_demo:
 					# Demo mode is not a real account, so it must be sent from admin@bumpapp.co
-					reply_to = "demo@bumpapp.co"
+					reply_to = cur_user.reply_to_email
 					sender_email = "admin@bumpapp.co"
 				else:
 					sender_email = cur_user.email

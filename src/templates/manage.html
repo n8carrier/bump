@@ -536,7 +536,7 @@
 				<a id="refreshButton" class="btn btn-large" onclick="refreshManage()" style="margin-left:-50px;margin-top:6px;"><i id="refreshIcon" class="icon-refresh icon-medium"></i></a>
 			</div>
 			<div class="span8">
-				<p class="text-right" style="margin-top:15px">Current Wait Time (in minutes):&nbsp;&nbsp;<input type="number" name="currentWait" id="currentWait" value="{{ cur_user.default_wait }}" style="width:40px"{% if cur_user.demo_mode() %} disabled{% endif %}></p>
+				<p class="text-right" style="margin-top:15px">Current Wait Time (in minutes):&nbsp;&nbsp;<input type="number" name="currentWait" id="currentWait" value="{{ cur_user.default_wait }}" style="width:40px"></p>
 			</div>
 		</div>
 			<table class="table table-striped table-bordered" id="guestQueue">
@@ -596,11 +596,11 @@
 				</div>
 				<div class="tooltip-inner" style="background-color:#d41e24">
 					<div style="font-size: 12pt; text-align: left;">
-						When guests sign in, they appear here (auto-refreshes every 30s). The party size defaults to 2, just click the +/- to update.
+						When guests sign in, they appear here (auto-refreshes every 30s). <b>Party Size</b> defaults to 2, just click the +/- to update.
 						<br><br>
-						Arrival time is set based on when the guest signed in, and the wait estimate defaults to the current wait defined in the top right (unchangeable in demo).
+						<b>Arrival Time</b> is set as the time the guest signed in, and <b>Wait Estimate</b> defaults to the current wait defined in the top right.
 						<br><br>
-						The target seating time lets you know when you've estimated to seat the guest. If you update the wait estimate, the target time will update automatically.
+						<b>Target Seating Time</b> lets you know when you've estimated to seat the guest. If you update the wait estimate, the target time will update automatically.
 					</div>
 					<a id="tour3bend" class="btn btn-small btn-tour" style="margin-right:322px" onclick="endtour()">End Tour</a><a id="tour3bnext" class="btn btn-small btn-tour" onclick="tour4();">&#x25b6;</a>
 				</div>

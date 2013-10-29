@@ -24,6 +24,9 @@ app.add_url_rule('/_ah/warmup',view_func=views.warmup)
 # Home page
 app.add_url_rule('/',view_func=views.index,methods=["GET","POST"])
 
+# Waitlist Manager (Info)
+app.add_url_rule('/waitlist-manager',view_func=views.waitlist_manager,methods=['GET','POST'])
+
 # Settings
 app.add_url_rule('/settings',view_func=views.settings,methods=["GET","POST"])
 

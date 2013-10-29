@@ -8,18 +8,16 @@ class UserAccount(ndb.Model):
 	name = ndb.StringProperty(required=True)
 	email = ndb.StringProperty(required=True)
 	#default_msg_ready = ndb.StringProperty(default="") # Deprecated 10/18/13, replaced by MessageTemplate
-	default_checkbox_promos = ndb.BooleanProperty(default=False)
+	default_checkbox_promos = ndb.BooleanProperty(default=True)
 	is_admin = ndb.BooleanProperty(default=False)
 	gv_email  = ndb.StringProperty(required=False)
 	gv_password = ndb.StringProperty(required=False)
 	reply_to_email  = ndb.StringProperty(required=False)
 	default_wait = ndb.IntegerProperty(default=15)
+	is_demo = ndb.BooleanProperty(default=False)
 	
 	def demo_mode(self):
-		if self.email == 'demo@bumpapp.co':
-			return True
-		else:
-			return False
+		return self.is_demo
 	
 	def update(self, promoDefault, gv_email, gv_password, reply_to_email):
 		
