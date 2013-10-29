@@ -203,58 +203,47 @@ def manage():
 
 def advertise():
 	cur_user = current_user()
-	if not cur_user.is_demo:
-		# Create a list of guests (as dicts) within the user's library
-		optInList = []
-		for guest in cur_user.get_optins():
-			if guest.sms_number or guest.email:
-				optin = {}
-				optin["guest_ID"] = guest.key.id()
-				if guest.first_name and guest.last_name:
-					optin["name"] = guest.first_name + ' ' + guest.last_name
-				elif guest.first_name:
-					optin["name"] = guest.first_name
-				#else:
-				#	if guest.preferred_contact == 'sms':
-				#		optin["name"] = guest.sms_number
-				#	elif guest.preferred_contact == 'email':
-				#		optin["name"] = guest.email
-				#	else:
-				#		# This should never be the case
-				#		optin["name"] = "Unknown"
-				if guest.preferred_contact == 'sms':
-					optin["smsNumber"] = functions.stylizePhoneNumber(guest.sms_number)
-				elif guest.preferred_contact == 'email':
-					optin["email"] = guest.email
-				if guest.subscribe_date:
-					optin["subscribe_date"] = guest.subscribe_date.strftime('%m/%d/%y')
-				else:
-					optin["subscribe_date"] = "Unknown"
-				if guest.signup_method:
-					if guest.signup_method == 1:
-						optin["signup_method"] = 'Waitlist'
-					elif guest.signup_method == 2:
-						optin["signup_method"] = 'SMS'
-					elif guest.signup_method == 3:
-						optin["signup_method"] = "Website"
-				else:
+	# Create a list of guests (as dicts) within the user's library
+	optInList = []
+	for guest in cur_user.get_optins():
+		if guest.sms_number or guest.email:
+			optin = {}
+			optin["guest_ID"] = guest.key.id()
+			if guest.first_name and guest.last_name:
+				optin["name"] = guest.first_name + ' ' + guest.last_name
+			elif guest.first_name:
+				optin["name"] = guest.first_name
+			if guest.preferred_contact == 'sms':
+				optin["smsNumber"] = functions.stylizePhoneNumber(guest.sms_number)
+			elif guest.preferred_contact == 'email':
+				optin["email"] = guest.email
+			if guest.subscribe_date:
+				optin["subscribe_date"] = guest.subscribe_date.strftime('%m/%d/%y')
+			else:
+				optin["subscribe_date"] = "Unknown"
+			if guest.signup_method:
+				if guest.signup_method == 1:
 					optin["signup_method"] = 'Waitlist'
-				optin["promos_sent"] = Message.query(Message.restaurant_key==cur_user.key,Message.recipient_key==guest.key).count() # TODO: Don't count table notifications (it's going to be nasty to fix that!)
-				optInList.append(optin)
-		optInList.sort(key=lambda optin: optin["subscribe_date"])
-		
-		# Create list of MessageTemplates
-		msgTemplates = []
-		for msgTemplate in MessageTemplate.query(MessageTemplate.restaurant_key==cur_user.key,MessageTemplate.message_type==2,MessageTemplate.is_active==True).fetch():
-			if msgTemplate.message_name: # If it doesn't have a name, we can't show it
-				msg = {}
-				msg["msgID"] = msgTemplate.key.id()
-				msg["msgName"] = msgTemplate.message_name
-				msg["msgText"] = msgTemplate.message_text
-				msgTemplates.append(msg)
-		msgTemplates.sort(key=lambda msg: msg["msgName"])
-	else:
-		return redirect(url_for("index"))
+				elif guest.signup_method == 2:
+					optin["signup_method"] = 'SMS'
+				elif guest.signup_method == 3:
+					optin["signup_method"] = "Website"
+			else:
+				optin["signup_method"] = 'Waitlist'
+			optin["promos_sent"] = Message.query(Message.restaurant_key==cur_user.key,Message.recipient_key==guest.key).count() # TODO: Don't count table notifications (it's going to be nasty to fix that!)
+			optInList.append(optin)
+	optInList.sort(key=lambda optin: optin["subscribe_date"])
+	
+	# Create list of MessageTemplates
+	msgTemplates = []
+	for msgTemplate in MessageTemplate.query(MessageTemplate.restaurant_key==cur_user.key,MessageTemplate.message_type==2,MessageTemplate.is_active==True).fetch():
+		if msgTemplate.message_name: # If it doesn't have a name, we can't show it
+			msg = {}
+			msg["msgID"] = msgTemplate.key.id()
+			msg["msgName"] = msgTemplate.message_name
+			msg["msgText"] = msgTemplate.message_text
+			msgTemplates.append(msg)
+	msgTemplates.sort(key=lambda msg: msg["msgName"])
 	return render_response("advertise.html", optInList=optInList, msgTemplates=msgTemplates)
 
 def optin(user_ID=None):
@@ -268,11 +257,11 @@ def optin(user_ID=None):
 	else:
 		include_email = False
 	if not iframe:
-		iframe = True
-	elif iframe.lower() == "false":
 		iframe = False
-	else:
+	elif iframe.lower() == "true":
 		iframe = True
+	else:
+		iframe = False
 	if not signup_method:
 		signup_method = 3 # Default to website
 	cur_user = current_user()
@@ -323,7 +312,7 @@ def new_promo():
 	return "Success"
 
 def send_promos():
-	
+	cur_user = current_user()
 	sms_counter = 0
 	
 	if request.form["schedule"] == "now":
@@ -333,7 +322,8 @@ def send_promos():
 		for key in request.form:
 			if key[:5] == "guest":
 				# Send message
-				Message.send_promo(request.form[key], msgTemplate)
+				if not cur_user.is_demo or sms_counter <= 10:
+					Message.send_promo(request.form[key], msgTemplate)
 				if Guest.get_by_id(int(request.form[key])).preferred_contact == 'sms':
 					sms_counter = sms_counter + 1
 					if sms_counter % 5 == 0:

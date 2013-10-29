@@ -29,6 +29,10 @@
 
 <script type="text/javascript">
 	
+	if("{{ user.is_demo }}"=="True") {
+		$("#demoModal").modal("show");
+	}
+	
 	$(function() {
 		$(".tooltip-button").tooltip({trigger: "hover"});
 	});
@@ -228,7 +232,9 @@
 				$(this).prop('checked', true);
 			}
 		});
-		updateCount($('#optins-table tr:visible').length-1);
+		if(!$("#no-customers").is(":visible")) { // Necessary otherwise updates to 1 when no customers are in the list
+			updateCount($('#optins-table tr:visible').length-1);
+		}
 	}
 	
 	function uncheckAllBoxes() {
@@ -269,6 +275,26 @@
 	<button class="btn btn-inverse" onclick="createNewMessageTemplate()">Create</button>
   </div>
 </div>
+
+<div id="demoModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="demoModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3 id="demoModalLabel">Bump SMS Marketing Platform Demo</h3>
+  </div>
+  <div class="modal-body">
+    <p>
+        Thanks for demoing Bump. You are welcome to try any features. Please note 
+		that only 5 SMS messages may be sent per demo login.
+		<br><br>
+		If you'd like to participate in Bump's private beta, please enter your contact information on the main page 
+		(just click the bump logo and scroll to the bottom). We hope you've enjoyed Bump. Thanks!
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+  </div>
+</div>
+
 
 <div class="span6 offset3" style="position: absolute;">
 	<div id="undoMessage" class="alert alert-success" style="display: none;">
@@ -359,6 +385,9 @@
 				</tr>
 			</thead>
 			<tbody>
+				<tr id="no-customers" {% if optInList|length >= 1 %}style="display:none"{% endif %}>
+					<td colspan="6">There are no customers in your database. Try adding customers through <a href="{{ url_for('optin') }}">manual opt-in</a> or the <a href="{{ url_for('manage') }}">waitlist manager</a>.</td>
+				</tr>
 				{% for optin in optInList %}
 					<tr id="guest-{{optin.guest_ID}}">
 						<td>
