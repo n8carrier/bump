@@ -59,8 +59,8 @@ def index():
 		phoneNumber = request.form["phoneNumber"]
 		emailAddress =  request.form["emailAddress"]
 		msg = "The following individual has expressed interest in Bump:\r\n\r\nRestaurant: " + restaurantName + "\r\nName: " + fullName + "\r\nPhone Number: " + phoneNumber + "\r\nEmail Adress: " + emailAddress
-		mail.send_mail(sender="nate@bumpapp.co",
-			to="nate@bumpapp.co",
+		mail.send_mail(sender="admin@bumpapp.co",
+			to="admin@bumpapp.co",
 			subject="Interest in Bump",
 			body=msg)
 	
@@ -75,8 +75,8 @@ def waitlist_manager():
 		phoneNumber = request.form["phoneNumber"]
 		emailAddress =  request.form["emailAddress"]
 		msg = "The following individual has expressed interest in Bump:\r\n\r\nRestaurant: " + restaurantName + "\r\nName: " + fullName + "\r\nPhone Number: " + phoneNumber + "\r\nEmail Adress: " + emailAddress
-		mail.send_mail(sender="nate@bumpapp.co",
-			to="nate@bumpapp.co",
+		mail.send_mail(sender="admin@bumpapp.co",
+			to="admin@bumpapp.co",
 			subject="Interest in Bump",
 			body=msg)
 	
