@@ -29,7 +29,7 @@
 
 <script type="text/javascript">
 	
-	if("{{ user.is_demo }}"=="True") {
+	if("{{ demo }}"=="True") {
 		$("#demoModal").modal("show");
 	}
 	
@@ -67,8 +67,17 @@
 			}
 		});
 		
-		// Add guestList to sendList
-		//sendList["guestList"] = guestList
+		// I think JSON should look something like this, but the backend can't read it
+		//sendList = '{' +
+		//	'"schedule": "now",' + 
+		//	'"msgTemplate": "msgTemplateID",' + 
+		//	'"guestList": [' + 
+		//		'{"guest-0": "guest-0-id"},' + 
+		//		'{"guest-1": "guest-1-id"}' + 
+		//	']' + 
+		//'}'
+		//
+		//alert(sendList);
 	
 		if(true) {
 			//$("#smsValidationError").hide();
@@ -386,7 +395,7 @@
 			</thead>
 			<tbody>
 				<tr id="no-customers" {% if optInList|length >= 1 %}style="display:none"{% endif %}>
-					<td colspan="6">There are no customers in your database. Try adding customers through <a href="{{ url_for('optin') }}">manual opt-in</a> or the <a href="{{ url_for('manage') }}">waitlist manager</a>.</td>
+					<td colspan="6">There are no customers in your database. Try adding customers through <a href="{{ url_for('optin') }}">manual opt-in</a> or the <a href="{{ url_for('manage') }}{% if demo == True %}?tour=start{% endif %}">waitlist manager</a>.</td>
 				</tr>
 				{% for optin in optInList %}
 					<tr id="guest-{{optin.guest_ID}}">

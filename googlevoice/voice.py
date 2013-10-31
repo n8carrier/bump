@@ -72,7 +72,13 @@ class Voice(object):
 
         content = self.__do_page('login').read()
         # holy hackjob
-        galx = re.search(r"name=\"GALX\"\s+value=\"([^\"]+)\"", content).group(1)
+        try:
+            galx = re.search(r"name=\"GALX\" type=\"hidden\"\n *value=\"(.+)\"", content).group(1)
+        except:
+            galx = ''.join(e for e in content if e.isalnum()) # Remove special characters (leaving only letters & numbers)
+            galx = galx[galx.index("GALX"):] # Grab everything from GALX forward
+            galx = galx[:galx.index("input")] # Truncate at input (first word after GALX value
+            galx = galx[galx.index("value")+5:] # Extract GALX value
         result = self.__do_page('login', {'Email': email, 'Passwd': passwd, 'GALX': galx})
 
         if result.geturl().startswith(getattr(settings, "SMSAUTH")):

@@ -202,6 +202,13 @@ def manage():
 	return render_response("manage.html", guestlist=guestlist, cur_user=cur_user, tour=tour, default_message=msgTemplate.message_text)
 
 def advertise():
+	demo = request.args.get('demo')
+	if not demo:
+		demo = False
+	elif demo.lower() == "true":
+		demo = True
+	else:
+		demo = False
 	cur_user = current_user()
 	# Create a list of guests (as dicts) within the user's library
 	optInList = []
@@ -244,7 +251,7 @@ def advertise():
 			msg["msgText"] = msgTemplate.message_text
 			msgTemplates.append(msg)
 	msgTemplates.sort(key=lambda msg: msg["msgName"])
-	return render_response("advertise.html", optInList=optInList, msgTemplates=msgTemplates)
+	return render_response("advertise.html", optInList=optInList, msgTemplates=msgTemplates, demo=demo)
 
 def optin(user_ID=None):
 	signup_method = request.args.get('signup_method')
@@ -522,11 +529,17 @@ def login():
 		return redirect(users.create_login_url(request.url))
 
 def demo_login():
+	landing_page = request.args.get('lp')
+	if not landing_page:
+		landing_page = "advertise"
 	# Create demo account
 	user = UserAccount(name="Bump Demo", email="demo@bumpapp.co", reply_to_email="demo@bumpapp.co", is_demo=True)
 	user.put()
 	if user and flasklogin.login_user(user,False):
-		return redirect(url_for("manage") + '?tour=start')
+		if landing_page == "advertise":
+			return redirect(url_for("advertise") + '?demo=true')
+		elif landing_page == 'manage':
+			return redirect(url_for("manage") + '?tour=start')
 	return redirect(url_for("index") + '?whitelist=false')
 			
 def logout():
