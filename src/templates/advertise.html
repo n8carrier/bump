@@ -148,7 +148,8 @@
 		})
 		.done(function() {
 			// Update options
-			location.reload(); // Should be done thru ajax, but this a shortcut
+			// location.reload(); // Should be done thru ajax, but this a shortcut
+			window.location = "/advertise" // same as above, but gets rid of refresh with demo modal
 		}).fail(function() {
 		});
 		$("#newMessageModal").modal('hide');
