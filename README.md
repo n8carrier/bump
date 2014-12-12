@@ -2,6 +2,7 @@ bump
 =======
 
 Iteration 1: Restaurant Waitlist Management
+
 Iteration 2: SMS Marketing Platform (but the above still works!)
 
 Bump is the result of a semester-long entrepreneurship project in one of my MBA classes. We followed Lean Startup's Build-Measure-Learn feedback loop through several iterations, ending with an SMS marketing platform aimed at less tech savvy businesses. Built by [@natecarrier](https://github.com/natecarrier) and [@demosthenes48](https://github.com/demosthenes48).
